@@ -1,15 +1,40 @@
 import './globals.css'
 import { ReactNode } from 'react'
+import { Sora, Manrope, IBM_Plex_Mono } from 'next/font/google'
 import Header from '../components/navigation/Header'
 import Footer from '../components/footer/Footer'
+import { siteConfig } from '../data/site'
+
+const sora = Sora({
+  subsets: ['latin'],
+  weight: ['500', '600', '700', '800'],
+  variable: '--font-sora',
+  display: 'swap'
+})
+
+const manrope = Manrope({
+  subsets: ['latin'],
+  variable: '--font-manrope',
+  display: 'swap'
+})
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-plex-mono',
+  display: 'swap'
+})
 
 export const metadata = {
-  title: 'APTECH Abeokuta',
-  description: 'Professional IT training and career-focused technology education in Abeokuta.',
+  title: {
+    default: `${siteConfig.name} — Build Your Future with Technology`,
+    template: `%s — ${siteConfig.name}`
+  },
+  description: siteConfig.description,
   icons: '/favicon.svg',
   openGraph: {
-    title: 'APTECH Abeokuta',
-    description: 'Gain practical IT skills and career-ready training at APTECH Abeokuta.',
+    title: siteConfig.name,
+    description: siteConfig.description,
     images: ['/images/hero-tech.svg']
   },
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com')
@@ -17,11 +42,12 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${sora.variable} ${manrope.variable} ${plexMono.variable}`}>
       <body>
+        <a href="#main-content" className="skip-link">Skip to main content</a>
         <div className="min-h-screen flex flex-col">
           <Header />
-          <main className="flex-1">{children}</main>
+          <main id="main-content" className="flex-1">{children}</main>
           <Footer />
         </div>
       </body>

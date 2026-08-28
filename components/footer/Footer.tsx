@@ -1,29 +1,61 @@
 import Link from 'next/link'
-import { siteConfig } from '../../data/site'
+import Image from 'next/image'
+import { siteConfig, footerNav } from '../../data/site'
 
-export default function Footer(){
+export default function Footer() {
   return (
-    <footer className="bg-white border-t mt-10">
-      <div className="container py-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+    <footer className="pattern-adire" style={{ background: 'var(--color-navy-950)', color: 'rgba(255,255,255,0.65)' }}>
+      <div className="container py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] gap-10">
         <div>
-          <h3 className="font-bold">APTECH Abeokuta</h3>
-          <p className="mt-2 text-slate-600 max-w-sm">{siteConfig.description}</p>
+          <div className="flex items-center">
+            <Image
+              src="/images/aptech-logo-footer.png"
+              alt="APTECH Computer Education — Abeokuta"
+              width={860}
+              height={258}
+              className="w-auto h-[44px] sm:h-[48px] md:h-[52px] object-contain"
+            />
+          </div>
+          <p className="mt-5 text-sm leading-relaxed max-w-xs">{siteConfig.description}</p>
         </div>
+
         <div>
-          <h4 className="font-semibold">Quick Links</h4>
-          <ul className="mt-2 space-y-2">
-            <li><Link href="/courses" className="hover:underline">Courses</Link></li>
-            <li><Link href="/admissions" className="hover:underline">Admissions</Link></li>
-            <li><Link href="/contact" className="hover:underline">Contact</Link></li>
+          <h2 className="eyebrow eyebrow-inverse">Explore</h2>
+          <ul className="mt-5 space-y-3 text-sm">
+            {footerNav.explore.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className="hover:text-white transition-colors">{l.label}</Link>
+              </li>
+            ))}
           </ul>
         </div>
+
         <div>
-          <h4 className="font-semibold">Contact</h4>
-          <p className="mt-2 text-slate-600">Email: {siteConfig.email || 'info@example.com'}</p>
-          <p className="mt-1 text-slate-600">Phone: {siteConfig.phone || 'Placeholder'}</p>
+          <h2 className="eyebrow eyebrow-inverse">Support</h2>
+          <ul className="mt-5 space-y-3 text-sm">
+            {footerNav.support.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className="hover:text-white transition-colors">{l.label}</Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h2 className="eyebrow eyebrow-inverse">Contact</h2>
+          <ul className="mt-5 space-y-3 text-sm">
+            <li>{siteConfig.address}</li>
+            <li>{siteConfig.phone}</li>
+            <li>{siteConfig.email}</li>
+          </ul>
         </div>
       </div>
-      <div className="border-t py-4 text-center text-sm">© 2026 APTECH Abeokuta. All rights reserved.</div>
+
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="container py-5 flex flex-col sm:flex-row items-center justify-center gap-3 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <p>© {new Date().getFullYear()} APTECH Abeokuta. All rights reserved.</p>
+        </div>
+      </div>
     </footer>
   )
 }

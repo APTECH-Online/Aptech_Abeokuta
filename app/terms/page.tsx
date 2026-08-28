@@ -1,13 +1,30 @@
+import PageHero from '../../components/shared/PageHero'
+import Container from '../../components/ui/Container'
+
 export const metadata = {
-  title: 'Terms — APTECH Abeokuta',
-  description: 'Terms and conditions placeholder.'
+  title: 'Terms & Conditions',
+  description: 'Terms and conditions for APTECH Abeokuta.'
 }
 
 export default function Terms() {
   return (
-    <section className="container py-12">
-      <h1 className="text-2xl font-semibold">Terms & Conditions</h1>
-      <p className="mt-4 text-muted">This page is a placeholder for terms and conditions.</p>
-    </section>
+    <>
+      <PageHero
+        eyebrow="Legal"
+        title="Terms & conditions"
+        crumbs={[{ label: 'Home', href: '/' }, { label: 'Terms' }]}
+      />
+      <section className="section">
+        <Container className="max-w-2xl">
+          <div className="card p-8">
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>
+              This page is a placeholder for APTECH Abeokuta's terms and conditions. Replace
+              this content with terms that accurately describe enrolment, payment, attendance,
+              and conduct policies for the institution.
+            </p>
+          </div>
+        </Container>
+      </section>
+    </>
   )
 }

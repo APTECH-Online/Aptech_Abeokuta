@@ -1,52 +1,116 @@
 'use client'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
-import { Menu } from 'lucide-react'
+import Image from 'next/image'
+import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { Menu, X } from 'lucide-react'
+import { primaryNav } from '../../data/site'
 
-export default function Header(){
+export default function Header() {
+  const pathname = usePathname()
   const [open, setOpen] = useState(false)
-  const [sticky, setSticky] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
-  useEffect(()=>{
-    const onScroll = ()=> setSticky(window.scrollY>50)
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    onScroll()
     window.addEventListener('scroll', onScroll)
-    return ()=> window.removeEventListener('scroll', onScroll)
-  },[])
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname])
+
+  const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href))
 
   return (
-    <header className={`${sticky? 'shadow-sm bg-white': 'bg-transparent'} sticky top-0 z-40 transition`}> 
-      <div className="container flex items-center justify-between py-4">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="text-xl font-bold">APTECH <span className="hidden sm:inline">Abeokuta</span></Link>
-        </div>
+    <header
+      className="sticky top-0 z-50 bg-white transition-all duration-200"
+      style={{
+        borderBottom: '1px solid var(--color-line)',
+        boxShadow: scrolled ? '0 8px 24px rgba(19,12,46,0.08)' : 'none'
+      }}
+    >
+      <div
+        className="container flex items-center justify-between transition-all duration-200"
+        style={{ paddingBlock: scrolled ? '0.7rem' : '1.1rem' }}
+      >
+        <Link href="/" className="flex items-center shrink-0 group" aria-label="APTECH Abeokuta home">
+          <Image
+            src="/images/aptech-logo-header.png"
+            alt="APTECH Computer Education — Abeokuta"
+            width={860}
+            height={258}
+            priority
+            className="w-auto h-[44px] sm:h-[48px] md:h-[52px] object-contain"
+          />
+        </Link>
 
-        <nav className="hidden md:flex items-center gap-6" aria-label="Primary">
-          <Link href="/" className="focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] rounded">Home</Link>
-          <Link href="/about" className="focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] rounded">About</Link>
-          <Link href="/courses" className="focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] rounded">Courses</Link>
-          <Link href="/about#why" className="focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] rounded">Why APTECH</Link>
-          <Link href="/admissions" className="focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] rounded">Admissions</Link>
-          <Link href="/contact" className="focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)] rounded">Contact</Link>
-          <Link href="/admissions" className="bg-[var(--color-secondary)] text-white px-3 py-2 rounded shadow-sm hover:shadow-md transition">Enroll Now</Link>
+        <nav className="hidden md:flex items-center gap-1" aria-label="Primary">
+          {primaryNav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+              className="relative px-3.5 py-2 text-sm font-semibold transition-colors group"
+              style={{ color: isActive(item.href) ? 'var(--color-navy-900)' : 'var(--color-body)' }}
+            >
+              {item.label}
+              <span
+                aria-hidden="true"
+                className="absolute left-3.5 right-3.5 -bottom-0.5 h-[2px] origin-left transition-transform duration-200"
+                style={{
+                  background: 'var(--color-amber-500)',
+                  transform: isActive(item.href) ? 'scaleX(1)' : 'scaleX(0)'
+                }}
+              />
+              <span
+                aria-hidden="true"
+                className="absolute left-3.5 right-3.5 -bottom-0.5 h-[2px] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-200"
+                style={{ background: 'var(--color-line-strong)' }}
+              />
+            </Link>
+          ))}
+          <Link href="/admissions" className="btn btn-primary btn-sm ml-3">
+            Enroll now
+          </Link>
         </nav>
 
-        <div className="md:hidden">
-          <button aria-label="menu" aria-expanded={open} onClick={()=>setOpen(!open)} className="p-2 focus:ring-2 focus:ring-[var(--color-secondary)] rounded">
-            <Menu />
-          </button>
-        </div>
+        <button
+          aria-label={open ? 'Close menu' : 'Open menu'}
+          aria-expanded={open}
+          aria-controls="mobile-nav"
+          onClick={() => setOpen((v) => !v)}
+          className="md:hidden p-2 rounded-md"
+          style={{ color: 'var(--color-navy-900)' }}
+        >
+          {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+        </button>
       </div>
 
       {open && (
-        <div className="md:hidden bg-white border-t">
-          <div className="container py-4 flex flex-col gap-3">
-            <Link href="/">Home</Link>
-            <Link href="/about">About</Link>
-            <Link href="/courses">Courses</Link>
-            <Link href="/admissions">Admissions</Link>
-            <Link href="/contact">Contact</Link>
-            <Link href="/admissions" className="inline-block bg-[var(--color-secondary)] text-white px-3 py-2 rounded">Enroll Now</Link>
-          </div>
+        <div id="mobile-nav" className="md:hidden bg-white" style={{ borderTop: '1px solid var(--color-line)' }}>
+          <nav className="container py-3 flex flex-col" aria-label="Mobile">
+            {primaryNav.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                className="py-3 text-[0.95rem] font-semibold flex items-center gap-2"
+                style={{
+                  color: isActive(item.href) ? 'var(--color-navy-900)' : 'var(--color-body)',
+                  borderBottom: '1px solid var(--color-line)'
+                }}
+              >
+                {isActive(item.href) && <span className="node-mark" aria-hidden="true" />}
+                {item.label}
+              </Link>
+            ))}
+            <Link href="/admissions" className="btn btn-primary btn-block mt-4 mb-2">
+              Enroll now
+            </Link>
+          </nav>
         </div>
       )}
     </header>

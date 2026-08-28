@@ -1,19 +1,27 @@
 import { courses } from '../../data/courses'
-import CourseCard from '../../components/courses/CourseCard'
 import CourseSearch from '../../components/courses/CourseSearch'
+import PageHero from '../../components/shared/PageHero'
+import Container from '../../components/ui/Container'
 
 export const metadata = {
-  title: 'Courses — APTECH Abeokuta',
-  description: 'Explore APTECH Abeokuta course offerings and programs.'
+  title: 'Courses',
+  description: 'Explore APTECH Abeokuta course offerings: Advanced Diploma in Software Engineering, Smart Pro, Aptech Certified Network Specialist, and short-term courses.'
 }
 
 export default function CoursesPage() {
   return (
-    <section className="container py-12">
-      <h1 className="text-3xl font-bold">Courses</h1>
-      <div className="mt-6">
-        <CourseSearch initialCourses={courses} />
-      </div>
-    </section>
+    <>
+      <PageHero
+        eyebrow="Course catalogue"
+        title="Find your programme"
+        description="Explore the programme areas at APTECH Abeokuta, including the Advanced Diploma in Software Engineering, Smart Pro, Aptech Certified Network Specialist, and our short-term courses."
+        crumbs={[{ label: 'Home', href: '/' }, { label: 'Courses' }]}
+      />
+      <section className="section">
+        <Container>
+          <CourseSearch initialCourses={courses} />
+        </Container>
+      </section>
+    </>
   )
 }
