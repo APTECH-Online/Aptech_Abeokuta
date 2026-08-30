@@ -39,6 +39,13 @@ Deployment
 
 This project is prepared for deployment on Vercel via GitHub. Connect the repository to Vercel and set the environment variable `NEXT_PUBLIC_SITE_URL` to your production domain.
 
+CRM & Admissions Management System
+
+This project also includes a full CRM at `/admin`, backed by Supabase, for
+managing admissions leads, applications, follow-ups and programmes. See
+[`docs/CRM_SETUP.md`](./docs/CRM_SETUP.md) for setup, environment variables,
+roles, and deployment notes.
+
 Environment variables
 
 - `NEXT_PUBLIC_SITE_URL` — your production canonical site URL (e.g. https://www.example.com)

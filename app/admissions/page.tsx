@@ -1,17 +1,21 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import PageHero from '../../components/shared/PageHero'
 import Container from '../../components/ui/Container'
 import SectionHeading from '../../components/ui/SectionHeading'
 import Accordion from '../../components/ui/Accordion'
+import AdmissionsForm from '../../components/admissions/AdmissionsForm'
 import { admissionsSteps, admissionsRequirements, faqs } from '../../data/site'
+import { getActiveProgrammesForPublicForm } from './programmes'
 
 export const metadata = {
   title: 'Admissions',
   description: 'How to apply to APTECH Abeokuta — steps, requirements, and what to expect.'
 }
 
-export default function Admissions() {
+export default async function Admissions() {
   const faqItems = faqs.slice(0, 3).map((f) => ({ id: f.id, title: f.question, content: f.answer }))
+  const programmes = await getActiveProgrammesForPublicForm()
 
   return (
     <>
@@ -80,42 +84,16 @@ export default function Admissions() {
       <section id="apply" className="section">
         <Container className="max-w-2xl">
           <SectionHeading eyebrow="Application" title="Submit an enquiry" description="Tell us about yourself and the programme you're interested in — the admissions team will follow up with next steps." />
-          <form className="mt-8 card p-6 sm:p-8 grid gap-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div>
-                <label htmlFor="full-name" className="field-label">Full name</label>
-                <input id="full-name" name="full-name" required className="field-input" placeholder="Your full name" />
-              </div>
-              <div>
-                <label htmlFor="phone" className="field-label">Phone number</label>
-                <input id="phone" name="phone" type="tel" required className="field-input" placeholder="e.g. 080X XXX XXXX" />
-              </div>
+          {programmes.length > 0 ? (
+            <Suspense fallback={<div className="mt-8 card p-8 text-sm" style={{ color: 'var(--color-muted)' }}>Loading form…</div>}>
+              <AdmissionsForm programmes={programmes} />
+            </Suspense>
+          ) : (
+            <div className="mt-8 card p-6 sm:p-8 text-sm" style={{ color: 'var(--color-muted)' }}>
+              The enquiry form is temporarily unavailable. Please contact admissions directly at{' '}
+              <a href="mailto:aptech.abeokuta@gmail.com" className="underline">aptech.abeokuta@gmail.com</a>.
             </div>
-            <div>
-              <label htmlFor="email" className="field-label">Email address</label>
-              <input id="email" name="email" type="email" required className="field-input" placeholder="you@example.com" />
-            </div>
-            <div>
-              <label htmlFor="programme" className="field-label">Programme of interest</label>
-              <select id="programme" name="programme" className="field-select" defaultValue="">
-                <option value="" disabled>Select a programme</option>
-                <option>Advanced Diploma in Software Engineering</option>
-                <option>Smart Pro</option>
-                <option>Aptech Certified Network Specialist</option>
-                <option>Short Term Courses</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="message" className="field-label">Message (optional)</label>
-              <textarea id="message" name="message" className="field-textarea" placeholder="Anything you'd like the admissions team to know" />
-            </div>
-            <button type="submit" className="btn btn-primary btn-block sm:w-auto sm:justify-self-start">
-              Submit application
-            </button>
-            <p className="field-hint">
-              This is a front-end demo form — connect it to your admissions inbox or CRM before launch.
-            </p>
-          </form>
+          )}
         </Container>
       </section>
 

@@ -675,3 +675,116 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .gallery-tile img, .gallery-caption, .gallery-tile::after { transition: none; }
 }
+
+/* ==========================================================================
+   CRM / Admin — an internal extension of the same design system. Reuses the
+   existing color tokens, radius (12px), shadows, and typography; adds only
+   the data-dense primitives (sidebar shell, tables, KPI cards, pipeline,
+   status pills) that the marketing site doesn't need.
+   ========================================================================== */
+
+.admin-shell { min-height: 100vh; display: flex; background: var(--color-paper); }
+
+.admin-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--color-navy-950);
+  color: rgba(255,255,255,0.82);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 40;
+  transform: translateX(-100%);
+  transition: transform .25s ease;
+}
+.admin-sidebar.is-open { transform: translateX(0); }
+@media (min-width: 1024px) {
+  .admin-sidebar { position: sticky; top: 0; height: 100vh; transform: none; }
+}
+
+.admin-sidebar-brand { padding: 1.25rem 1.25rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.admin-sidebar-nav { padding: 0.75rem; display: flex; flex-direction: column; gap: 0.15rem; overflow-y: auto; flex: 1; }
+.admin-nav-link {
+  display: flex; align-items: center; gap: 0.65rem;
+  padding: 0.6rem 0.75rem; border-radius: 10px;
+  font-size: 0.875rem; font-weight: 500;
+  color: rgba(255,255,255,0.72);
+  transition: background .15s ease, color .15s ease;
+}
+.admin-nav-link:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.admin-nav-link.is-active { background: var(--color-navy-700); color: #fff; }
+.admin-sidebar-footer { padding: 1rem 1.25rem; border-top: 1px solid rgba(255,255,255,0.08); }
+
+.admin-main { flex: 1; min-width: 0; }
+.admin-topbar {
+  position: sticky; top: 0; z-index: 30;
+  background: var(--color-paper-alt);
+  border-bottom: 1px solid var(--color-line);
+  padding: 0.85rem 1.25rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.admin-content { padding: 1.5rem 1.25rem 3rem; max-width: 1400px; }
+@media (min-width: 640px) { .admin-content { padding: 2rem 2rem 3.5rem; } }
+
+.admin-overlay {
+  position: fixed; inset: 0; background: rgba(19,12,46,0.5); z-index: 35;
+}
+
+.kpi-card {
+  background: var(--color-paper-alt);
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  box-shadow: var(--shadow-card);
+}
+.kpi-card .kpi-label { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted); }
+.kpi-card .kpi-value { font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; color: var(--color-ink); margin-top: 0.35rem; }
+.kpi-card .kpi-sub { font-size: 0.75rem; color: var(--color-muted); margin-top: 0.25rem; }
+
+.admin-table-wrap { overflow-x: auto; border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-paper-alt); }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 760px; }
+.admin-table th {
+  text-align: left; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--color-muted); padding: 0.75rem 1rem; border-bottom: 1px solid var(--color-line); white-space: nowrap;
+  background: var(--color-paper);
+}
+.admin-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--color-line); vertical-align: middle; color: var(--color-body); }
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr.is-clickable { cursor: pointer; }
+.admin-table tr.is-clickable:hover td { background: var(--color-navy-50); }
+
+.status-pill {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.25rem 0.6rem; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 600; white-space: nowrap;
+}
+
+.admin-input, .admin-select {
+  font-size: 0.85rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 8px;
+  background: var(--color-paper-alt);
+  color: var(--color-ink);
+}
+.admin-input:focus, .admin-select:focus { outline: 2px solid var(--color-navy-600); outline-offset: 1px; }
+
+.pipeline-track { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.pipeline-stage {
+  flex: 1; min-width: 130px;
+  background: var(--color-paper-alt); border: 1px solid var(--color-line); border-radius: 12px;
+  padding: 0.85rem 1rem;
+}
+.pipeline-stage .pipeline-count { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; color: var(--color-navy-800); }
+.pipeline-stage .pipeline-label { font-size: 0.75rem; color: var(--color-muted); margin-top: 0.15rem; }
+
+.timeline { position: relative; padding-left: 1.5rem; }
+.timeline::before { content: ""; position: absolute; left: 5px; top: 4px; bottom: 4px; width: 2px; background: var(--color-line); }
+.timeline-item { position: relative; padding-bottom: 1.35rem; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-item::before {
+  content: ""; position: absolute; left: -1.5rem; top: 2px;
+  width: 10px; height: 10px; border-radius: 999px; background: var(--color-teal-500);
+  box-shadow: 0 0 0 3px var(--color-teal-50);
+}
