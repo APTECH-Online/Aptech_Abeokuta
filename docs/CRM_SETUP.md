@@ -17,8 +17,8 @@ except the admissions form itself and `robots.txt` (which now disallows
 ## 2. Set up Supabase
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. In **Project Settings → API**, copy the Project URL, `anon` public key,
-   and `service_role` key.
+2. In **Project Settings → API**, copy the Project URL, public/anon key,
+   and Secret Key. The CRM keeps the Secret Key server-only.
 3. In the **SQL Editor**, run the contents of `supabase/migrations/0001_init.sql`,
    then `supabase/seed.sql` (seeds the three real programmes).
 4. In **Authentication → Users**, add your first staff member (email +
@@ -35,17 +35,21 @@ except the admissions form itself and `robots.txt` (which now disallows
 
 ## 3. Environment variables
 
-Copy `.env.example` to `.env.local` and fill in:
+For the current Vercel/Supabase setup, use these server-side variables:
 
 | Variable | Required | Notes |
 |---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Yes | From Supabase Project Settings |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Public key — safe for the browser |
-| `SUPABASE_SERVICE_ROLE_KEY` | Yes | **Server-only.** Never prefix with `NEXT_PUBLIC_`, never commit it |
+| `SUPABASE_URL` | Yes | Supabase Project URL |
+| `SUPABASE_ANON_KEY` | Yes | Public/anon key used for authenticated server sessions |
+| `SUPABASE_SECRET_KEY` | Yes | **Server-only.** Never expose it to the browser or commit it |
 | `NEXT_PUBLIC_SITE_URL` | Recommended | Used for metadata/OpenGraph |
 | `RESEND_API_KEY` | Optional | If unset, emails are logged server-side instead of sent |
 | `EMAIL_FROM_ADDRESS` | Optional | From-address for outgoing email |
-| `ADMISSIONS_NOTIFICATION_EMAIL` | Optional | Defaults to aptech.abeokuta@gmail.com |
+| `ADMISSIONS_NOTIFICATION_EMAIL` | Optional | Defaults to `aptech.abeokuta@gmail.com` |
+
+The CRM also accepts the older `NEXT_PUBLIC_SUPABASE_URL`,
+`NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` names as
+backward-compatible fallbacks.
 
 ## 4. Run locally
 

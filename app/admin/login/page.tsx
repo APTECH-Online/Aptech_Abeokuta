@@ -3,7 +3,7 @@
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '../../../lib/supabase/browser'
+import { signInStaff } from './actions'
 import FormAlert from '../../../components/shared/FormAlert'
 
 function LoginForm() {
@@ -18,29 +18,18 @@ function LoginForm() {
     e.preventDefault()
     setError(null)
 
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      setError('The CRM is not configured yet. Set up Supabase environment variables first.')
+    setLoading(true)
+    const result = await signInStaff(email, password)
+
+    if (result.error) {
+      setError(result.error)
+      setLoading(false)
       return
     }
 
-    setLoading(true)
-    try {
-      const supabase = createClient()
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
-
-      if (signInError) {
-        setError('Incorrect email or password.')
-        setLoading(false)
-        return
-      }
-
-      const next = searchParams.get('next') || '/admin'
-      router.push(next)
-      router.refresh()
-    } catch {
-      setError('Something went wrong. Please try again.')
-      setLoading(false)
-    }
+    const next = searchParams.get('next') || '/admin'
+    router.push(next)
+    router.refresh()
   }
 
   return (

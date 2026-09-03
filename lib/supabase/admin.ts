@@ -1,32 +1,21 @@
 import 'server-only'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { requireSupabaseConfig } from './config'
 
 /**
- * Privileged Supabase client using the service-role key. This bypasses Row
- * Level Security entirely, so it must NEVER be imported from a Client
- * Component or exposed to the browser in any way.
- *
- * The `server-only` import above makes Next.js throw a build error if this
- * module is ever pulled into client-side code.
- *
- * Use this only inside:
- *  - Server Actions (files with 'use server')
- *  - Route Handlers (app/api/**\/route.ts)
- * and only after the caller's identity/role has already been checked with
- * lib/auth.ts, or for the public admissions form submission path (which is
- * intentionally unauthenticated but rate-limited and validated).
+ * Privileged Supabase client. The secret/service-role key bypasses RLS and must
+ * remain server-only. Never import this from a Client Component.
  */
 export function createAdminClient() {
-  const url = process.env.SUPABASE_URL
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const { url, secretKey } = requireSupabaseConfig()
 
-  if (!url || !serviceKey) {
+  if (!secretKey) {
     throw new Error(
-      'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.'
+      'Supabase is not configured. Set SUPABASE_SECRET_KEY in the server environment.'
     )
   }
 
-  return createSupabaseClient(url, serviceKey, {
+  return createSupabaseClient(url, secretKey, {
     auth: { autoRefreshToken: false, persistSession: false }
   })
 }
