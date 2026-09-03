@@ -57,20 +57,45 @@ export async function submitEnquiry(
   }
 
   const values = parsed.data
-  const admin = createAdminClient()
 
-  // --- Confirm the programme exists and is currently active ------------------
-  const { data: programme, error: programmeError } = await admin
-    .from('programmes')
-    .select('id, name, status')
-    .eq('id', values.programmeId)
-    .maybeSingle()
+  let admin: ReturnType<typeof createAdminClient>
+  let programme: { id: string; name: string; status: string } | null
 
-  if (programmeError || !programme) {
+  try {
+    admin = createAdminClient()
+
+    // --- Confirm the programme exists and is currently active ------------------
+    const { data, error: programmeError } = await admin
+      .from('programmes')
+      .select('id, name, status')
+      .eq('id', values.programmeId)
+      .maybeSingle()
+
+    if (programmeError || !data) {
+      return {
+        status: 'error',
+        message: 'Please select a valid programme.',
+        fieldErrors: { programmeId: 'Please select a valid programme' }
+      }
+    }
+
+    programme = data
+  } catch (err) {
+    // Supabase isn't configured/reachable — fail with a friendly message
+    // instead of an uncaught 500.
+    console.error('[admissions] Supabase unavailable while submitting enquiry', err)
     return {
       status: 'error',
-      message: 'Please select a valid programme.',
-      fieldErrors: { programmeId: 'Please select a valid programme' }
+      message: "We couldn't submit your enquiry right now. Please try again shortly, or contact us directly."
+    }
+  }
+
+  if (!programme) {
+    // Unreachable in practice (the block above returns early otherwise),
+    // this just satisfies TypeScript's control-flow narrowing.
+    return {
+      status: 'error',
+      message: 'Something went wrong on our end. Please try again, or contact us directly.'
     }
   }
 
