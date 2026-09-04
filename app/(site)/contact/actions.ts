@@ -45,6 +45,18 @@ export async function submitContactMessage(
 
   // --- Parse + validate --------------------------------------------------------
   const raw = Object.fromEntries(formData.entries())
+
+  // Honeypot check FIRST — before schema validation. If we validated the
+  // honeypot as part of the schema, a browser autofilling this hidden field
+  // (autofill sometimes targets it because the name contains "website")
+  // would fail the whole form with no visible highlighted field, since the
+  // honeypot input isn't rendered. Checking it separately, up front, means a
+  // real visitor's legitimate name/email/message are never blocked by it.
+  if (typeof raw.companyWebsite === 'string' && raw.companyWebsite.length > 0) {
+    // Honeypot tripped — silently pretend success so bots don't learn.
+    return { status: 'success' }
+  }
+
   const parsed = contactFormSchema.safeParse(raw)
 
   if (!parsed.success) {
@@ -53,11 +65,6 @@ export async function submitContactMessage(
       message: 'Please fix the highlighted fields and try again.',
       fieldErrors: formatZodErrors(parsed.error)
     }
-  }
-
-  if (parsed.data.companyWebsite) {
-    // Honeypot tripped — silently pretend success so bots don't learn.
-    return { status: 'success' }
   }
 
   const values = parsed.data
