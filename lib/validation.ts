@@ -57,6 +57,24 @@ export const admissionsFormSchema = z.object({
 
 export type AdmissionsFormValues = z.infer<typeof admissionsFormSchema>
 
+export const contactFormSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(150),
+  email: z.string().trim().min(1, 'Email address is required').email('Enter a valid email address'),
+  phone: z
+    .string()
+    .trim()
+    .regex(phoneRegex, 'Enter a valid phone number')
+    .optional()
+    .or(z.literal('')),
+  subject: z.string().trim().max(200).optional().or(z.literal('')),
+  message: z.string().trim().min(1, 'Please add a message').max(4000),
+
+  // Honeypot — must always be empty. Bots that fill every field will trip this.
+  companyWebsite: z.string().max(0, 'Spam check failed').optional().or(z.literal(''))
+})
+
+export type ContactFormValues = z.infer<typeof contactFormSchema>
+
 export const REQUIRED_ADMISSIONS_FIELDS: (keyof AdmissionsFormValues)[] = [
   'firstName',
   'lastName',

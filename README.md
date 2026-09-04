@@ -74,9 +74,9 @@ rendering essentially unstyled. This has been fixed:
   syntax.
 
 ### Design system
-- Palette: navy (primary/brand), teal (links/accents), amber (calls to action, badges) —
-  defined as CSS custom properties in `app/globals.css`.
-- Typography: Space Grotesk (headings), Inter (body), IBM Plex Mono (labels, tags, and the
+- Palette: navy/indigo (primary/brand), teal (links/accents), amber (calls to action, badges) —
+  defined as CSS custom properties in `app/globals.css` under the "Adire Circuit" token set.
+- Typography: Sora (headings), Manrope (body), IBM Plex Mono (labels, tags, and the
   "console card" motif), loaded via `next/font/google` in `app/layout.tsx`.
 - Signature element: a terminal/"console card" component (`.console-card` in
   `globals.css`) used sparingly in the hero, course detail sidebar, and error/404 pages to
@@ -93,22 +93,25 @@ error. This is expected in that environment only — Vercel and any normal devel
 machine have unrestricted access to `fonts.googleapis.com` / `fonts.gstatic.com`, so
 `npm install && npm run build` will succeed there without changes. (Every other part of
 the app — components, pages, TypeScript — was verified independently of this by
-temporarily swapping out the font imports during QA.)
+temporarily swapping out the font imports during QA; `npx tsc --noEmit` and a full
+`next build` with fonts stubbed out both pass cleanly.)
 
-### Placeholder content — replace before launch
-The following are clearly marked in the code and rendered UI as placeholders, per the
-request not to invent real APTECH facts:
-- `data/site.ts` — phone, WhatsApp, email, street address, office hours, social links.
-- `components/home/StatsBand.tsx` and `app/about/page.tsx` — "20+ years / 1,000+
-  students" style figures, carried over from the original scaffold and explicitly
-  labelled in a mono "sample figures" caption. Replace with verified numbers or remove.
-- `components/testimonials/Testimonials.tsx` — sample student quotes, labelled
-  `[PLACEHOLDER QUOTE]`. Replace with real, consented testimonials.
-- `app/admissions/page.tsx` and `app/contact/page.tsx` — the enquiry/contact forms are
-  front-end only; wire them up to an email service, CRM, or API route before launch.
-- `app/contact/page.tsx` — the map is a static placeholder block; embed a real map
-  (e.g. Google Maps) once the address is confirmed.
-- `app/privacy/page.tsx` and `app/terms/page.tsx` — placeholder legal copy.
+### Content status
+All public-facing copy, statistics, testimonials, contact details, and partner logos
+have been checked against APTECH Abeokuta's own published materials — nothing on the
+public site is invented. A few items are still worth owner review before launch:
+- `data/site.ts` — `social.facebook` is a verified link; add other verified handles
+  (Instagram, LinkedIn, X) if the centre has them — don't guess a URL.
+- `app/(site)/contact/page.tsx` and `app/(site)/admissions/page.tsx` — the enquiry/
+  contact forms are front-end only (the admissions form gracefully falls back to a
+  "contact us by email" message if Supabase isn't configured); wire the contact form
+  to an email service or the existing CRM (`lib/crm`) before launch.
+- `app/(site)/privacy/page.tsx` and `app/(site)/terms/page.tsx` — working drafts that
+  describe the site's actual data practices and enrolment policies; have them reviewed
+  by qualified legal counsel before treating them as final.
+- `components/gallery/Gallery.tsx` — uses the four real campus/event photos supplied
+  plus two brand illustrations; swap in additional real photography as it becomes
+  available (each tile is a simple array entry).
 
 ### What's new structurally
 - `app/loading.tsx` and `app/error.tsx` — global loading skeleton and error boundary.

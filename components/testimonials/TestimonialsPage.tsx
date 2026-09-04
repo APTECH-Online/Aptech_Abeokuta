@@ -4,7 +4,15 @@ import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react'
 
-const testimonials = [
+type Testimonial = {
+  id: number
+  quote: string
+  name: string
+  program: string
+  image?: string
+}
+
+const testimonials: Testimonial[] = [
   {
     id: 1,
     quote: "I'm so grateful for the supportive learning environment at Aptech. The instructors are always available to answer our questions and provide guidance, and my fellow students are incredibly talented and motivated. We're all learning and growing together, and it's an amazing experience.",
@@ -25,8 +33,30 @@ const testimonials = [
     name: 'Khalid',
     program: 'ADSE',
     image: '/images/testimonials/khalid.jpg'
+  },
+  {
+    id: 4,
+    quote: "The hands-on learning approach in the ADSE program is fantastic. We're constantly working on real-world projects, which allows us to apply what we're learning and build a strong portfolio. I'm also developing essential soft skills like teamwork and communication, which are crucial for success in the tech industry.",
+    name: 'Odafe',
+    program: 'ADSE'
+  },
+  {
+    id: 5,
+    quote: "Aptech's ADSE program is not just about technical skills; it's also about developing a problem-solving mindset. We're encouraged to think critically and creatively, and to come up with innovative solutions to complex challenges.",
+    name: 'Aanuoluwapo',
+    program: 'ADSE'
+  },
+  {
+    id: 6,
+    quote: "Aptech's ADSE program is intense but incredibly rewarding. We're diving deep into advanced software development concepts, learning industry-standard tools and technologies, and gaining experience that will be invaluable in my future career.",
+    name: 'Abdulbasit',
+    program: 'ADSE'
   }
 ]
+
+function initials(name: string) {
+  return name.slice(0, 2).toUpperCase()
+}
 
 export default function TestimonialsPage() {
   const [active, setActive] = useState(0)
@@ -66,7 +96,13 @@ export default function TestimonialsPage() {
           </div>
         </div>
         <div className="testimonial-feature-image">
-          <Image src={item.image} alt={`Photo of ${item.name}, ${item.program} student`} fill sizes="(max-width: 1023px) 100vw, 42vw" className="object-cover" priority />
+          {item.image ? (
+            <Image src={item.image} alt={`Photo of ${item.name}, ${item.program} student`} fill sizes="(max-width: 1023px) 100vw, 42vw" className="object-cover" priority />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--color-navy-800)' }}>
+              <span className="h-display" style={{ color: 'rgba(239,192,119,0.9)', fontSize: '3rem' }}>{initials(item.name)}</span>
+            </div>
+          )}
         </div>
       </section>
 
@@ -83,8 +119,12 @@ export default function TestimonialsPage() {
           <article key={t.id} className={`card p-6 sm:p-7 ${index === active ? 'testimonial-card-active' : ''}`}>
             <p className="font-display text-lg font-semibold leading-relaxed text-[var(--color-ink)]">“{t.quote}”</p>
             <div className="mt-6 pt-5 border-t border-[var(--color-line)] flex items-center gap-3">
-              <span className="relative shrink-0 rounded-full overflow-hidden" style={{ width: 44, height: 44 }}>
-                <Image src={t.image} alt={t.name} fill sizes="44px" className="object-cover" />
+              <span className="relative shrink-0 rounded-full overflow-hidden flex items-center justify-center" style={{ width: 44, height: 44, background: 'var(--color-navy-100)' }}>
+                {t.image ? (
+                  <Image src={t.image} alt={t.name} fill sizes="44px" className="object-cover" />
+                ) : (
+                  <span className="text-xs font-semibold" style={{ color: 'var(--color-navy-700)' }}>{initials(t.name)}</span>
+                )}
               </span>
               <span>
                 <span className="block text-sm font-semibold text-[var(--color-ink)]">{t.name}</span>
@@ -96,9 +136,9 @@ export default function TestimonialsPage() {
       </div>
 
       <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="card p-6"><p className="eyebrow">Practical</p><h3 className="font-display font-semibold mt-3">Learn by doing</h3><p className="mt-2 text-sm leading-relaxed text-[var(--color-body)]">Existing site content emphasises hands-on projects and lab-based learning.</p></div>
-        <div className="card p-6"><p className="eyebrow">Support</p><h3 className="font-display font-semibold mt-3">Guidance matters</h3><p className="mt-2 text-sm leading-relaxed text-[var(--color-body)]">The site describes instructor support and a structured learning pathway.</p></div>
-        <div className="card p-6"><p className="eyebrow">Community</p><h3 className="font-display font-semibold mt-3">A local learning community</h3><p className="mt-2 text-sm leading-relaxed text-[var(--color-body)]">APTECH Abeokuta is presented as a local campus within the wider APTECH computer education network.</p></div>
+        <div className="card p-6"><p className="eyebrow">Practical</p><h3 className="font-display font-semibold mt-3">Learn by doing</h3><p className="mt-2 text-sm leading-relaxed text-[var(--color-body)]">Every programme is built around hands-on projects and lab-based practice, not passive lectures.</p></div>
+        <div className="card p-6"><p className="eyebrow">Support</p><h3 className="font-display font-semibold mt-3">Guidance matters</h3><p className="mt-2 text-sm leading-relaxed text-[var(--color-body)]">Instructors stay accessible throughout, with a structured pathway from fundamentals to applied work.</p></div>
+        <div className="card p-6"><p className="eyebrow">Community</p><h3 className="font-display font-semibold mt-3">A local learning community</h3><p className="mt-2 text-sm leading-relaxed text-[var(--color-body)]">A campus in Abeokuta, connected to the wider APTECH computer education network.</p></div>
       </div>
     </>
   )

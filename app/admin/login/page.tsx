@@ -3,6 +3,7 @@
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { signInStaff } from './actions'
 import FormAlert from '../../../components/shared/FormAlert'
 
@@ -33,11 +34,19 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--color-navy-950)' }}>
+    <div className="min-h-screen flex items-center justify-center px-4 pattern-adire" style={{ background: 'var(--color-navy-950)' }}>
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
-          <p className="font-display font-bold text-white text-lg">APTECH Abeokuta</p>
-          <p className="text-sm text-white/50 mt-1">Admissions CRM staff sign-in</p>
+          <Image
+            src="/images/aptech-logo-footer.png"
+            alt="APTECH Computer Education — Abeokuta"
+            width={860}
+            height={258}
+            className="w-auto h-9 object-contain mx-auto mb-5"
+          />
+          <p className="eyebrow eyebrow-inverse">Official Staff Login</p>
+          <p className="font-display font-bold text-white text-xl mt-1">Administration Portal</p>
+          <p className="text-sm text-white/50 mt-2">Authorized APTECH Abeokuta personnel only.</p>
         </div>
         <form onSubmit={handleSubmit} className="card p-6 sm:p-8 grid gap-5">
           {error && (

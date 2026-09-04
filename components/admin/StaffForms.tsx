@@ -3,7 +3,7 @@
 import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
-import { inviteStaffMember, updateStaffRole, toggleStaffActive, type ActionResult } from '../../app/admin/(dashboard)/settings/actions'
+import { inviteStaffMember, updateStaffRole, toggleStaffActive, type ActionResult } from '../../app/admin/(dashboard)/staff/actions'
 import { STAFF_ROLE_LABELS, type Staff, type StaffRole } from '../../types/db'
 
 const initial: ActionResult = { ok: true }

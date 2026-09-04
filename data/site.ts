@@ -18,11 +18,11 @@ export const siteConfig = {
     { day: 'Sunday', time: 'Closed' }
   ],
 
+  // Only include accounts that have been verified as belonging to the
+  // centre. Leave unverified channels out entirely rather than linking a
+  // placeholder or guessed handle.
   social: {
-    facebook: '[PLACEHOLDER]',
-    instagram: '[PLACEHOLDER]',
-    linkedin: '[PLACEHOLDER]',
-    x: '[PLACEHOLDER]'
+    facebook: 'https://www.facebook.com/aptechabk/'
   }
 }
 

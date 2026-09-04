@@ -8,80 +8,63 @@ export type GalleryItem = {
   id: number
   title: string
   category: string
-  src?: string
+  src: string
   alt: string
   size: 'feature' | 'tall' | 'standard'
-  placeholder?: boolean
 }
 
 const items: GalleryItem[] = [
   {
     id: 1,
-    title: 'Technology learning environment',
-    category: 'Learning',
-    src: '/images/hero-tech.svg',
-    alt: 'Illustration representing technology-focused learning',
+    title: 'Aptech Career Quest, 16th edition',
+    category: 'Events',
+    src: '/images/gallery/event-1.jpg',
+    alt: 'A group of students at the APTECH Career Quest event, held in association with Middlesex University',
     size: 'feature'
   },
   {
     id: 2,
-    title: 'Students building practical skills',
+    title: 'Around the campus',
+    category: 'Campus',
+    src: '/images/gallery/campus-1.jpg',
+    alt: 'A student walking through a corridor on the APTECH Abeokuta campus',
+    size: 'tall'
+  },
+  {
+    id: 3,
+    title: 'Hands-on with the tools of the trade',
     category: 'Students',
+    src: '/images/gallery/staff-1.jpg',
+    alt: 'A student working at a laptop on campus',
+    size: 'standard'
+  },
+  {
+    id: 4,
+    title: 'The admin office',
+    category: 'Campus',
+    src: '/images/gallery/staff-2.jpg',
+    alt: 'A staff member working at a desk in the campus office',
+    size: 'standard'
+  },
+  {
+    id: 5,
+    title: 'Students building practical skills',
+    category: 'Learning',
     src: '/images/about-illustration.svg',
     alt: 'Illustration of a student working with a laptop, code panels and a data chart',
     size: 'tall'
   },
   {
-    id: 3,
-    title: 'Staff at work',
-    category: 'Campus',
-    src: '/images/gallery/staff-1.jpg',
-    alt: 'A staff member working at a desk with a laptop on campus',
-    size: 'standard'
-  },
-  {
-    id: 4,
-    title: 'Classroom activity',
-    category: 'Classes',
-    alt: 'Placeholder for an approved APTECH Abeokuta classroom photograph',
-    size: 'standard',
-    placeholder: true
-  },
-  {
-    id: 5,
-    title: 'Office and admin team',
-    category: 'Campus',
-    src: '/images/gallery/staff-2.jpg',
-    alt: 'A staff member working at a desk in an office on campus',
-    size: 'tall'
-  },
-  {
     id: 6,
-    title: 'Around the campus',
-    category: 'Campus',
-    src: '/images/gallery/campus-1.jpg',
-    alt: 'A student walking through a corridor on the APTECH Abeokuta campus',
-    size: 'standard'
-  },
-  {
-    id: 7,
-    title: 'Career Quest event',
-    category: 'Events',
-    src: '/images/gallery/event-1.jpg',
-    alt: 'A group of students at the APTECH Career Quest event, in association with Middlesex University',
-    size: 'standard'
-  },
-  {
-    id: 8,
-    title: 'Technology and practice',
-    category: 'Technology',
+    title: 'The APTECH standard',
+    category: 'Learning',
     src: '/images/hero-tech.svg',
-    alt: 'Technology illustration used as a temporary visual until an approved campus image is supplied',
+    alt: 'Illustration representing technology-focused learning',
     size: 'standard'
   }
 ]
 
-const filters = ['All', 'Campus', 'Students', 'Classes', 'Technology', 'Events', 'Learning']
+const filters = ['All', 'Campus', 'Students', 'Events', 'Learning']
 
 export default function Gallery() {
   const [filter, setFilter] = useState('All')
@@ -139,16 +122,8 @@ export default function Gallery() {
               onClick={() => setSelected(item.id)}
               aria-label={`Open ${item.title}`}
             >
-              {item.placeholder ? (
-                <div className="gallery-placeholder">
-                  <span className="badge badge-navy">Image placeholder</span>
-                  <span className="mt-3 font-display font-semibold text-[var(--color-ink)]">{item.title}</span>
-                  <span className="mt-1 text-xs text-[var(--color-muted)]">Replace with an approved APTECH Abeokuta photo</span>
-                </div>
-              ) : (
-                <Image src={item.src!} alt={item.alt} fill sizes="(max-width: 767px) 100vw, (max-width: 1199px) 50vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-[1.035]" />
-              )}
-              {!item.placeholder && <span className="gallery-caption"><span>{item.category}</span><strong>{item.title}</strong></span>}
+              <Image src={item.src} alt={item.alt} fill sizes="(max-width: 767px) 100vw, (max-width: 1199px) 50vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-[1.035]" />
+              <span className="gallery-caption"><span>{item.category}</span><strong>{item.title}</strong></span>
             </button>
           ))}
         </div>
@@ -165,14 +140,7 @@ export default function Gallery() {
           <button type="button" className="gallery-close" onClick={() => setSelected(null)} aria-label="Close image preview"><X /></button>
           <div className="gallery-lightbox-content">
             <div className="gallery-lightbox-media">
-              {selectedItem.placeholder ? (
-                <div className="gallery-placeholder gallery-placeholder-large">
-                  <span className="badge badge-navy">Image placeholder</span>
-                  <span className="mt-3 font-display font-semibold">{selectedItem.title}</span>
-                </div>
-              ) : (
-                <Image src={selectedItem.src!} alt={selectedItem.alt} fill sizes="90vw" className="object-contain" priority />
-              )}
+              <Image src={selectedItem.src} alt={selectedItem.alt} fill sizes="90vw" className="object-contain" priority />
             </div>
             <div className="gallery-lightbox-copy">
               <span className="badge badge-amber">{selectedItem.category}</span>

@@ -14,6 +14,9 @@ export default async function AdminDashboardPage() {
       <div>
         <p className="eyebrow">Overview</p>
         <h1 className="h-section mt-1">Admissions dashboard</h1>
+        <p className="mt-2 text-sm" style={{ color: 'var(--color-muted)' }}>
+          A live view of enquiries, applications, and follow-ups across every intake.
+        </p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -22,7 +25,7 @@ export default async function AdminDashboardPage() {
         <KpiCard label="Contacted" value={data.contacted} />
         <KpiCard label="Interested" value={data.interested} />
         <KpiCard label="Applications" value={data.applicationsCount} />
-        <KpiCard label="Enrolled" value={data.enrolledCount} sub={`${data.conversionRate}% conversion`} />
+        <KpiCard label="Enrolled" value={data.enrolledCount} sub={`${data.conversionRate}% conversion`} accent />
         <KpiCard label="Follow-ups due" value={data.followUpsDueCount} sub="Overdue, pending action" />
         <KpiCard label="Sources tracked" value={data.leadsBySource.length} />
       </div>

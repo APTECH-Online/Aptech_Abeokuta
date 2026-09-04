@@ -1,8 +1,6 @@
 import './globals.css'
 import { ReactNode } from 'react'
 import { Sora, Manrope, IBM_Plex_Mono } from 'next/font/google'
-import Header from '../components/navigation/Header'
-import Footer from '../components/footer/Footer'
 import { siteConfig } from '../data/site'
 
 const sora = Sora({
@@ -40,17 +38,18 @@ export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com')
 }
 
+/**
+ * True app root. Deliberately minimal: it only sets up fonts and global
+ * CSS. Chrome (header/footer for the public site, or the CRM shell for
+ * /admin) is added by each section's own nested layout, so the two
+ * experiences never leak into each other. See:
+ *   - app/(site)/layout.tsx  → public marketing site
+ *   - app/admin/layout.tsx   → CRM / staff portal
+ */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${sora.variable} ${manrope.variable} ${plexMono.variable}`}>
-      <body>
-        <a href="#main-content" className="skip-link">Skip to main content</a>
-        <div className="min-h-screen flex flex-col">
-          <Header />
-          <main id="main-content" className="flex-1">{children}</main>
-          <Footer />
-        </div>
-      </body>
+      <body>{children}</body>
     </html>
   )
 }

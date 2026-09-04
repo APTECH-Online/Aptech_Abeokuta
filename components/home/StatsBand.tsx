@@ -1,12 +1,15 @@
+import { courses } from '../../data/courses'
+
+// Every figure here is derived from the site's own verified data (course
+// catalogue, partner list) rather than invented — see data/courses.ts and
+// components/shared/PartnerLogos.tsx.
 const stats = [
-  { label: 'Years of technology training', value: '20+' },
-  { label: 'Professional programmes', value: '10+' },
-  { label: 'Students trained', value: '1,000+' },
-  { label: 'Focus', value: 'Career-ready' }
+  { label: 'Programme areas', value: '3' },
+  { label: 'Courses across those areas', value: String(courses.length) },
+  { label: 'Academic & accreditation alliances', value: '4' },
+  { label: 'Network', value: 'Global Aptech' }
 ]
 
-// Figures below are illustrative placeholders carried over from the site
-// scaffold — replace with verified numbers before launch. Labelled clearly.
 export default function StatsBand() {
   return (
     <div className="border-t border-b hairline pattern-adire" style={{ background: 'var(--color-navy-900)' }}>
@@ -23,9 +26,6 @@ export default function StatsBand() {
             </div>
           ))}
         </div>
-        <p className="eyebrow eyebrow-inverse mt-8" style={{ opacity: 0.55 }}>
-          Sample figures — replace with verified data before launch
-        </p>
       </div>
     </div>
   )

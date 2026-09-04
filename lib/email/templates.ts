@@ -71,6 +71,69 @@ export function adminNewLeadNotificationEmail(params: {
   return { subject, text, html }
 }
 
+export function contactAcknowledgementEmail(params: { firstName: string }) {
+  const { firstName } = params
+  const subject = "We've received your message — APTECH Abeokuta"
+  const text = [
+    `Hi ${firstName},`,
+    '',
+    "Thank you for reaching out to APTECH Abeokuta. We've received your message and someone from our team will get back to you within one to two business days.",
+    '',
+    'Warm regards,',
+    'APTECH Abeokuta'
+  ].join('\n')
+
+  const html = `
+    <div style="font-family: sans-serif; color: #1B1626; line-height: 1.6;">
+      <p>Hi ${escapeHtml(firstName)},</p>
+      <p>Thank you for reaching out to <strong>APTECH Abeokuta</strong>. We've received your
+      message and someone from our team will get back to you within one to two business days.</p>
+      <p>Warm regards,<br />APTECH Abeokuta</p>
+    </div>
+  `
+
+  return { subject, text, html }
+}
+
+export function adminNewContactMessageEmail(params: {
+  fullName: string
+  email: string
+  phone: string
+  subject: string
+  message: string
+  isDuplicate: boolean
+}) {
+  const { fullName, email, phone, subject: messageSubject, message, isDuplicate } = params
+  const subject = `${isDuplicate ? '[Returning contact] ' : ''}New contact form message${messageSubject ? ` — ${messageSubject}` : ''}`
+  const text = [
+    `${isDuplicate ? 'A returning contact sent a message via the contact form.' : 'A new message was submitted via the contact form.'}`,
+    '',
+    `Name: ${fullName}`,
+    `Email: ${email}`,
+    phone ? `Phone: ${phone}` : null,
+    messageSubject ? `Subject: ${messageSubject}` : null,
+    '',
+    'Message:',
+    message
+  ].filter(Boolean).join('\n')
+
+  const html = `
+    <div style="font-family: sans-serif; color: #1B1626; line-height: 1.6;">
+      <p>${isDuplicate ? 'A <strong>returning contact</strong> sent a message via the contact form.' : 'A new message was submitted via the contact form.'}</p>
+      <table cellpadding="4">
+        <tr><td><strong>Name</strong></td><td>${escapeHtml(fullName)}</td></tr>
+        <tr><td><strong>Email</strong></td><td>${escapeHtml(email)}</td></tr>
+        ${phone ? `<tr><td><strong>Phone</strong></td><td>${escapeHtml(phone)}</td></tr>` : ''}
+        ${messageSubject ? `<tr><td><strong>Subject</strong></td><td>${escapeHtml(messageSubject)}</td></tr>` : ''}
+      </table>
+      <p><strong>Message:</strong></p>
+      <p>${escapeHtml(message).replace(/\n/g, '<br />')}</p>
+    </div>
+  `
+
+  return { subject, text, html }
+}
+
 function escapeHtml(value: string) {
   return value
     .replace(/&/g, '&amp;')

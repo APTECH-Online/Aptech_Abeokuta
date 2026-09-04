@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, ShieldCheck } from 'lucide-react'
 import { primaryNav } from '../../data/site'
 
 export default function Header() {
@@ -47,7 +47,7 @@ export default function Header() {
           />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1" aria-label="Primary">
+        <nav className="hidden xl:flex items-center gap-1" aria-label="Primary">
           {primaryNav.map((item) => (
             <Link
               key={item.href}
@@ -72,7 +72,11 @@ export default function Header() {
               />
             </Link>
           ))}
-          <Link href="/admissions" className="btn btn-primary btn-sm ml-3">
+          <Link href="/admin/login" className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium ml-1" style={{ color: 'var(--color-muted)' }}>
+            <ShieldCheck size={13} aria-hidden="true" />
+            Official Login
+          </Link>
+          <Link href="/admissions" className="btn btn-primary btn-sm ml-2">
             Enroll now
           </Link>
         </nav>
@@ -82,7 +86,7 @@ export default function Header() {
           aria-expanded={open}
           aria-controls="mobile-nav"
           onClick={() => setOpen((v) => !v)}
-          className="md:hidden p-2 rounded-md"
+          className="xl:hidden p-2 rounded-md"
           style={{ color: 'var(--color-navy-900)' }}
         >
           {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
@@ -90,7 +94,7 @@ export default function Header() {
       </div>
 
       {open && (
-        <div id="mobile-nav" className="md:hidden bg-white" style={{ borderTop: '1px solid var(--color-line)' }}>
+        <div id="mobile-nav" className="xl:hidden bg-white" style={{ borderTop: '1px solid var(--color-line)' }}>
           <nav className="container py-3 flex flex-col" aria-label="Mobile">
             {primaryNav.map((item) => (
               <Link
@@ -109,6 +113,14 @@ export default function Header() {
             ))}
             <Link href="/admissions" className="btn btn-primary btn-block mt-4 mb-2">
               Enroll now
+            </Link>
+            <Link
+              href="/admin/login"
+              className="flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium"
+              style={{ color: 'var(--color-muted)', borderTop: '1px solid var(--color-line)' }}
+            >
+              <ShieldCheck size={13} aria-hidden="true" />
+              Official Login
             </Link>
           </nav>
         </div>

@@ -4,7 +4,7 @@ import { useActionState, useEffect, useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useSearchParams } from 'next/navigation'
 import FormAlert from '../shared/FormAlert'
-import { submitEnquiry, type SubmitEnquiryState } from '../../app/admissions/actions'
+import { submitEnquiry, type SubmitEnquiryState } from '../../app/(site)/admissions/actions'
 
 type ProgrammeOption = {
   id: string

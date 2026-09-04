@@ -26,7 +26,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
             Ask a Super Admin to add you as staff.
           </p>
           <form action={signOut} className="mt-5">
-            <button type="submit" className="btn btn-secondary">Sign out</button>
+            <button type="submit" className="btn btn-secondary">Logout</button>
           </form>
         </div>
       </div>
