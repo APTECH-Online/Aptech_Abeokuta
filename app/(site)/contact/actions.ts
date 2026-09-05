@@ -95,8 +95,16 @@ export async function submitContactMessage(
       }
     }
 
-    const leadId = submission.lead_id as string
-    const isDuplicate = Boolean(submission.is_duplicate)
+    // Supabase's untyped RPC response is inferred as `{}` in this project.
+    // Narrow it explicitly to the row returned by submit_contact_form.
+    const result = submission as unknown as {
+      lead_id: string
+      is_duplicate: boolean
+      lead_reference?: string | null
+    }
+
+    const leadId = result.lead_id
+    const isDuplicate = Boolean(result.is_duplicate)
 
     await logAudit(admin, {
       action: isDuplicate ? 'lead.contacted' : 'lead.created',

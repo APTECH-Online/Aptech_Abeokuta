@@ -167,6 +167,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     leadsByStatus,
     applicationsByProgramme,
     conversionRate,
-    overdueFollowUps
+    overdueFollowUps,
+    recentWebsiteEnquiries
   }
 }
