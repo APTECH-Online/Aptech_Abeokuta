@@ -46,16 +46,6 @@ export async function submitContactMessage(
   // --- Parse + validate --------------------------------------------------------
   const raw = Object.fromEntries(formData.entries())
 
-  // Honeypot check FIRST — before schema validation. If we validated the
-  // honeypot as part of the schema, a browser autofilling this hidden field
-  // (autofill sometimes targets it because the name contains "website")
-  // would fail the whole form with no visible highlighted field, since the
-  // honeypot input isn't rendered. Checking it separately, up front, means a
-  // real visitor's legitimate name/email/message are never blocked by it.
-  if (typeof raw.companyWebsite === 'string' && raw.companyWebsite.length > 0) {
-    // Honeypot tripped — silently pretend success so bots don't learn.
-    return { status: 'success' }
-  }
 
   const parsed = contactFormSchema.safeParse(raw)
 
@@ -86,59 +76,27 @@ export async function submitContactMessage(
   }
 
   try {
-    // --- Duplicate detection ----------------------------------------------------
-    const existingLead = await findExistingLead(admin, { email: values.email, phone, whatsapp: null })
+    // The contact form is written through a database RPC so lead creation and
+    // the website interaction are handled atomically in Supabase.
+    const { data: submission, error: submissionError } = await admin.rpc('submit_contact_form', {
+      p_name: values.name,
+      p_email: values.email,
+      p_phone: phone || null,
+      p_subject: values.subject || null,
+      p_message: values.message,
+      p_landing_page: '/contact'
+    }).maybeSingle()
 
-    let leadId: string
-    let isDuplicate = false
-
-    if (existingLead) {
-      isDuplicate = true
-      leadId = existingLead.id
-    } else {
-      const leadReference = await generateLeadReference(admin)
-
-      const { data: created, error: createError } = await admin
-        .from('leads')
-        .insert({
-          lead_reference: leadReference,
-          first_name: firstName,
-          last_name: lastName,
-          email: values.email,
-          phone: phone || 'Not provided',
-          status: 'new',
-          source: 'website',
-          landing_page: '/contact'
-        })
-        .select('id')
-        .single()
-
-      if (createError || !created) {
-        console.error('[contact] failed to create lead', createError)
-        return {
-          status: 'error',
-          message: "We couldn't send your message right now. Please try again shortly."
-        }
+    if (submissionError || !submission) {
+      console.error('[contact] submit_contact_form RPC failed', submissionError)
+      return {
+        status: 'error',
+        message: "We couldn't save your message to the admissions CRM right now. Please try again shortly."
       }
-
-      leadId = created.id
     }
 
-    // --- Interaction history ------------------------------------------------
-    const { error: interactionError } = await admin.from('interactions').insert({
-      lead_id: leadId,
-      user_id: null,
-      type: 'website',
-      subject: values.subject || 'Website contact form',
-      description: values.message
-    })
-
-    // Interaction history is secondary to creating the lead. Do not make a
-    // successful contact submission look like a failure if this auxiliary
-    // insert has an issue.
-    if (interactionError) {
-      console.error('[contact] failed to create interaction history', interactionError)
-    }
+    const leadId = submission.lead_id as string
+    const isDuplicate = Boolean(submission.is_duplicate)
 
     await logAudit(admin, {
       action: isDuplicate ? 'lead.contacted' : 'lead.created',

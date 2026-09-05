@@ -36,12 +36,6 @@ export default function ContactForm() {
 
   return (
     <form ref={formRef} action={formAction} className="mt-6 grid gap-5" noValidate>
-      {/* Honeypot — hidden from real visitors, not from simple bots that skip hidden fields */}
-      <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden' }}>
-        <label htmlFor="companyWebsite">Leave this field empty</label>
-        <input id="companyWebsite" name="companyWebsite" type="text" tabIndex={-1} autoComplete="off" />
-      </div>
-
       {state.status === 'success' ? (
         <div id="contact-form-result">
           <FormAlert variant="success" title="Message sent">

@@ -28,6 +28,7 @@ export default async function AdminDashboardPage() {
         <KpiCard label="Enrolled" value={data.enrolledCount} sub={`${data.conversionRate}% conversion`} accent />
         <KpiCard label="Follow-ups due" value={data.followUpsDueCount} sub="Overdue, pending action" />
         <KpiCard label="Sources tracked" value={data.leadsBySource.length} />
+        <KpiCard label="Website enquiries" value={data.recentWebsiteEnquiries.length} sub="Latest 8 shown below" />
       </div>
 
       <section className="card p-5 sm:p-6">
@@ -60,6 +61,44 @@ export default async function AdminDashboardPage() {
           <BarChart data={data.applicationsByProgramme.map((p) => ({ label: p.programme, value: p.count }))} />
         </section>
       </div>
+
+      <section className="card p-5 sm:p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="eyebrow">Website enquiries</p>
+            <p className="mt-1 text-sm" style={{ color: 'var(--color-muted)' }}>Messages received through the public contact form.</p>
+          </div>
+          <Link href="/admin/leads" className="text-xs font-semibold" style={{ color: 'var(--color-navy-700)' }}>
+            View all leads →
+          </Link>
+        </div>
+        {data.recentWebsiteEnquiries.length === 0 ? (
+          <p className="mt-5 text-sm" style={{ color: 'var(--color-muted)' }}>No website enquiries have been received yet.</p>
+        ) : (
+          <div className="mt-5 grid gap-3">
+            {data.recentWebsiteEnquiries.map((enquiry) => (
+              <Link
+                key={enquiry.id}
+                href={`/admin/leads/${enquiry.leadId}`}
+                className="block rounded-xl border p-4 transition-opacity hover:opacity-80"
+                style={{ borderColor: 'var(--color-border)' }}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold" style={{ color: 'var(--color-ink)' }}>{enquiry.leadName}</p>
+                    <p className="mt-0.5 text-xs" style={{ color: 'var(--color-muted)' }}>{enquiry.email}</p>
+                  </div>
+                  <time className="shrink-0 text-xs" style={{ color: 'var(--color-muted)' }}>
+                    {new Date(enquiry.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                  </time>
+                </div>
+                <p className="mt-3 text-sm font-medium" style={{ color: 'var(--color-ink)' }}>{enquiry.subject}</p>
+                <p className="mt-1 line-clamp-2 text-sm" style={{ color: 'var(--color-muted)' }}>{enquiry.message}</p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
 
       <section className="card p-5 sm:p-6">
         <div className="flex items-center justify-between">

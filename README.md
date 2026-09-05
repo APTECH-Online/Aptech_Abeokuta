@@ -123,3 +123,15 @@ public site is invented. A few items are still worth owner review before launch:
   accordion, and filter chip components.
 
 
+
+## Contact form → CRM database setup
+
+The public Contact form now saves enquiries through the Supabase function `public.submit_contact_form`. Apply the migration below to the same Supabase project used by the deployed site:
+
+```text
+supabase/migrations/0002_contact_form_rpc.sql
+```
+
+In the Supabase SQL Editor, paste/run that migration (or run `supabase db push` if this project is linked to the correct Supabase project). The function is restricted to the `service_role`, so it is not directly callable by anonymous visitors.
+
+After deploying the Next.js changes and applying the migration, a Contact form submission creates/updates the lead and records a `website` interaction. The CRM dashboard also displays the latest website enquiries.

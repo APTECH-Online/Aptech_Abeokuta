@@ -19,6 +19,7 @@ export interface DashboardData {
   applicationsByProgramme: { programme: string; count: number }[]
   conversionRate: number
   overdueFollowUps: { id: string; leadName: string; leadId: string; dueDate: string }[]
+  recentWebsiteEnquiries: { id: string; leadId: string; leadName: string; email: string; subject: string; message: string; createdAt: string }[]
 }
 
 export async function getDashboardData(): Promise<DashboardData> {
@@ -34,7 +35,8 @@ export async function getDashboardData(): Promise<DashboardData> {
     { count: enrolledCount },
     { data: leadsRaw },
     { data: applicationsRaw },
-    { data: overdueRaw }
+    { data: overdueRaw },
+    { data: websiteEnquiriesRaw }
   ] = await Promise.all([
     supabase.from('leads').select('id', { count: 'exact', head: true }),
     supabase.from('leads').select('id', { count: 'exact', head: true }).eq('status', 'new'),
@@ -54,7 +56,13 @@ export async function getDashboardData(): Promise<DashboardData> {
       .eq('status', 'pending')
       .lt('due_date', new Date().toISOString())
       .order('due_date', { ascending: true })
-      .limit(20)
+      .limit(20),
+    supabase
+      .from('interactions')
+      .select('id, lead_id, subject, description, created_at, leads(first_name, last_name, email)')
+      .eq('type', 'website')
+      .order('created_at', { ascending: false })
+      .limit(8)
   ])
 
   const leads = leadsRaw ?? []
@@ -130,6 +138,16 @@ export async function getDashboardData(): Promise<DashboardData> {
     leadId: f.lead_id,
     leadName: f.leads ? `${f.leads.first_name} ${f.leads.last_name}` : 'Unknown lead',
     dueDate: f.due_date
+  }))
+
+  const recentWebsiteEnquiries = (websiteEnquiriesRaw ?? []).map((i: any) => ({
+    id: i.id,
+    leadId: i.lead_id,
+    leadName: i.leads ? `${i.leads.first_name} ${i.leads.last_name}` : 'Unknown lead',
+    email: i.leads?.email ?? '',
+    subject: i.subject ?? 'Website enquiry',
+    message: i.description ?? '',
+    createdAt: i.created_at
   }))
 
   const conversionRate = totalLeads && totalLeads > 0 ? Math.round(((enrolledCount ?? 0) / totalLeads) * 1000) / 10 : 0
