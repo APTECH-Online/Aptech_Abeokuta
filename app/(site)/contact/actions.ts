@@ -125,13 +125,20 @@ export async function submitContactMessage(
     }
 
     // --- Interaction history ------------------------------------------------
-    await admin.from('interactions').insert({
+    const { error: interactionError } = await admin.from('interactions').insert({
       lead_id: leadId,
       user_id: null,
       type: 'website',
       subject: values.subject || 'Website contact form',
       description: values.message
     })
+
+    // Interaction history is secondary to creating the lead. Do not make a
+    // successful contact submission look like a failure if this auxiliary
+    // insert has an issue.
+    if (interactionError) {
+      console.error('[contact] failed to create interaction history', interactionError)
+    }
 
     await logAudit(admin, {
       action: isDuplicate ? 'lead.contacted' : 'lead.created',

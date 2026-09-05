@@ -12,7 +12,10 @@ import 'server-only'
  */
 export function getSupabaseConfig() {
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL
-  const anonKey = process.env.SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const anonKey =
+    process.env.SUPABASE_ANON_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   const secretKey = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY
 
   return { url, anonKey, secretKey }
@@ -23,7 +26,7 @@ export function requireSupabaseConfig() {
 
   if (!url || !anonKey) {
     throw new Error(
-      'Supabase is not configured. Set SUPABASE_URL and SUPABASE_ANON_KEY in the server environment.'
+      'Supabase is not configured. Set SUPABASE_URL and SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) in the server environment.'
     )
   }
 
