@@ -6,23 +6,56 @@ import Testimonials from '../../components/testimonials/Testimonials'
 import Container from '../../components/ui/Container'
 import SectionHeading from '../../components/ui/SectionHeading'
 import WhyChoose from '../../components/home/WhyChoose'
+import CareerPaths from '../../components/home/CareerPaths'
+import ProgramFinder from '../../components/home/ProgramFinder'
 import StatsBand from '../../components/home/StatsBand'
 import FAQSection from '../../components/home/FAQSection'
 import CTABand from '../../components/home/CTABand'
 import BuildSection from '../../components/home/BuildSection'
 import PartnerLogos from '../../components/shared/PartnerLogos'
+import { insights } from '../../data/insights'
+import { faqJsonLd } from '../../lib/structured-data'
 
 export const metadata = {
   title: 'Build Your Future with Technology',
   description:
-    'Gain practical IT skills, industry-focused training, and career-ready knowledge at APTECH Abeokuta.'
+    'Gain practical IT skills, industry-focused training, and career-ready knowledge at APTECH Abeokuta.',
+  alternates: { canonical: '/' },
+  openGraph: {
+    title: 'APTECH Abeokuta — Build Your Future with Technology',
+    description: 'Gain practical IT skills, industry-focused training, and career-ready knowledge at APTECH Abeokuta.',
+    url: '/'
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'APTECH Abeokuta — Build Your Future with Technology',
+    description: 'Gain practical IT skills, industry-focused training, and career-ready knowledge at APTECH Abeokuta.'
+  }
 }
 
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd()) }}
+      />
       <Hero />
       <StatsBand />
+
+      <section className="section-tight">
+        <Container className="max-w-3xl">
+          <SectionHeading
+            eyebrow="Program finder"
+            title="Which programme is right for you?"
+            description="Answer two quick questions and we'll point you to the APTECH Abeokuta programme that best fits your goals."
+            align="center"
+          />
+          <div className="mt-8">
+            <ProgramFinder />
+          </div>
+        </Container>
+      </section>
 
       <section className="section">
         <Container>
@@ -39,6 +72,17 @@ export default function Home() {
               <CourseCard key={c.slug} course={c} />
             ))}
           </div>
+        </Container>
+      </section>
+
+      <section className="section">
+        <Container>
+          <SectionHeading
+            eyebrow="Career paths"
+            title="Learn. Build. Certify. Launch."
+            description="Each APTECH Abeokuta programme is mapped to real skills and job-role-aligned outcomes — see where each path can take you."
+          />
+          <CareerPaths />
         </Container>
       </section>
 
@@ -74,6 +118,39 @@ export default function Home() {
           <SectionHeading eyebrow="Student stories" title="What students say" />
           <div className="mt-8">
             <Testimonials />
+          </div>
+        </Container>
+      </section>
+
+      <section className="section">
+        <Container>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <SectionHeading
+              eyebrow="Insights"
+              title="Career guides & technology explainers"
+              description="Practical guidance on tech careers, learning to code, and choosing the right programme."
+            />
+            <Link href="/insights" className="btn btn-secondary shrink-0">View all insights</Link>
+          </div>
+          <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {insights.slice(0, 3).map((post) => (
+              <article key={post.slug} className="card p-6 flex flex-col">
+                <p className="eyebrow">{post.category}</p>
+                <h3 className="mt-3 font-display font-semibold text-[1rem] text-[var(--color-ink)] leading-snug">
+                  {post.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed flex-1" style={{ color: 'var(--color-body)' }}>
+                  {post.excerpt}
+                </p>
+                <Link
+                  href={`/insights/${post.slug}`}
+                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold"
+                  style={{ color: 'var(--color-teal-700)' }}
+                >
+                  Read article
+                </Link>
+              </article>
+            ))}
           </div>
         </Container>
       </section>

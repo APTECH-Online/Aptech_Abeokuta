@@ -3,15 +3,34 @@ import PageHero from '../../../components/shared/PageHero'
 import Container from '../../../components/ui/Container'
 import ContactForm from '../../../components/contact/ContactForm'
 import { Mail, MapPin, Phone, Clock } from 'lucide-react'
+import { breadcrumbJsonLd } from '../../../lib/structured-data'
 
 export const metadata = {
   title: 'Contact',
-  description: 'Contact APTECH Abeokuta — phone, email, address, and enquiry form.'
+  description: 'Contact APTECH Abeokuta — phone, email, address, and enquiry form.',
+  alternates: { canonical: '/contact' },
+  openGraph: {
+    title: 'Contact APTECH Abeokuta',
+    description: 'Contact APTECH Abeokuta — phone, email, address, and enquiry form.',
+    url: '/contact'
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Contact APTECH Abeokuta',
+    description: 'Contact APTECH Abeokuta — phone, email, address, and enquiry form.'
+  }
 }
 
 export default function Contact() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Contact' }]))
+        }}
+      />
       <PageHero
         eyebrow="Contact"
         title="Get in touch"

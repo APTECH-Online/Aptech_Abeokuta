@@ -1,15 +1,34 @@
 import PageHero from '../../../components/shared/PageHero'
 import Container from '../../../components/ui/Container'
 import Gallery from '../../../components/gallery/Gallery'
+import { breadcrumbJsonLd } from '../../../lib/structured-data'
 
 export const metadata = {
   title: { absolute: 'Gallery | APTECH Abeokuta' },
-  description: 'Explore the learning environment, technology, classes and community experience represented across the APTECH Abeokuta website.'
+  description: 'Explore the learning environment, technology, classes and community experience represented across the APTECH Abeokuta website.',
+  alternates: { canonical: '/gallery' },
+  openGraph: {
+    title: 'Gallery | APTECH Abeokuta',
+    description: 'Explore the learning environment, technology, classes and community experience represented across the APTECH Abeokuta website.',
+    url: '/gallery'
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Gallery | APTECH Abeokuta',
+    description: 'Explore the learning environment, technology, classes and community experience represented across the APTECH Abeokuta website.'
+  }
 }
 
 export default function GalleryPage() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Gallery' }]))
+        }}
+      />
       <PageHero
         eyebrow="Campus life"
         title="Life at APTECH Abeokuta"

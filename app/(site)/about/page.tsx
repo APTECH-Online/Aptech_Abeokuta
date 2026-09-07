@@ -7,10 +7,22 @@ import SectionHeading from '../../../components/ui/SectionHeading'
 import CTABand from '../../../components/home/CTABand'
 import PartnerLogos from '../../../components/shared/PartnerLogos'
 import { courses } from '../../../data/courses'
+import { breadcrumbJsonLd } from '../../../lib/structured-data'
 
 export const metadata = {
   title: 'About',
-  description: 'About APTECH Abeokuta — mission, vision, and approach to technology education.'
+  description: 'About APTECH Abeokuta — mission, vision, and approach to technology education.',
+  alternates: { canonical: '/about' },
+  openGraph: {
+    title: 'About APTECH Abeokuta',
+    description: 'About APTECH Abeokuta — mission, vision, and approach to technology education.',
+    url: '/about'
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'About APTECH Abeokuta',
+    description: 'About APTECH Abeokuta — mission, vision, and approach to technology education.'
+  }
 }
 
 const values = [
@@ -41,8 +53,17 @@ const partners = [
 ]
 
 export default function About() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'About' }])
+          )
+        }}
+      />
       <PageHero
         eyebrow="About us"
         title="About APTECH Abeokuta"

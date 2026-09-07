@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef } from 'react'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
+import WhatsAppButton from '../shared/WhatsAppButton'
 import { submitContactMessage, type SubmitContactState } from '../../app/(site)/contact/actions'
 
 const initialState: SubmitContactState = { status: 'idle' }
@@ -44,7 +45,21 @@ export default function ContactForm() {
         </div>
       ) : (
         <>
-          {state.status === 'error' && (
+          {state.status === 'error' && !state.fieldErrors && (
+            <div id="contact-form-result">
+              <FormAlert variant="error" title="We couldn't send your message">
+                <p>{state.message}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <WhatsAppButton
+                    variant="secondary"
+                    label="Contact Admissions"
+                    message="Hi APTECH Abeokuta, I tried to send a message on your website but it didn't go through. Can you help?"
+                  />
+                </div>
+              </FormAlert>
+            </div>
+          )}
+          {state.status === 'error' && state.fieldErrors && (
             <div id="contact-form-result">
               <FormAlert variant="error" title="We couldn't send your message">
                 <p>{state.message}</p>

@@ -50,11 +50,11 @@ begin
   v_last_name := coalesce(v_last_name, '—');
 
   -- Keep one CRM profile per person. Email is the primary match.
-  select id, lead_reference
+  select l.id, l.lead_reference
     into v_lead_id, v_lead_reference
-  from public.leads
-  where lower(email) = lower(trim(p_email))
-  order by created_at desc
+  from public.leads l
+  where lower(l.email) = lower(trim(p_email))
+  order by l.created_at desc
   limit 1;
 
   if v_lead_id is not null then
@@ -65,7 +65,7 @@ begin
       v_suffix := lpad(floor(random() * 1000000)::int::text, 6, '0');
       v_lead_reference := 'APC-' || v_year || '-' || v_suffix;
       exit when not exists (
-        select 1 from public.leads where lead_reference = v_lead_reference
+        select 1 from public.leads l where l.lead_reference = v_lead_reference
       );
     end loop;
 

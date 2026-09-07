@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import Header from '../../components/navigation/Header'
 import Footer from '../../components/footer/Footer'
+import StickyMobileCTA from '../../components/shared/StickyMobileCTA'
 
 /**
  * Layout for the public marketing website only (everything under the
@@ -16,7 +17,11 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
         <Header />
         <main id="main-content" className="flex-1">{children}</main>
         <Footer />
+        {/* Spacer so the sticky mobile bar never overlaps footer links or a
+            form's own submit button on small screens. */}
+        <div className="md:hidden" style={{ height: '3.5rem' }} aria-hidden="true" />
       </div>
+      <StickyMobileCTA />
     </>
   )
 }

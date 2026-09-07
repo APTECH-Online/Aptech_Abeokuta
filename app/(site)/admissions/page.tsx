@@ -7,18 +7,39 @@ import Accordion from '../../../components/ui/Accordion'
 import AdmissionsForm from '../../../components/admissions/AdmissionsForm'
 import { admissionsSteps, admissionsRequirements, faqs } from '../../../data/site'
 import { getActiveProgrammesForPublicForm } from './programmes'
+import { breadcrumbJsonLd } from '../../../lib/structured-data'
 
 export const metadata = {
   title: 'Admissions',
-  description: 'How to apply to APTECH Abeokuta — steps, requirements, and what to expect.'
+  description: 'How to apply to APTECH Abeokuta — steps, requirements, and what to expect.',
+  alternates: { canonical: '/admissions' },
+  openGraph: {
+    title: 'Admissions — APTECH Abeokuta',
+    description: 'How to apply to APTECH Abeokuta — steps, requirements, and what to expect.',
+    url: '/admissions'
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Admissions — APTECH Abeokuta',
+    description: 'How to apply to APTECH Abeokuta — steps, requirements, and what to expect.'
+  }
 }
 
 export default async function Admissions() {
   const faqItems = faqs.slice(0, 3).map((f) => ({ id: f.id, title: f.question, content: f.answer }))
   const programmes = await getActiveProgrammesForPublicForm()
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Admissions' }])
+          )
+        }}
+      />
       <PageHero
         eyebrow="Admissions"
         title="Start your application"

@@ -91,7 +91,7 @@ export async function submitContactMessage(
       console.error('[contact] submit_contact_form RPC failed', submissionError)
       return {
         status: 'error',
-        message: "We couldn't save your message to the admissions CRM right now. Please try again shortly."
+        message: "We couldn't submit your message right now. Please try again shortly, or reach us directly on WhatsApp."
       }
     }
 

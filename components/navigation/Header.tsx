@@ -1,15 +1,18 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { Menu, X, ShieldCheck } from 'lucide-react'
-import { primaryNav } from '../../data/site'
+import { Menu, X, ShieldCheck, MessageCircle, ChevronDown } from 'lucide-react'
+import { primaryNav, exploreNav } from '../../data/site'
+import { buildWhatsAppLink, WHATSAPP_DEFAULT_MESSAGE } from '../../lib/whatsapp'
 
 export default function Header() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [exploreOpen, setExploreOpen] = useState(false)
+  const exploreRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -20,9 +23,27 @@ export default function Header() {
 
   useEffect(() => {
     setOpen(false)
+    setExploreOpen(false)
   }, [pathname])
 
+  useEffect(() => {
+    if (!exploreOpen) return
+    const onClickOutside = (e: MouseEvent) => {
+      if (exploreRef.current && !exploreRef.current.contains(e.target as Node)) setExploreOpen(false)
+    }
+    const onEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setExploreOpen(false)
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    document.addEventListener('keydown', onEscape)
+    return () => {
+      document.removeEventListener('mousedown', onClickOutside)
+      document.removeEventListener('keydown', onEscape)
+    }
+  }, [exploreOpen])
+
   const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href))
+  const isExploreActive = exploreNav.some((item) => isActive(item.href))
 
   return (
     <header
@@ -72,12 +93,54 @@ export default function Header() {
               />
             </Link>
           ))}
+
+          <div ref={exploreRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setExploreOpen((v) => !v)}
+              aria-expanded={exploreOpen}
+              aria-haspopup="true"
+              className="relative px-3.5 py-2 text-sm font-semibold transition-colors inline-flex items-center gap-1"
+              style={{ color: isExploreActive ? 'var(--color-navy-900)' : 'var(--color-body)' }}
+            >
+              Explore
+              <ChevronDown size={14} aria-hidden="true" className={`transition-transform ${exploreOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {exploreOpen && (
+              <div
+                className="absolute left-0 top-full mt-1 min-w-[180px] rounded-xl bg-white py-2 z-50"
+                style={{ border: '1px solid var(--color-line)', boxShadow: '0 12px 32px rgba(19,12,46,0.14)' }}
+              >
+                {exploreNav.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={isActive(item.href) ? 'page' : undefined}
+                    className="block px-4 py-2 text-sm font-medium"
+                    style={{ color: isActive(item.href) ? 'var(--color-navy-900)' : 'var(--color-body)' }}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
           <Link href="/admin/login" className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium ml-1" style={{ color: 'var(--color-muted)' }}>
             <ShieldCheck size={13} aria-hidden="true" />
             Official Login
           </Link>
+          <a
+            href={buildWhatsAppLink(WHATSAPP_DEFAULT_MESSAGE)}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="btn btn-ghost btn-sm ml-2 inline-flex items-center gap-1.5"
+          >
+            <MessageCircle size={14} aria-hidden="true" />
+            Talk to Admissions
+          </a>
           <Link href="/admissions" className="btn btn-primary btn-sm ml-2">
-            Enroll now
+            Apply Now
           </Link>
         </nav>
 
@@ -111,9 +174,36 @@ export default function Header() {
                 {item.label}
               </Link>
             ))}
+            <p className="pt-4 pb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-muted)' }}>
+              Explore
+            </p>
+            {exploreNav.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                className="py-3 text-[0.95rem] font-semibold flex items-center gap-2"
+                style={{
+                  color: isActive(item.href) ? 'var(--color-navy-900)' : 'var(--color-body)',
+                  borderBottom: '1px solid var(--color-line)'
+                }}
+              >
+                {isActive(item.href) && <span className="node-mark" aria-hidden="true" />}
+                {item.label}
+              </Link>
+            ))}
             <Link href="/admissions" className="btn btn-primary btn-block mt-4 mb-2">
-              Enroll now
+              Apply Now
             </Link>
+            <a
+              href={buildWhatsAppLink(WHATSAPP_DEFAULT_MESSAGE)}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="btn btn-ghost btn-block mb-2 inline-flex items-center justify-center gap-1.5"
+            >
+              <MessageCircle size={14} aria-hidden="true" />
+              Talk to Admissions
+            </a>
             <Link
               href="/admin/login"
               className="flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium"

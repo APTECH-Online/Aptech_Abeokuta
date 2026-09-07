@@ -26,14 +26,23 @@ export const siteConfig = {
   }
 }
 
+// Top-level links shown directly in the nav bar.
 export const primaryNav = [
   { label: 'Home', href: '/' },
   { label: 'About', href: '/about' },
   { label: 'Courses', href: '/courses' },
   { label: 'Admissions', href: '/admissions' },
+  { label: 'Contact', href: '/contact' }
+]
+
+// Secondary links grouped under an "Explore" dropdown, so the nav bar stays
+// uncluttered as more pages are added. Header.tsx treats being on any of
+// these routes as keeping the "Explore" trigger visually active.
+export const exploreNav = [
+  { label: 'Student Life', href: '/student-life' },
   { label: 'Gallery', href: '/gallery' },
   { label: 'Testimonials', href: '/testimonials' },
-  { label: 'Contact', href: '/contact' }
+  { label: 'Insights', href: '/insights' }
 ]
 
 export const footerNav = {
@@ -42,8 +51,10 @@ export const footerNav = {
     { label: 'About APTECH', href: '/about' },
     { label: 'Course catalogue', href: '/courses' },
     { label: 'Admissions', href: '/admissions' },
+    { label: 'Student Life', href: '/student-life' },
     { label: 'Gallery', href: '/gallery' },
-    { label: 'Testimonials', href: '/testimonials' }
+    { label: 'Testimonials', href: '/testimonials' },
+    { label: 'Insights', href: '/insights' }
   ],
   support: [
     { label: 'Contact us', href: '/contact' },

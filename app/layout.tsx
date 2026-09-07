@@ -2,6 +2,7 @@ import './globals.css'
 import { ReactNode } from 'react'
 import { Sora, Manrope, IBM_Plex_Mono } from 'next/font/google'
 import { siteConfig } from '../data/site'
+import { organizationJsonLd } from '../lib/structured-data'
 
 const sora = Sora({
   subsets: ['latin'],
@@ -47,9 +48,17 @@ export const metadata = {
  *   - app/admin/layout.tsx   → CRM / staff portal
  */
 export default function RootLayout({ children }: { children: ReactNode }) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
   return (
     <html lang="en" className={`${sora.variable} ${manrope.variable} ${plexMono.variable}`}>
-      <body>{children}</body>
+      <body>
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd(baseUrl)) }}
+        />
+        {children}
+      </body>
     </html>
   )
 }

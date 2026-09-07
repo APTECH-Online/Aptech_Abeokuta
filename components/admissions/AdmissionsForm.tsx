@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useSearchParams } from 'next/navigation'
 import FormAlert from '../shared/FormAlert'
+import WhatsAppButton from '../shared/WhatsAppButton'
 import { submitEnquiry, type SubmitEnquiryState } from '../../app/(site)/admissions/actions'
 
 type ProgrammeOption = {
@@ -43,7 +44,7 @@ function SubmitButton() {
       aria-busy={pending}
       className="btn btn-primary btn-block sm:w-auto sm:justify-self-start disabled:opacity-60 disabled:cursor-not-allowed"
     >
-      {pending ? 'Submitting…' : 'Submit application'}
+      {pending ? 'Submitting application…' : 'Submit application'}
     </button>
   )
 }
@@ -107,9 +108,23 @@ export default function AdmissionsForm({ programmes }: { programmes: ProgrammeOp
         </div>
       ) : (
         <>
-          {state.status === 'error' && (
+          {state.status === 'error' && !state.fieldErrors && (
             <div id="admissions-form-result">
-              <FormAlert variant="error" title="We couldn't submit your enquiry">
+              <FormAlert variant="error" title="We couldn't submit your application">
+                <p>{state.message}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <WhatsAppButton
+                    variant="secondary"
+                    label="Contact Admissions"
+                    message="Hi APTECH Abeokuta, I tried to apply on your website but it didn't go through. Can you help?"
+                  />
+                </div>
+              </FormAlert>
+            </div>
+          )}
+          {state.status === 'error' && state.fieldErrors && (
+            <div id="admissions-form-result">
+              <FormAlert variant="error" title="Please fix the highlighted fields">
                 <p>{state.message}</p>
               </FormAlert>
             </div>

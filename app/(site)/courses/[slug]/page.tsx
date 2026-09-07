@@ -16,6 +16,7 @@ import { smartProFoundation, smartProTracks } from '../../../../data/smartpro'
 import AcnsTermCard from '../../../../components/courses/AcnsTermCard'
 import { acnsTerms } from '../../../../data/acns'
 import Image from 'next/image'
+import { courseJsonLd, breadcrumbJsonLd } from '../../../../lib/structured-data'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -27,7 +28,22 @@ export async function generateMetadata({ params }: Props) {
   const { slug } = await params
   const course = getCourseBySlug(slug)
   if (!course) return { title: 'Course not found' }
-  return { title: course.title, description: course.summary }
+  return {
+    title: course.title,
+    description: course.summary,
+    alternates: { canonical: `/courses/${course.slug}` },
+    openGraph: {
+      title: course.title,
+      description: course.summary,
+      type: 'article',
+      url: `/courses/${course.slug}`
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: course.title,
+      description: course.summary
+    }
+  }
 }
 
 export default async function CoursePage({ params }: Props) {
@@ -36,17 +52,27 @@ export default async function CoursePage({ params }: Props) {
   if (!course) notFound()
 
   const related = getRelatedCourses(course)
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const crumbs = [
+    { label: 'Home', href: '/' },
+    { label: 'Courses', href: '/courses' },
+    { label: course.title }
+  ]
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJsonLd(baseUrl, course)) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(baseUrl, crumbs)) }}
+      />
       <section className="border-b hairline pattern-adire" style={{ background: 'var(--color-navy-900)' }}>
         <div className="container py-12 sm:py-16">
           <Breadcrumbs
-            items={[
-              { label: 'Home', href: '/' },
-              { label: 'Courses', href: '/courses' },
-              { label: course.title }
-            ]}
+            items={crumbs}
           />
           <div className="mt-5 flex items-start gap-4">
             <div
