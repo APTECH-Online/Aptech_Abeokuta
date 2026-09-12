@@ -7,6 +7,7 @@ import {
   archiveInsight,
   restoreInsightToDraft,
   toggleInsightFeatured,
+  deleteInsight,
   type ActionResult
 } from '../../app/admin/(dashboard)/insights/actions'
 import type { InsightRow } from '../../lib/crm/insights'
@@ -37,6 +38,27 @@ function QuickActionForm({
   )
 }
 
+function DeleteActionForm({ insightId, title }: { insightId: string; title: string }) {
+  const [state, formAction] = useActionState(deleteInsight, initial)
+  return (
+    <form
+      action={formAction}
+      className="inline-block"
+      onSubmit={(e) => {
+        if (!window.confirm(`Permanently delete "${title}"? This cannot be undone.`)) {
+          e.preventDefault()
+        }
+      }}
+    >
+      <input type="hidden" name="insightId" value={insightId} />
+      <button type="submit" className="btn btn-ghost btn-sm" style={{ color: 'var(--color-danger)' }}>
+        Delete
+      </button>
+      {!state.ok && <p className="text-xs mt-1" style={{ color: 'var(--color-danger)' }}>{state.message}</p>}
+    </form>
+  )
+}
+
 export default function InsightRowActions({ insight, canManage }: { insight: InsightRow; canManage: boolean }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -56,6 +78,10 @@ export default function InsightRowActions({ insight, canManage }: { insight: Ins
 
           {insight.status === 'archived' && (
             <QuickActionForm action={restoreInsightToDraft} insightId={insight.id} label="Restore to draft" />
+          )}
+
+          {(insight.status === 'draft' || insight.status === 'archived') && (
+            <DeleteActionForm insightId={insight.id} title={insight.title} />
           )}
 
           {insight.status === 'published' && (

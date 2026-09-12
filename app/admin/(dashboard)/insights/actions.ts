@@ -285,3 +285,52 @@ export async function toggleInsightFeatured(_prev: ActionResult, formData: FormD
     nextValue ? 'insight.featured' : 'insight.unfeatured'
   )
 }
+
+/**
+ * Permanently removes an insight/event and its featured image. This is
+ * distinct from archiveInsight (a reversible status change) — deletion
+ * cannot be undone, so it's restricted to draft/archived items only.
+ * Published or scheduled content must be archived first, which keeps the
+ * public site from ever losing a live page out from under a visitor and
+ * gives staff a chance to reconsider before the record is gone for good.
+ */
+export async function deleteInsight(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  try {
+    const staff = await requireInsightsAccess()
+    const insightId = String(formData.get('insightId') || '')
+    if (!insightId) return { ok: false, message: 'Missing insight.' }
+
+    const admin = createAdminClient()
+    const { data: existing } = await admin
+      .from('insights')
+      .select('id, title, slug, status, featured_image')
+      .eq('id', insightId)
+      .maybeSingle()
+    if (!existing) return { ok: false, message: 'This insight no longer exists.' }
+
+    if (existing.status !== 'draft' && existing.status !== 'archived') {
+      return { ok: false, message: 'Archive this insight before deleting it.' }
+    }
+
+    const { error } = await admin.from('insights').delete().eq('id', insightId)
+    if (error) {
+      console.error('[crm] failed to delete insight', error)
+      return { ok: false, message: 'Could not delete this insight.' }
+    }
+
+    await deleteInsightImageByUrl(existing.featured_image)
+
+    await logAudit(admin, {
+      userId: staff.id,
+      action: 'insight.deleted',
+      entity: 'insight',
+      entityId: insightId,
+      metadata: { title: existing.title, slug: existing.slug }
+    })
+
+    revalidateInsightPaths(existing.slug)
+    return { ok: true }
+  } catch (err) {
+    return authError(err)
+  }
+}
