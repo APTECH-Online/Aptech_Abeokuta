@@ -1,24 +1,27 @@
-import { BellRing } from 'lucide-react'
+import { requireStaff } from '../../../../lib/auth'
+import { createClient } from '../../../../lib/supabase/server'
+import { getNotificationsForStaff } from '../../../../lib/notifications'
+import NotificationsList from '../../../../components/admin/NotificationsList'
 
 export const metadata = { title: 'Notifications | Admissions CRM' }
+export const dynamic = 'force-dynamic'
 
-export default function NotificationsPage() {
+export default async function NotificationsPage() {
+  const staff = await requireStaff()
+  const supabase = await createClient()
+  const notifications = await getNotificationsForStaff(supabase, staff)
+
   return (
     <div className="grid gap-6">
       <div>
         <p className="eyebrow">Official Account</p>
         <h1 className="h-section mt-1">Notifications</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
+          New enquiries, applications, and overdue follow-ups — everything lives here, no email required.
+        </p>
       </div>
 
-      <section className="card p-8 sm:p-10 text-center grid gap-3 justify-items-center">
-        <BellRing size={28} style={{ color: 'var(--color-muted)' }} aria-hidden="true" />
-        <p className="font-semibold" style={{ color: 'var(--color-ink)' }}>Nothing here yet</p>
-        <p className="text-sm max-w-sm" style={{ color: 'var(--color-muted)' }}>
-          System notifications — new enquiries, overdue follow-ups, and account activity — will
-          appear here once this is wired up. For now, check Follow-ups and the Dashboard for
-          what needs attention.
-        </p>
-      </section>
+      <NotificationsList notifications={notifications} />
     </div>
   )
 }

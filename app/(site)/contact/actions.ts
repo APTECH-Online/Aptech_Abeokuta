@@ -8,15 +8,14 @@ import { generateLeadReference } from '../../../lib/reference'
 import { checkRateLimit } from '../../../lib/rate-limit'
 import { logAudit } from '../../../lib/audit'
 import { sendEmail } from '../../../lib/email/send'
-import { contactAcknowledgementEmail, adminNewContactMessageEmail } from '../../../lib/email/templates'
+import { contactAcknowledgementEmail } from '../../../lib/email/templates'
+import { createNotification } from '../../../lib/notifications'
 
 export type SubmitContactState = {
   status: 'idle' | 'success' | 'error'
   message?: string
   fieldErrors?: Record<string, string>
 }
-
-const CONTACT_NOTIFICATION_EMAIL = process.env.ADMISSIONS_NOTIFICATION_EMAIL || 'aptech.abeokuta@gmail.com'
 
 function splitName(fullName: string): { firstName: string; lastName: string } {
   const parts = fullName.trim().split(/\s+/)
@@ -114,21 +113,21 @@ export async function submitContactMessage(
     })
 
     // --- Notifications (best-effort; never block the success response) --------
+    // Staff hear about this inside the CRM (Notifications page + sidebar
+    // badge), not by email — see lib/notifications.ts.
     await Promise.allSettled([
       sendEmail({
         to: values.email,
         ...contactAcknowledgementEmail({ firstName })
       }),
-      sendEmail({
-        to: CONTACT_NOTIFICATION_EMAIL,
-        ...adminNewContactMessageEmail({
-          fullName: values.name,
-          email: values.email,
-          phone,
-          subject: values.subject || '',
-          message: values.message,
-          isDuplicate
-        })
+      createNotification(admin, {
+        type: isDuplicate ? 'lead.resubmitted' : 'lead.created',
+        title: isDuplicate ? `${values.name} messaged again` : `New message from ${values.name}`,
+        body: values.subject || values.message.slice(0, 140),
+        link: `/admin/leads/${leadId}`,
+        entity: 'lead',
+        entityId: leadId,
+        targetRoles: ['admissions_officer', 'admissions_manager', 'super_admin']
       })
     ])
 

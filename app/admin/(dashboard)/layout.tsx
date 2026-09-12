@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getSessionAndStaff } from '../../../lib/auth'
+import { createClient } from '../../../lib/supabase/server'
+import { getUnreadNotificationCount } from '../../../lib/notifications'
 import AdminShell from '../../../components/admin/AdminShell'
 import { signOut } from '../actions'
 
@@ -33,5 +35,12 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
     )
   }
 
-  return <AdminShell staff={staff}>{children}</AdminShell>
+  const supabase = await createClient()
+  const unreadNotifications = await getUnreadNotificationCount(supabase, staff)
+
+  return (
+    <AdminShell staff={staff} unreadNotifications={unreadNotifications}>
+      {children}
+    </AdminShell>
+  )
 }

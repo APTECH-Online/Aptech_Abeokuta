@@ -37,7 +37,15 @@ const NAV_ITEMS = [
   { href: '/admin/settings', label: 'Settings', icon: Settings }
 ]
 
-export default function AdminShell({ staff, children }: { staff: Staff; children: React.ReactNode }) {
+export default function AdminShell({
+  staff,
+  unreadNotifications = 0,
+  children
+}: {
+  staff: Staff
+  unreadNotifications?: number
+  children: React.ReactNode
+}) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
@@ -83,6 +91,14 @@ export default function AdminShell({ staff, children }: { staff: Staff; children
               >
                 <Icon size={17} aria-hidden="true" />
                 {item.label}
+                {item.href === '/admin/notifications' && unreadNotifications > 0 && (
+                  <span
+                    className="ml-auto text-[0.65rem] font-semibold rounded-full px-1.5 py-0.5"
+                    style={{ background: 'var(--color-primary)', color: 'white' }}
+                  >
+                    {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                  </span>
+                )}
               </Link>
             )
           })}
@@ -131,6 +147,17 @@ export default function AdminShell({ staff, children }: { staff: Staff; children
             <p className="admin-topbar-eyebrow">Official Administration Portal</p>
             <p className="admin-topbar-title truncate">{currentItem?.label ?? 'Dashboard'}</p>
           </div>
+          <Link href="/admin/notifications" className="relative shrink-0" style={{ color: 'var(--color-ink)' }} aria-label="Notifications">
+            <Bell size={20} aria-hidden="true" />
+            {unreadNotifications > 0 && (
+              <span
+                className="absolute -top-1.5 -right-1.5 text-[0.6rem] font-semibold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1"
+                style={{ background: 'var(--color-primary)', color: 'white' }}
+              >
+                {unreadNotifications > 99 ? '99+' : unreadNotifications}
+              </span>
+            )}
+          </Link>
           <span className="admin-avatar hidden sm:flex" style={{ width: 32, height: 32, fontSize: '0.7rem' }} aria-hidden="true">
             {staff.full_name
               .split(' ')

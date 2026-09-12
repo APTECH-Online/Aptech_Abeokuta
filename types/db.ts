@@ -160,6 +160,28 @@ export interface FollowUp {
   updated_at: string
 }
 
+export type NotificationType =
+  | 'lead.created'
+  | 'lead.resubmitted'
+  | 'application.created'
+  | 'followup.due'
+  | 'followup.overdue'
+
+export interface Notification {
+  id: string
+  type: NotificationType
+  title: string
+  body: string | null
+  link: string | null
+  entity: string | null
+  entity_id: string | null
+  recipient_id: string | null
+  target_roles: StaffRole[] | null
+  created_at: string
+  // Not a DB column — merged in application code from notification_reads.
+  read_at?: string | null
+}
+
 export interface AuditLog {
   id: string
   user_id: string | null

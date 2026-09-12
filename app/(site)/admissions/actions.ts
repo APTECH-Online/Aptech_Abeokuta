@@ -8,7 +8,8 @@ import { generateLeadReference } from '../../../lib/reference'
 import { checkRateLimit } from '../../../lib/rate-limit'
 import { logAudit } from '../../../lib/audit'
 import { sendEmail } from '../../../lib/email/send'
-import { applicantAcknowledgementEmail, adminNewLeadNotificationEmail } from '../../../lib/email/templates'
+import { applicantAcknowledgementEmail } from '../../../lib/email/templates'
+import { createNotification } from '../../../lib/notifications'
 
 export type SubmitEnquiryState = {
   status: 'idle' | 'success' | 'error'
@@ -16,9 +17,6 @@ export type SubmitEnquiryState = {
   leadReference?: string
   fieldErrors?: Record<string, string>
 }
-
-const ADMISSIONS_NOTIFICATION_EMAIL =
-  process.env.ADMISSIONS_NOTIFICATION_EMAIL || 'aptech.abeokuta@gmail.com'
 
 export async function submitEnquiry(
   _prevState: SubmitEnquiryState,
@@ -215,6 +213,10 @@ export async function submitEnquiry(
     })
 
     // --- Notifications (best-effort; never block the success response) ---------
+    // Staff-facing alerts live inside the CRM (Notifications page + sidebar
+    // badge) rather than email, since no email provider is configured. The
+    // applicant still gets an acknowledgement email attempt (harmless no-op
+    // until a provider is wired up — see lib/email/send.ts).
     const fullName = `${values.firstName} ${values.lastName}`
     await Promise.allSettled([
       sendEmail({
@@ -225,17 +227,14 @@ export async function submitEnquiry(
           programmeName: programme.name
         })
       }),
-      sendEmail({
-        to: ADMISSIONS_NOTIFICATION_EMAIL,
-        ...adminNewLeadNotificationEmail({
-          fullName,
-          email: values.email,
-          phone: values.phone,
-          programmeName: programme.name,
-          source: values.source,
-          leadReference,
-          isDuplicate
-        })
+      createNotification(admin, {
+        type: isDuplicate ? 'lead.resubmitted' : 'lead.created',
+        title: isDuplicate ? `${fullName} enquired again` : `New enquiry from ${fullName}`,
+        body: `${programme.name} · ${values.source}${leadReference ? ` · Ref ${leadReference}` : ''}`,
+        link: `/admin/leads/${leadId}`,
+        entity: 'lead',
+        entityId: leadId,
+        targetRoles: ['admissions_officer', 'admissions_manager', 'super_admin']
       })
     ])
 

@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/publish-insights",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/follow-up-reminders",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
