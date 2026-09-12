@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getDashboardData } from '../../../lib/crm/dashboard'
+import { getInsightsDashboardStats } from '../../../lib/crm/insights'
 import KpiCard from '../../../components/admin/KpiCard'
 import { BarChart, LineChart, DonutChart } from '../../../components/admin/charts'
 
@@ -7,7 +8,7 @@ export const metadata = { title: 'Dashboard | Admissions CRM' }
 export const dynamic = 'force-dynamic'
 
 export default async function AdminDashboardPage() {
-  const data = await getDashboardData()
+  const [data, insightsStats] = await Promise.all([getDashboardData(), getInsightsDashboardStats()])
 
   return (
     <div className="grid gap-8">
@@ -98,6 +99,63 @@ export default async function AdminDashboardPage() {
             ))}
           </div>
         )}
+      </section>
+
+      <section className="card p-5 sm:p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="eyebrow">Insights &amp; Events</p>
+            <p className="mt-1 text-sm" style={{ color: 'var(--color-muted)' }}>News, announcements and events on the public website.</p>
+          </div>
+          <Link href="/admin/insights/new" className="btn btn-primary btn-sm">Create Insight</Link>
+        </div>
+        <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <KpiCard label="Total insights" value={insightsStats.total} />
+          <KpiCard label="Drafts" value={insightsStats.drafts} />
+          <KpiCard label="Scheduled" value={insightsStats.scheduled} />
+          <KpiCard label="Published" value={insightsStats.published} accent />
+          <KpiCard label="Upcoming events" value={insightsStats.upcomingEvents} />
+        </div>
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--color-muted)' }}>Next scheduled content</p>
+            {insightsStats.nextScheduled.length === 0 ? (
+              <p className="text-sm" style={{ color: 'var(--color-muted)' }}>Nothing scheduled right now.</p>
+            ) : (
+              <ul className="grid gap-2">
+                {insightsStats.nextScheduled.map((s) => (
+                  <li key={s.id}>
+                    <Link href={`/admin/insights/${s.id}`} className="flex items-center justify-between gap-3 p-3 rounded-lg" style={{ background: 'var(--color-navy-50)' }}>
+                      <span className="text-sm font-semibold truncate" style={{ color: 'var(--color-ink)' }}>{s.title}</span>
+                      <span className="text-xs shrink-0" style={{ color: 'var(--color-muted)' }}>
+                        {new Date(s.publishAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--color-muted)' }}>Next upcoming events</p>
+            {insightsStats.nextEvents.length === 0 ? (
+              <p className="text-sm" style={{ color: 'var(--color-muted)' }}>No upcoming events yet.</p>
+            ) : (
+              <ul className="grid gap-2">
+                {insightsStats.nextEvents.map((e) => (
+                  <li key={e.id}>
+                    <Link href={`/admin/insights/${e.id}`} className="flex items-center justify-between gap-3 p-3 rounded-lg" style={{ background: 'var(--color-teal-50)' }}>
+                      <span className="text-sm font-semibold truncate" style={{ color: 'var(--color-ink)' }}>{e.title}</span>
+                      <span className="text-xs shrink-0" style={{ color: 'var(--color-muted)' }}>
+                        {new Date(e.eventStartAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
       </section>
 
       <section className="card p-5 sm:p-6">

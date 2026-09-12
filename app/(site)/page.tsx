@@ -13,7 +13,7 @@ import FAQSection from '../../components/home/FAQSection'
 import CTABand from '../../components/home/CTABand'
 import BuildSection from '../../components/home/BuildSection'
 import PartnerLogos from '../../components/shared/PartnerLogos'
-import { insights } from '../../data/insights'
+import { getPublishedInsights } from '../../lib/insights-public'
 import { faqJsonLd } from '../../lib/structured-data'
 
 export const metadata = {
@@ -33,7 +33,8 @@ export const metadata = {
   }
 }
 
-export default function Home() {
+export default async function Home() {
+  const insights = await getPublishedInsights({ limit: 3 })
   return (
     <>
       <script
@@ -140,7 +141,7 @@ export default function Home() {
                   {post.title}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed flex-1" style={{ color: 'var(--color-body)' }}>
-                  {post.excerpt}
+                  {post.short_description}
                 </p>
                 <Link
                   href={`/insights/${post.slug}`}

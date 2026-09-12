@@ -54,6 +54,77 @@ export function breadcrumbJsonLd(
   }
 }
 
+/** Article schema for a single published Insight, built only from that insight's own fields. */
+export function articleJsonLd(
+  baseUrl: string,
+  insight: {
+    title: string
+    short_description: string | null
+    slug: string
+    featured_image: string | null
+    category: string
+    created_at: string
+    updated_at: string
+    publish_at: string | null
+  }
+) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: insight.title,
+    description: insight.short_description ?? undefined,
+    url: `${baseUrl}/insights/${insight.slug}`,
+    image: insight.featured_image ? [insight.featured_image] : undefined,
+    articleSection: insight.category,
+    datePublished: insight.publish_at ?? insight.created_at,
+    dateModified: insight.updated_at,
+    publisher: {
+      '@type': 'EducationalOrganization',
+      name: siteConfig.name,
+      sameAs: baseUrl
+    }
+  }
+}
+
+/** Event schema for a single published Event-type Insight. */
+export function eventJsonLd(
+  baseUrl: string,
+  insight: {
+    title: string
+    short_description: string | null
+    slug: string
+    featured_image: string | null
+    event_start_at: string | null
+    event_end_at: string | null
+    event_venue: string | null
+  }
+) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: insight.title,
+    description: insight.short_description ?? undefined,
+    url: `${baseUrl}/insights/${insight.slug}`,
+    image: insight.featured_image ? [insight.featured_image] : undefined,
+    startDate: insight.event_start_at ?? undefined,
+    endDate: insight.event_end_at ?? undefined,
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventStatus: 'https://schema.org/EventScheduled',
+    location: insight.event_venue
+      ? {
+          '@type': 'Place',
+          name: insight.event_venue,
+          address: siteConfig.address
+        }
+      : undefined,
+    organizer: {
+      '@type': 'EducationalOrganization',
+      name: siteConfig.name,
+      sameAs: baseUrl
+    }
+  }
+}
+
 /** Course schema for a single programme's own page, built only from that course's real data. */
 export function courseJsonLd(
   baseUrl: string,

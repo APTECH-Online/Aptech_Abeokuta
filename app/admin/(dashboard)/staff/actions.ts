@@ -124,3 +124,34 @@ export async function toggleStaffActive(_prev: ActionResult, formData: FormData)
     return authError(err)
   }
 }
+
+/**
+ * Grants or revokes access to the Insights & Events CMS. Deliberately
+ * separate from updateStaffRole above: this is the granular permission
+ * described in migration 0004_insights.sql, not a role change, so it can't
+ * accidentally widen access to leads, applications or staff management.
+ */
+export async function toggleInsightsPermission(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  try {
+    const staff = await requireRole('super_admin')
+    const staffId = String(formData.get('staffId') || '')
+    const nextValue = formData.get('nextValue') === 'true'
+    if (!staffId) return { ok: false, message: 'Missing staff member.' }
+
+    const admin = createAdminClient()
+    const { error } = await admin.from('staff').update({ can_manage_insights: nextValue }).eq('id', staffId)
+    if (error) return { ok: false, message: 'Could not update Insights access.' }
+
+    await logAudit(admin, {
+      userId: staff.id,
+      action: nextValue ? 'staff.insights_access_granted' : 'staff.insights_access_revoked',
+      entity: 'staff',
+      entityId: staffId
+    })
+
+    revalidatePath('/admin/staff')
+    return { ok: true }
+  } catch (err) {
+    return authError(err)
+  }
+}

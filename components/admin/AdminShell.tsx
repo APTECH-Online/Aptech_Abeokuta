@@ -17,7 +17,8 @@ import {
   LogOut,
   UserCircle,
   UserCog,
-  Bell
+  Bell,
+  Newspaper
 } from 'lucide-react'
 import type { Staff } from '../../types/db'
 import { STAFF_ROLE_LABELS } from '../../types/db'
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { href: '/admin/leads', label: 'Enquiries', icon: Users },
   { href: '/admin/applications', label: 'Applications', icon: FileText },
   { href: '/admin/follow-ups', label: 'Follow-ups', icon: CalendarClock },
+  { href: '/admin/insights', label: 'Insights', icon: Newspaper },
   { href: '/admin/programmes', label: 'Programmes', icon: GraduationCap },
   { href: '/admin/staff', label: 'Staff', icon: UserCog },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3 },

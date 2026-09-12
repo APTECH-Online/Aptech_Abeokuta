@@ -1,47 +1,50 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CalendarDays, MapPin, Link2, Phone } from 'lucide-react'
 import Container from '../../../../components/ui/Container'
 import Breadcrumbs from '../../../../components/shared/Breadcrumbs'
 import CTABand from '../../../../components/home/CTABand'
-import { insights, getInsightBySlug, getRelatedInsights } from '../../../../data/insights'
-import { breadcrumbJsonLd } from '../../../../lib/structured-data'
+import { getInsightBySlug, getRelatedInsights } from '../../../../lib/insights-public'
+import { breadcrumbJsonLd, articleJsonLd, eventJsonLd } from '../../../../lib/structured-data'
+import { INSIGHT_CONTENT_TYPE_LABELS } from '../../../../types/db'
 
 type Props = { params: Promise<{ slug: string }> }
 
-export async function generateStaticParams() {
-  return insights.map((i) => ({ slug: i.slug }))
-}
-
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params
-  const post = getInsightBySlug(slug)
-  if (!post) return { title: 'Article not found' }
+  const post = await getInsightBySlug(slug)
+  if (!post) return { title: 'Not found' }
+
+  const title = post.seo_title || post.title
+  const description = post.seo_description || post.short_description || undefined
+
   return {
-    title: post.title,
-    description: post.excerpt,
+    title,
+    description,
     alternates: { canonical: `/insights/${post.slug}` },
     openGraph: {
-      title: post.title,
-      description: post.excerpt,
+      title,
+      description,
       type: 'article',
-      url: `/insights/${post.slug}`
+      url: `/insights/${post.slug}`,
+      ...(post.featured_image ? { images: [post.featured_image] } : {})
     },
     twitter: {
       card: 'summary_large_image',
-      title: post.title,
-      description: post.excerpt
+      title,
+      description
     }
   }
 }
 
 export default async function InsightArticlePage({ params }: Props) {
   const { slug } = await params
-  const post = getInsightBySlug(slug)
+  const post = await getInsightBySlug(slug)
   if (!post) notFound()
 
-  const related = getRelatedInsights(post)
+  const related = await getRelatedInsights(post)
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const isEvent = post.content_type === 'event'
   const crumbs = [
     { label: 'Home', href: '/' },
     { label: 'Insights', href: '/insights' },
@@ -54,14 +57,21 @@ export default async function InsightArticlePage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(baseUrl, crumbs)) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(isEvent ? eventJsonLd(baseUrl, post) : articleJsonLd(baseUrl, post)) }}
+      />
+
       <section className="border-b hairline pattern-adire" style={{ background: 'var(--color-navy-900)' }}>
         <div className="container py-12 sm:py-16">
           <Breadcrumbs items={crumbs} />
-          <p className="eyebrow eyebrow-inverse mt-5">{post.category}</p>
+          <p className="eyebrow eyebrow-inverse mt-5">{post.category} · {INSIGHT_CONTENT_TYPE_LABELS[post.content_type]}</p>
           <h1 className="h-display mt-2 max-w-3xl" style={{ color: '#fff' }}>{post.title}</h1>
-          <p className="mt-4 max-w-2xl text-[1.05rem] leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>
-            {post.excerpt}
-          </p>
+          {post.short_description && (
+            <p className="mt-4 max-w-2xl text-[1.05rem] leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>
+              {post.short_description}
+            </p>
+          )}
         </div>
       </section>
 
@@ -76,13 +86,54 @@ export default async function InsightArticlePage({ params }: Props) {
             Back to Insights
           </Link>
 
-          <div className="mt-8 space-y-5">
-            {post.body.map((paragraph, i) => (
-              <p key={i} className="leading-relaxed text-[1.02rem]" style={{ color: 'var(--color-body)' }}>
-                {paragraph}
-              </p>
-            ))}
-          </div>
+          {post.featured_image && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={post.featured_image}
+              alt={post.title}
+              className="mt-6 w-full rounded-xl object-cover"
+              style={{ aspectRatio: '16 / 9' }}
+            />
+          )}
+
+          {isEvent && (post.event_start_at || post.event_venue) && (
+            <div className="mt-8 card p-5 grid gap-2.5">
+              <p className="eyebrow">Event details</p>
+              {post.event_start_at && (
+                <p className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--color-ink)' }}>
+                  <CalendarDays size={16} aria-hidden="true" style={{ color: 'var(--color-teal-700)' }} />
+                  {new Date(post.event_start_at).toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' })}
+                  {post.event_end_at && ` — ${new Date(post.event_end_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}`}
+                </p>
+              )}
+              {post.event_venue && (
+                <p className="flex items-center gap-2 text-sm" style={{ color: 'var(--color-body)' }}>
+                  <MapPin size={16} aria-hidden="true" style={{ color: 'var(--color-teal-700)' }} />
+                  {post.event_venue}
+                </p>
+              )}
+              {post.event_registration_url && (
+                <a
+                  href={post.event_registration_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm font-semibold"
+                  style={{ color: 'var(--color-teal-700)' }}
+                >
+                  <Link2 size={16} aria-hidden="true" />
+                  Register for this event
+                </a>
+              )}
+              {post.event_contact && (
+                <p className="flex items-center gap-2 text-sm" style={{ color: 'var(--color-muted)' }}>
+                  <Phone size={16} aria-hidden="true" />
+                  {post.event_contact}
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="insight-content mt-8" dangerouslySetInnerHTML={{ __html: post.content }} />
 
           <div className="mt-10 pt-8" style={{ borderTop: '1px solid var(--color-line)' }}>
             <CTABand />
@@ -98,9 +149,11 @@ export default async function InsightArticlePage({ params }: Props) {
               {related.map((r) => (
                 <article key={r.slug} className="card p-5 flex flex-col">
                   <h3 className="font-display font-semibold text-sm text-[var(--color-ink)] leading-snug">{r.title}</h3>
-                  <p className="mt-2 text-xs leading-relaxed flex-1" style={{ color: 'var(--color-muted)' }}>
-                    {r.excerpt}
-                  </p>
+                  {r.short_description && (
+                    <p className="mt-2 text-xs leading-relaxed flex-1" style={{ color: 'var(--color-muted)' }}>
+                      {r.short_description}
+                    </p>
+                  )}
                   <Link
                     href={`/insights/${r.slug}`}
                     className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold"

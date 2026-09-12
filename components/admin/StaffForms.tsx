@@ -3,7 +3,7 @@
 import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
-import { inviteStaffMember, updateStaffRole, toggleStaffActive, type ActionResult } from '../../app/admin/(dashboard)/staff/actions'
+import { inviteStaffMember, updateStaffRole, toggleStaffActive, toggleInsightsPermission, type ActionResult } from '../../app/admin/(dashboard)/staff/actions'
 import { STAFF_ROLE_LABELS, type Staff, type StaffRole } from '../../types/db'
 
 const initial: ActionResult = { ok: true }
@@ -63,6 +63,7 @@ export function InviteStaffForm() {
 export function StaffRow({ member, isSelf }: { member: Staff; isSelf: boolean }) {
   const [roleState, roleAction] = useActionState(updateStaffRole, initial)
   const [activeState, activeAction] = useActionState(toggleStaffActive, initial)
+  const [insightsState, insightsAction] = useActionState(toggleInsightsPermission, initial)
 
   return (
     <tr>
@@ -89,6 +90,20 @@ export function StaffRow({ member, isSelf }: { member: Staff; isSelf: boolean })
           </button>
         </form>
         {!activeState.ok && <p className="text-xs mt-1" style={{ color: 'var(--color-danger)' }}>{activeState.message}</p>}
+      </td>
+      <td>
+        {member.role === 'super_admin' ? (
+          <span className="text-xs" style={{ color: 'var(--color-muted)' }}>Always on</span>
+        ) : (
+          <form action={insightsAction}>
+            <input type="hidden" name="staffId" value={member.id} />
+            <input type="hidden" name="nextValue" value={(!member.can_manage_insights).toString()} />
+            <button type="submit" className="btn btn-ghost btn-sm">
+              {member.can_manage_insights ? 'Revoke' : 'Grant'}
+            </button>
+          </form>
+        )}
+        {!insightsState.ok && <p className="text-xs mt-1" style={{ color: 'var(--color-danger)' }}>{insightsState.message}</p>}
       </td>
     </tr>
   )

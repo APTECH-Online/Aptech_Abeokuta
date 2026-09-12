@@ -1,3 +1,11 @@
+// NOTE: superseded by the Supabase-backed Insights & Events CMS
+// (see supabase/migrations/0004_insights.sql and lib/insights-public.ts).
+// The public site no longer imports from this file — these six articles
+// were migrated into the `insights` table (same slugs, same content) so
+// existing URLs keep working. Left in place per the CMS brief's
+// "don't delete existing useful content" instruction, and as the
+// reference copy the migration's seed data was generated from.
+//
 // Insights articles. These are general career/technology guidance pieces —
 // none of them claim specific Aptech Abeokuta statistics, employment
 // outcomes, partnerships or events that aren't already established

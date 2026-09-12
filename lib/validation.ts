@@ -128,6 +128,102 @@ export const leadEditSchema = z.object({
   country: z.string().trim().max(120).optional().or(z.literal(''))
 })
 
+// ----------------------------------------------------------------------------
+// INSIGHTS & EVENTS
+// ----------------------------------------------------------------------------
+
+const optionalDateTime = z
+  .string()
+  .trim()
+  .optional()
+  .or(z.literal(''))
+  .refine((v) => !v || !Number.isNaN(Date.parse(v)), 'Enter a valid date and time')
+
+const optionalUrl = z
+  .string()
+  .trim()
+  .optional()
+  .or(z.literal(''))
+  .refine((v) => !v || /^https?:\/\/.+/i.test(v), 'Enter a full URL starting with http:// or https://')
+
+export const insightFormSchema = z
+  .object({
+    title: z.string().trim().min(1, 'Title is required').max(200, 'Keep the title under 200 characters'),
+    slug: z
+      .string()
+      .trim()
+      .min(1, 'Slug is required')
+      .max(200)
+      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase letters, numbers and hyphens only'),
+    shortDescription: z.string().trim().max(400, 'Keep the summary under 400 characters').optional().or(z.literal('')),
+    content: z.string().trim().min(1, 'Add some content before saving').max(50000),
+    category: z.string().trim().min(1, 'Choose a category').max(80),
+    contentType: z.enum([
+      'news',
+      'announcement',
+      'event',
+      'academic_update',
+      'spotlight',
+      'achievement',
+      'career_update',
+      'celebration'
+    ]),
+    isFeatured: z.enum(['on']).optional().or(z.literal('')),
+    publishAt: optionalDateTime,
+    expiresAt: optionalDateTime,
+    seoTitle: z.string().trim().max(70, 'Keep the SEO title under 70 characters').optional().or(z.literal('')),
+    seoDescription: z.string().trim().max(160, 'Keep the meta description under 160 characters').optional().or(z.literal('')),
+    // Event fields — only required/validated when contentType === 'event'.
+    eventStartAt: optionalDateTime,
+    eventEndAt: optionalDateTime,
+    eventVenue: z.string().trim().max(200).optional().or(z.literal('')),
+    eventRegistrationUrl: optionalUrl,
+    eventContact: z.string().trim().max(200).optional().or(z.literal(''))
+  })
+  .superRefine((val, ctx) => {
+    if (val.publishAt && val.expiresAt && Date.parse(val.expiresAt) <= Date.parse(val.publishAt)) {
+      ctx.addIssue({ code: 'custom', path: ['expiresAt'], message: 'Expiry must be after the publish date' })
+    }
+    if (val.contentType === 'event') {
+      if (!val.eventStartAt) {
+        ctx.addIssue({ code: 'custom', path: ['eventStartAt'], message: 'Event date is required for events' })
+      }
+      if (val.eventStartAt && val.eventEndAt && Date.parse(val.eventEndAt) < Date.parse(val.eventStartAt)) {
+        ctx.addIssue({ code: 'custom', path: ['eventEndAt'], message: 'Event end date cannot be before the start date' })
+      }
+      if (!val.eventVenue) {
+        ctx.addIssue({ code: 'custom', path: ['eventVenue'], message: 'Venue is required for events' })
+      }
+    }
+  })
+
+export type InsightFormValues = z.infer<typeof insightFormSchema>
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024 // 5MB
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+
+/** Validates an uploaded featured image before it's ever sent to storage. */
+export function validateImageFile(file: File): string | null {
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    return 'Featured image must be a JPG, PNG, WEBP or GIF file.'
+  }
+  if (file.size > MAX_IMAGE_BYTES) {
+    return 'Featured image must be smaller than 5MB.'
+  }
+  return null
+}
+
+/** Turns a title into a clean, URL-safe slug. */
+export function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 200)
+}
+
 export function formatZodErrors(error: z.ZodError): Record<string, string> {
   const fieldErrors: Record<string, string> = {}
   for (const issue of error.issues) {

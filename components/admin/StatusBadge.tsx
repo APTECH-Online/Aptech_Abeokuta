@@ -25,6 +25,11 @@ const COLOR_MAP: Record<string, { bg: string; fg: string }> = {
   active: { bg: 'var(--color-success-bg)', fg: 'var(--color-success)' },
   inactive: { bg: '#F2F0F5', fg: 'var(--color-muted)' },
 
+  // Insight statuses
+  scheduled: { bg: 'var(--color-amber-100)', fg: 'var(--color-amber-700)' },
+  published: { bg: 'var(--color-success-bg)', fg: 'var(--color-success)' },
+  archived: { bg: '#F2F0F5', fg: 'var(--color-muted)' },
+
   // Follow-up statuses
   pending: { bg: 'var(--color-amber-100)', fg: 'var(--color-amber-700)' },
   completed: { bg: 'var(--color-success-bg)', fg: 'var(--color-success)' },

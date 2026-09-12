@@ -56,6 +56,9 @@ export interface Staff {
   email: string
   role: StaffRole
   is_active: boolean
+  // Granular permission, independent of `role` — see migration 0004_insights.sql
+  // for why this isn't a new staff_role value.
+  can_manage_insights: boolean
   created_at: string
   updated_at: string
 }
@@ -260,3 +263,96 @@ export const STAFF_ROLE_LABELS: Record<StaffRole, string> = {
   counsellor: 'Counsellor',
   viewer: 'Viewer'
 }
+
+// ----------------------------------------------------------------------------
+// INSIGHTS & EVENTS
+// ----------------------------------------------------------------------------
+
+export type InsightStatus = 'draft' | 'scheduled' | 'published' | 'archived'
+
+export type InsightContentType =
+  | 'news'
+  | 'announcement'
+  | 'event'
+  | 'academic_update'
+  | 'spotlight'
+  | 'achievement'
+  | 'career_update'
+  | 'celebration'
+
+export interface Insight {
+  id: string
+  title: string
+  slug: string
+  short_description: string | null
+  content: string
+  featured_image: string | null
+  category: string
+  content_type: InsightContentType
+  author_id: string | null
+  status: InsightStatus
+  is_featured: boolean
+  featured_priority: number
+  publish_at: string | null
+  expires_at: string | null
+  seo_title: string | null
+  seo_description: string | null
+  event_start_at: string | null
+  event_end_at: string | null
+  event_venue: string | null
+  event_registration_url: string | null
+  event_contact: string | null
+  created_at: string
+  updated_at: string
+}
+
+export const INSIGHT_STATUS_LABELS: Record<InsightStatus, string> = {
+  draft: 'Draft',
+  scheduled: 'Scheduled',
+  published: 'Published',
+  archived: 'Archived'
+}
+
+export const INSIGHT_CONTENT_TYPE_LABELS: Record<InsightContentType, string> = {
+  news: 'News',
+  announcement: 'Announcement',
+  event: 'Event',
+  academic_update: 'Academic Update',
+  spotlight: 'Student/Alumni Spotlight',
+  achievement: 'Achievement',
+  career_update: 'Career/Industry Update',
+  celebration: 'Celebration'
+}
+
+export const INSIGHT_CONTENT_TYPE_ORDER: InsightContentType[] = [
+  'news',
+  'announcement',
+  'event',
+  'academic_update',
+  'spotlight',
+  'achievement',
+  'career_update',
+  'celebration'
+]
+
+// Curated category list shown in the CRM editor's datalist and used to
+// validate submissions. Includes the categories the public site already
+// used (data/insights.ts) plus the new CMS categories from the brief, so
+// existing content keeps filtering correctly. `category` is still a plain
+// text column (see migration 0004), so this list can grow without a schema
+// change — just add a value here.
+export const INSIGHT_CATEGORIES = [
+  'News',
+  'Announcements',
+  'Academic Updates',
+  'Student/Alumni Spotlights',
+  'Achievements',
+  'Career/Industry Updates',
+  'Celebrations',
+  'Career Guides',
+  'Technology',
+  'Student Guides',
+  'APTECH Abeokuta'
+] as const
+
+export type InsightCategory = (typeof INSIGHT_CATEGORIES)[number]

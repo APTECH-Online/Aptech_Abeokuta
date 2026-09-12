@@ -1,5 +1,5 @@
 import { courses } from '../../../data/courses'
-import { insights } from '../../../data/insights'
+import { getPublishedInsights } from '../../../lib/insights-public'
 
 export async function GET() {
   const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
@@ -17,6 +17,7 @@ export async function GET() {
     '/terms'
   ]
   const courseUrls = courses.map((c) => `/courses/${c.slug}`)
+  const insights = await getPublishedInsights()
   const insightUrls = insights.map((i) => `/insights/${i.slug}`)
   const urls = [...staticUrls, ...courseUrls, ...insightUrls]
 

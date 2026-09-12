@@ -118,3 +118,25 @@ export function canAssignLeads(role: StaffRole) {
 export function canEditLead(role: StaffRole) {
   return role !== 'viewer'
 }
+
+/**
+ * Content-management permission for the Insights & Events module. This is
+ * intentionally NOT folded into the `role` hierarchy above: several of the
+ * helpers in this file (canEditLead, canExportData) grant access to anyone
+ * whose role isn't 'viewer', which would be the wrong behaviour for a
+ * permission meant only to unlock Insights. super_admin always has access;
+ * everyone else needs the explicit `can_manage_insights` flag on their
+ * staff row (see migration 0004_insights.sql).
+ */
+export function canManageInsights(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
+  return staff.role === 'super_admin' || staff.can_manage_insights === true
+}
+
+/** Throws unless the current staff member can manage Insights content. */
+export async function requireInsightsAccess(): Promise<Staff> {
+  const staff = await requireStaff()
+  if (!canManageInsights(staff)) {
+    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
+  }
+  return staff
+}

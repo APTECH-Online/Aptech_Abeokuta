@@ -824,3 +824,63 @@ a { color: inherit; }
   width: 10px; height: 10px; border-radius: 999px; background: var(--color-teal-500);
   box-shadow: 0 0 0 3px var(--color-teal-50);
 }
+
+/* Insights & Events — rich content rendering (public article + CRM preview)
+   and the CRM's contentEditable editor surface (components/admin/RichTextEditor.tsx) */
+.insight-content, .insight-editor-surface {
+  color: var(--color-body);
+  font-size: 1.02rem;
+  line-height: 1.75;
+}
+.insight-content > * + *, .insight-editor-surface > * + * { margin-top: 1.1em; }
+.insight-content h2, .insight-editor-surface h2 {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; color: var(--color-ink);
+}
+.insight-content h3, .insight-editor-surface h3 {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--color-ink);
+}
+.insight-content ul, .insight-editor-surface ul { list-style: disc; padding-left: 1.4em; }
+.insight-content ol, .insight-editor-surface ol { list-style: decimal; padding-left: 1.4em; }
+.insight-content li, .insight-editor-surface li { margin-top: 0.4em; }
+.insight-content a, .insight-editor-surface a { color: var(--color-teal-700); text-decoration: underline; }
+.insight-content blockquote, .insight-editor-surface blockquote {
+  border-left: 3px solid var(--color-teal-500); padding-left: 1em; font-style: italic; color: var(--color-muted);
+}
+.insight-content img, .insight-editor-surface img { border-radius: 10px; max-width: 100%; height: auto; }
+.insight-editor-surface { min-height: 16rem; cursor: text; }
+.insight-editor-surface:focus { outline: none; }
+
+/* Insights & Events CMS ----------------------------------------------- */
+
+.insight-editor-surface {
+  min-height: 16rem;
+  overflow-y: auto;
+  cursor: text;
+}
+.insight-editor-surface:focus { outline: none; }
+.insight-editor-surface h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.25rem; margin: 0.75rem 0 0.4rem; color: var(--color-ink); }
+.insight-editor-surface h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; margin: 0.65rem 0 0.35rem; color: var(--color-ink); }
+.insight-editor-surface p { margin: 0.5rem 0; }
+.insight-editor-surface ul, .insight-editor-surface ol { margin: 0.5rem 0 0.5rem 1.25rem; }
+.insight-editor-surface ul { list-style: disc; }
+.insight-editor-surface ol { list-style: decimal; }
+.insight-editor-surface blockquote {
+  border-left: 3px solid var(--color-teal-500); margin: 0.65rem 0; padding: 0.15rem 0 0.15rem 0.9rem;
+  color: var(--color-muted); font-style: italic;
+}
+.insight-editor-surface a { color: var(--color-teal-700); text-decoration: underline; }
+
+/* Public rendering of the same rich content */
+.insight-content h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; margin: 1.75rem 0 0.6rem; color: var(--color-ink); }
+.insight-content h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.12rem; margin: 1.4rem 0 0.5rem; color: var(--color-ink); }
+.insight-content p { margin: 0 0 1.15rem; line-height: 1.75; }
+.insight-content ul, .insight-content ol { margin: 0 0 1.15rem 1.4rem; line-height: 1.75; }
+.insight-content ul { list-style: disc; }
+.insight-content ol { list-style: decimal; }
+.insight-content li { margin-bottom: 0.35rem; }
+.insight-content blockquote {
+  border-left: 3px solid var(--color-teal-500); margin: 1.4rem 0; padding: 0.3rem 0 0.3rem 1.1rem;
+  color: var(--color-muted); font-style: italic; font-size: 1.05rem;
+}
+.insight-content a { color: var(--color-teal-700); text-decoration: underline; text-underline-offset: 2px; }
+.insight-content img { border-radius: 12px; margin: 1.4rem 0; max-width: 100%; height: auto; }

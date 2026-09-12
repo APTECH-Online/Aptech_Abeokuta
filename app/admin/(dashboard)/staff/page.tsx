@@ -36,6 +36,7 @@ export default async function StaffPage() {
                   <th>Email</th>
                   <th>Role</th>
                   <th>Status</th>
+                  <th>Insights access</th>
                 </tr>
               </thead>
               <tbody>
