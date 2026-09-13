@@ -182,6 +182,94 @@ export interface Notification {
   read_at?: string | null
 }
 
+export type GalleryDisplaySize = 'feature' | 'tall' | 'standard'
+
+export interface GalleryItem {
+  id: string
+  title: string
+  category: string
+  alt_text: string
+  image_url: string
+  display_size: GalleryDisplaySize
+  sort_order: number
+  is_published: boolean
+  uploaded_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export const GALLERY_CATEGORIES = ['Campus', 'Students', 'Events', 'Learning', 'Staff', 'Facilities'] as const
+export type GalleryCategory = (typeof GALLERY_CATEGORIES)[number]
+
+export const GALLERY_DISPLAY_SIZE_LABELS: Record<GalleryDisplaySize, string> = {
+  feature: 'Feature (large)',
+  tall: 'Tall',
+  standard: 'Standard'
+}
+
+export type CourseCategory = 'advanced_diploma' | 'smart_pro' | 'acns' | 'short_term'
+export type CourseStatus = 'draft' | 'published' | 'archived'
+
+export interface Course {
+  id: string
+  title: string
+  slug: string
+  category: CourseCategory
+  duration: string
+  level: string
+  mode: string
+  summary: string
+  description: string
+  highlights: string[]
+  tools: string[]
+  outcomes: string[]
+  cover_image: string | null
+  status: CourseStatus
+  display_order: number
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export const COURSE_CATEGORY_LABELS: Record<CourseCategory, string> = {
+  advanced_diploma: 'Advanced Diploma',
+  smart_pro: 'Smart Pro',
+  acns: 'Aptech Certified Network Specialist',
+  short_term: 'Short Term Courses'
+}
+
+export const COURSE_CATEGORY_ORDER: CourseCategory[] = ['advanced_diploma', 'smart_pro', 'acns', 'short_term']
+
+export const COURSE_STATUS_LABELS: Record<CourseStatus, string> = {
+  draft: 'Draft',
+  published: 'Published',
+  archived: 'Archived'
+}
+
+export interface Testimonial {
+  id: string
+  name: string
+  program: string
+  quote: string
+  image_url: string | null
+  sort_order: number
+  is_published: boolean
+  uploaded_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Faq {
+  id: string
+  question: string
+  answer: string
+  sort_order: number
+  is_published: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface AuditLog {
   id: string
   user_id: string | null

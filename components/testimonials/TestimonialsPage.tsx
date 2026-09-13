@@ -3,62 +3,13 @@
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react'
-
-type Testimonial = {
-  id: number
-  quote: string
-  name: string
-  program: string
-  image?: string
-}
-
-const testimonials: Testimonial[] = [
-  {
-    id: 1,
-    quote: "I'm so grateful for the supportive learning environment at Aptech. The instructors are always available to answer our questions and provide guidance, and my fellow students are incredibly talented and motivated. We're all learning and growing together, and it's an amazing experience.",
-    name: 'Lesley',
-    program: 'ADSE',
-    image: '/images/testimonials/lesley.jpg'
-  },
-  {
-    id: 2,
-    quote: "The ADSE program at Aptech is giving me the skills and confidence to pursue my dream of becoming a software engineer. I'm learning the latest technologies and best practices, and I'm building a strong foundation for a successful career in the tech industry.",
-    name: 'James',
-    program: 'ADSE',
-    image: '/images/testimonials/james.jpg'
-  },
-  {
-    id: 3,
-    quote: "I'm really impressed with the breadth and depth of the ADSE curriculum. We're covering everything from database management to cloud computing, and I'm gaining a holistic understanding of the software development lifecycle. The instructors are experts in their field and provide great guidance and support.",
-    name: 'Khalid',
-    program: 'ADSE',
-    image: '/images/testimonials/khalid.jpg'
-  },
-  {
-    id: 4,
-    quote: "The hands-on learning approach in the ADSE program is fantastic. We're constantly working on real-world projects, which allows us to apply what we're learning and build a strong portfolio. I'm also developing essential soft skills like teamwork and communication, which are crucial for success in the tech industry.",
-    name: 'Odafe',
-    program: 'ADSE'
-  },
-  {
-    id: 5,
-    quote: "Aptech's ADSE program is not just about technical skills; it's also about developing a problem-solving mindset. We're encouraged to think critically and creatively, and to come up with innovative solutions to complex challenges.",
-    name: 'Aanuoluwapo',
-    program: 'ADSE'
-  },
-  {
-    id: 6,
-    quote: "Aptech's ADSE program is intense but incredibly rewarding. We're diving deep into advanced software development concepts, learning industry-standard tools and technologies, and gaining experience that will be invaluable in my future career.",
-    name: 'Abdulbasit',
-    program: 'ADSE'
-  }
-]
+import type { PublicTestimonial } from '../../lib/testimonials-public'
 
 function initials(name: string) {
   return name.slice(0, 2).toUpperCase()
 }
 
-export default function TestimonialsPage() {
+export default function TestimonialsPage({ testimonials }: { testimonials: PublicTestimonial[] }) {
   const [active, setActive] = useState(0)
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const item = testimonials[active]
@@ -70,7 +21,16 @@ export default function TestimonialsPage() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [testimonials.length])
+
+  if (testimonials.length === 0 || !item) {
+    return (
+      <div className="card p-10 text-center">
+        <p className="font-semibold" style={{ color: 'var(--color-ink)' }}>No testimonials yet</p>
+        <p className="mt-1.5 text-sm" style={{ color: 'var(--color-muted)' }}>Check back soon for student stories.</p>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -96,8 +56,8 @@ export default function TestimonialsPage() {
           </div>
         </div>
         <div className="testimonial-feature-image">
-          {item.image ? (
-            <Image src={item.image} alt={`Photo of ${item.name}, ${item.program} student`} fill sizes="(max-width: 1023px) 100vw, 42vw" className="object-cover" priority />
+          {item.image_url ? (
+            <Image src={item.image_url} alt={`Photo of ${item.name}, ${item.program} student`} fill sizes="(max-width: 1023px) 100vw, 42vw" className="object-cover" priority />
           ) : (
             <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--color-navy-800)' }}>
               <span className="h-display" style={{ color: 'rgba(239,192,119,0.9)', fontSize: '3rem' }}>{initials(item.name)}</span>
@@ -120,8 +80,8 @@ export default function TestimonialsPage() {
             <p className="font-display text-lg font-semibold leading-relaxed text-[var(--color-ink)]">“{t.quote}”</p>
             <div className="mt-6 pt-5 border-t border-[var(--color-line)] flex items-center gap-3">
               <span className="relative shrink-0 rounded-full overflow-hidden flex items-center justify-center" style={{ width: 44, height: 44, background: 'var(--color-navy-100)' }}>
-                {t.image ? (
-                  <Image src={t.image} alt={t.name} fill sizes="44px" className="object-cover" />
+                {t.image_url ? (
+                  <Image src={t.image_url} alt={t.name} fill sizes="44px" className="object-cover" />
                 ) : (
                   <span className="text-xs font-semibold" style={{ color: 'var(--color-navy-700)' }}>{initials(t.name)}</span>
                 )}

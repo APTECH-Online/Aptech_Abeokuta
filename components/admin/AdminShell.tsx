@@ -18,7 +18,11 @@ import {
   UserCircle,
   UserCog,
   Bell,
-  Newspaper
+  Newspaper,
+  Images,
+  BookOpen,
+  MessageSquareQuote,
+  HelpCircle
 } from 'lucide-react'
 import type { Staff } from '../../types/db'
 import { STAFF_ROLE_LABELS } from '../../types/db'
@@ -30,6 +34,10 @@ const NAV_ITEMS = [
   { href: '/admin/applications', label: 'Applications', icon: FileText },
   { href: '/admin/follow-ups', label: 'Follow-ups', icon: CalendarClock },
   { href: '/admin/insights', label: 'Insights', icon: Newspaper },
+  { href: '/admin/gallery', label: 'Gallery', icon: Images },
+  { href: '/admin/courses', label: 'Courses', icon: BookOpen },
+  { href: '/admin/testimonials', label: 'Testimonials', icon: MessageSquareQuote },
+  { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
   { href: '/admin/programmes', label: 'Programmes', icon: GraduationCap },
   { href: '/admin/staff', label: 'Staff', icon: UserCog },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3 },

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { courses, getCourseBySlug, getRelatedCourses } from '../../../../data/courses'
+import { getPublishedCourses, getPublishedCourseBySlug, getRelatedCourses } from '../../../../lib/courses-public'
 import Container from '../../../../components/ui/Container'
 import Breadcrumbs from '../../../../components/shared/Breadcrumbs'
 import CourseCard from '../../../../components/courses/CourseCard'
@@ -20,13 +20,9 @@ import { courseJsonLd, breadcrumbJsonLd } from '../../../../lib/structured-data'
 
 type Props = { params: Promise<{ slug: string }> }
 
-export async function generateStaticParams() {
-  return courses.map((c) => ({ slug: c.slug }))
-}
-
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params
-  const course = getCourseBySlug(slug)
+  const course = await getPublishedCourseBySlug(slug)
   if (!course) return { title: 'Course not found' }
   return {
     title: course.title,
@@ -48,10 +44,11 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function CoursePage({ params }: Props) {
   const { slug } = await params
-  const course = getCourseBySlug(slug)
+  const course = await getPublishedCourseBySlug(slug)
   if (!course) notFound()
 
-  const related = getRelatedCourses(course)
+  const allCourses = await getPublishedCourses()
+  const related = getRelatedCourses(allCourses, course)
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
   const crumbs = [
     { label: 'Home', href: '/' },

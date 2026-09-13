@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, RotateCcw } from 'lucide-react'
-import { courses } from '../../data/courses'
+import type { Course } from '../../data/courses'
 
 type Interest = 'software' | 'data' | 'cyber' | 'networking' | 'web' | 'business'
 type Commitment = 'short' | 'professional' | 'long'
@@ -59,7 +59,7 @@ const RECOMMENDATIONS: Record<Interest, Record<Commitment, string>> = {
   }
 }
 
-export default function ProgramFinder() {
+export default function ProgramFinder({ courses }: { courses: Course[] }) {
   const [interest, setInterest] = useState<Interest | null>(null)
   const [commitment, setCommitment] = useState<Commitment | null>(null)
 

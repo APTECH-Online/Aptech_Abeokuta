@@ -2,6 +2,7 @@ import PageHero from '../../../components/shared/PageHero'
 import Container from '../../../components/ui/Container'
 import TestimonialsPage from '../../../components/testimonials/TestimonialsPage'
 import { breadcrumbJsonLd } from '../../../lib/structured-data'
+import { getPublishedTestimonials } from '../../../lib/testimonials-public'
 
 export const metadata = {
   title: { absolute: 'Testimonials | APTECH Abeokuta' },
@@ -19,7 +20,8 @@ export const metadata = {
   }
 }
 
-export default function TestimonialsRoute() {
+export default async function TestimonialsRoute() {
+  const testimonials = await getPublishedTestimonials()
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
   return (
     <>
@@ -37,7 +39,7 @@ export default function TestimonialsRoute() {
       />
       <section className="section">
         <Container>
-          <TestimonialsPage />
+          <TestimonialsPage testimonials={testimonials} />
         </Container>
       </section>
     </>

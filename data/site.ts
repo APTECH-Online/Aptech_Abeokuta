@@ -127,35 +127,7 @@ export const admissionsRequirements = [
   'Payment details for registration, confirmed with the admissions office'
 ]
 
-export const faqs = [
-  {
-    id: 'faq-1',
-    question: 'Do I need prior IT experience to enrol?',
-    answer:
-      'Entry requirements vary by programme. The course catalogue lists the recommended level for each programme, and admissions can confirm the current requirements for your chosen track.'
-  },
-  {
-    id: 'faq-2',
-    question: 'How are classes delivered?',
-    answer:
-      'Classes combine instructor-led teaching with hands-on lab time. Exact schedule and delivery format for a given cohort are confirmed by the admissions office.'
-  },
-  {
-    id: 'faq-3',
-    question: 'What happens after I apply?',
-    answer:
-      'The admissions team reviews your application and contacts you to confirm your programme, intake, and any outstanding requirements.'
-  },
-  {
-    id: 'faq-4',
-    question: 'Are there flexible payment options?',
-    answer:
-      'Fee structures and payment plans are confirmed directly with the admissions office, since they can vary by programme.'
-  },
-  {
-    id: 'faq-5',
-    question: 'Will I receive a certificate?',
-    answer:
-      'Students who complete a programme\'s requirements receive a certificate of completion. Ask the admissions office for details specific to your track.'
-  }
-]
+// FAQs used to be hardcoded here. That content now lives in the faqs
+// table (see migration 0009_faqs.sql), managed via the CRM at
+// /admin/faqs, and is fetched through lib/faqs-public.ts
+// (getPublishedFaqs()).

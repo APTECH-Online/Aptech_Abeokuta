@@ -5,7 +5,8 @@ import Container from '../../../components/ui/Container'
 import SectionHeading from '../../../components/ui/SectionHeading'
 import Accordion from '../../../components/ui/Accordion'
 import AdmissionsForm from '../../../components/admissions/AdmissionsForm'
-import { admissionsSteps, admissionsRequirements, faqs } from '../../../data/site'
+import { admissionsSteps, admissionsRequirements } from '../../../data/site'
+import { getPublishedFaqs } from '../../../lib/faqs-public'
 import { getActiveProgrammesForPublicForm } from './programmes'
 import { breadcrumbJsonLd } from '../../../lib/structured-data'
 
@@ -26,7 +27,8 @@ export const metadata = {
 }
 
 export default async function Admissions() {
-  const faqItems = faqs.slice(0, 3).map((f) => ({ id: f.id, title: f.question, content: f.answer }))
+  const faqs = await getPublishedFaqs(3)
+  const faqItems = faqs.map((f) => ({ id: f.id, title: f.question, content: f.answer }))
   const programmes = await getActiveProgrammesForPublicForm()
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
 

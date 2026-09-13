@@ -1,16 +1,21 @@
-import { courses } from '../../data/courses'
+import type { Course } from '../../data/courses'
 
 // Every figure here is derived from the site's own verified data (course
-// catalogue, partner list) rather than invented — see data/courses.ts and
-// components/shared/PartnerLogos.tsx.
-const stats = [
-  { label: 'Programme areas', value: '3' },
-  { label: 'Courses across those areas', value: String(courses.length) },
-  { label: 'Academic & accreditation alliances', value: '4' },
-  { label: 'Network', value: 'Global Aptech' }
-]
+// catalogue, partner list) rather than invented — see
+// components/shared/PartnerLogos.tsx. Course count comes from the
+// `courses` prop (fetched via lib/courses-public.ts, backed by the
+// `courses` table — see migration 0007) rather than a module-level
+// constant, since the catalogue is now CRM-managed and can change without
+// a deploy.
 
-export default function StatsBand() {
+export default function StatsBand({ courses }: { courses: Course[] }) {
+  const stats = [
+    { label: 'Programme areas', value: '3' },
+    { label: 'Courses across those areas', value: String(courses.length) },
+    { label: 'Academic & accreditation alliances', value: '4' },
+    { label: 'Network', value: 'Global Aptech' }
+  ]
+
   return (
     <div className="border-t border-b hairline pattern-adire" style={{ background: 'var(--color-navy-900)' }}>
       <div className="container py-12">

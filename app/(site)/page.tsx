@@ -1,5 +1,5 @@
 import Hero from '../../components/hero/Hero'
-import { courses } from '../../data/courses'
+import { getPublishedCourses } from '../../lib/courses-public'
 import CourseCard from '../../components/courses/CourseCard'
 import Link from 'next/link'
 import Testimonials from '../../components/testimonials/Testimonials'
@@ -14,6 +14,8 @@ import CTABand from '../../components/home/CTABand'
 import BuildSection from '../../components/home/BuildSection'
 import PartnerLogos from '../../components/shared/PartnerLogos'
 import { getPublishedInsights } from '../../lib/insights-public'
+import { getPublishedTestimonials } from '../../lib/testimonials-public'
+import { getPublishedFaqs } from '../../lib/faqs-public'
 import { faqJsonLd } from '../../lib/structured-data'
 
 export const metadata = {
@@ -35,14 +37,17 @@ export const metadata = {
 
 export default async function Home() {
   const insights = await getPublishedInsights({ limit: 3 })
+  const courses = await getPublishedCourses()
+  const testimonials = await getPublishedTestimonials(3)
+  const faqs = await getPublishedFaqs()
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd()) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faqs)) }}
       />
       <Hero />
-      <StatsBand />
+      <StatsBand courses={courses} />
 
       <section className="section-tight">
         <Container className="max-w-3xl">
@@ -53,7 +58,7 @@ export default async function Home() {
             align="center"
           />
           <div className="mt-8">
-            <ProgramFinder />
+            <ProgramFinder courses={courses} />
           </div>
         </Container>
       </section>
@@ -83,7 +88,7 @@ export default async function Home() {
             title="Learn. Build. Certify. Launch."
             description="Each APTECH Abeokuta programme is mapped to real skills and job-role-aligned outcomes — see where each path can take you."
           />
-          <CareerPaths />
+          <CareerPaths courses={courses} />
         </Container>
       </section>
 
@@ -118,7 +123,7 @@ export default async function Home() {
         <Container>
           <SectionHeading eyebrow="Student stories" title="What students say" />
           <div className="mt-8">
-            <Testimonials />
+            <Testimonials items={testimonials} />
           </div>
         </Container>
       </section>
@@ -160,7 +165,7 @@ export default async function Home() {
         <Container className="max-w-3xl">
           <SectionHeading eyebrow="FAQ" title="Frequently asked questions" />
           <div className="mt-8">
-            <FAQSection />
+            <FAQSection faqs={faqs} />
           </div>
         </Container>
       </section>

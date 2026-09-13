@@ -1,4 +1,4 @@
-import { siteConfig, faqs } from '../data/site'
+import { siteConfig } from '../data/site'
 
 /** EducationalOrganization schema, built only from verified siteConfig fields. */
 export function organizationJsonLd(baseUrl: string) {
@@ -21,8 +21,8 @@ export function organizationJsonLd(baseUrl: string) {
   }
 }
 
-/** FAQPage schema, built only from the real, existing faqs array in data/site.ts. */
-export function faqJsonLd() {
+/** FAQPage schema, built from the published faqs passed in (see lib/faqs-public.ts). */
+export function faqJsonLd(faqs: { question: string; answer: string }[]) {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',

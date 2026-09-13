@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import { Code2, Network, BarChart3, ArrowRight } from 'lucide-react'
-import { courses } from '../../data/courses'
+import type { Course } from '../../data/courses'
 
 /**
- * Every skill/outcome/duration shown here is pulled directly from
- * data/courses.ts — nothing here is invented. This deliberately mirrors
+ * Every skill/outcome/duration shown here comes from the `courses` prop
+ * (fetched via lib/courses-public.ts, backed by the `courses` table — see
+ * migration 0007) — nothing here is invented. This deliberately mirrors
  * each flagship programme's own `outcomes` array rather than introducing a
  * separate "career paths" taxonomy the data model doesn't actually have.
  */
@@ -20,7 +21,7 @@ const ICONS: Record<(typeof FLAGSHIP_SLUGS)[number], typeof Code2> = {
   'aptech-certified-network-specialist': Network
 }
 
-export default function CareerPaths() {
+export default function CareerPaths({ courses }: { courses: Course[] }) {
   const flagships = FLAGSHIP_SLUGS.map((slug) => courses.find((c) => c.slug === slug)).filter(
     (c): c is NonNullable<typeof c> => Boolean(c)
   )

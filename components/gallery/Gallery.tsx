@@ -3,72 +3,16 @@
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import type { PublicGalleryItem } from '../../lib/gallery-public'
 
-export type GalleryItem = {
-  id: number
-  title: string
-  category: string
-  src: string
-  alt: string
-  size: 'feature' | 'tall' | 'standard'
-}
+export type GalleryItem = PublicGalleryItem
 
-const items: GalleryItem[] = [
-  {
-    id: 1,
-    title: 'Aptech Career Quest, 16th edition',
-    category: 'Events',
-    src: '/images/gallery/event-1.jpg',
-    alt: 'A group of students at the APTECH Career Quest event, held in association with Middlesex University',
-    size: 'feature'
-  },
-  {
-    id: 2,
-    title: 'Around the campus',
-    category: 'Campus',
-    src: '/images/gallery/campus-1.jpg',
-    alt: 'A student walking through a corridor on the APTECH Abeokuta campus',
-    size: 'tall'
-  },
-  {
-    id: 3,
-    title: 'Hands-on with the tools of the trade',
-    category: 'Students',
-    src: '/images/gallery/staff-1.jpg',
-    alt: 'A student working at a laptop on campus',
-    size: 'standard'
-  },
-  {
-    id: 4,
-    title: 'The admin office',
-    category: 'Campus',
-    src: '/images/gallery/staff-2.jpg',
-    alt: 'A staff member working at a desk in the campus office',
-    size: 'standard'
-  },
-  {
-    id: 5,
-    title: 'Students building practical skills',
-    category: 'Learning',
-    src: '/images/about-illustration.svg',
-    alt: 'Illustration of a student working with a laptop, code panels and a data chart',
-    size: 'tall'
-  },
-  {
-    id: 6,
-    title: 'The APTECH standard',
-    category: 'Learning',
-    src: '/images/hero-tech.svg',
-    alt: 'Illustration representing technology-focused learning',
-    size: 'standard'
-  }
-]
+const DEFAULT_FILTERS = ['All']
 
-const filters = ['All', 'Campus', 'Students', 'Events', 'Learning']
-
-export default function Gallery() {
+export default function Gallery({ items }: { items: GalleryItem[] }) {
+  const filters = [...DEFAULT_FILTERS, ...Array.from(new Set(items.map((i) => i.category)))]
   const [filter, setFilter] = useState('All')
-  const [selected, setSelected] = useState<number | null>(null)
+  const [selected, setSelected] = useState<string | null>(null)
 
   const visible = items.filter((item) => filter === 'All' || item.category === filter)
   const selectedIndex = selected === null ? -1 : visible.findIndex((item) => item.id === selected)
@@ -118,11 +62,11 @@ export default function Gallery() {
             <button
               key={item.id}
               type="button"
-              className={`gallery-tile gallery-${item.size}`}
+              className={`gallery-tile gallery-${item.display_size}`}
               onClick={() => setSelected(item.id)}
               aria-label={`Open ${item.title}`}
             >
-              <Image src={item.src} alt={item.alt} fill sizes="(max-width: 767px) 100vw, (max-width: 1199px) 50vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-[1.035]" />
+              <Image src={item.image_url} alt={item.alt_text} fill sizes="(max-width: 767px) 100vw, (max-width: 1199px) 50vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-[1.035]" />
               <span className="gallery-caption"><span>{item.category}</span><strong>{item.title}</strong></span>
             </button>
           ))}
@@ -140,7 +84,7 @@ export default function Gallery() {
           <button type="button" className="gallery-close" onClick={() => setSelected(null)} aria-label="Close image preview"><X /></button>
           <div className="gallery-lightbox-content">
             <div className="gallery-lightbox-media">
-              <Image src={selectedItem.src} alt={selectedItem.alt} fill sizes="90vw" className="object-contain" priority />
+              <Image src={selectedItem.image_url} alt={selectedItem.alt_text} fill sizes="90vw" className="object-contain" priority />
             </div>
             <div className="gallery-lightbox-copy">
               <span className="badge badge-amber">{selectedItem.category}</span>

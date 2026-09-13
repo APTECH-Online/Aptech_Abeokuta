@@ -7,6 +7,7 @@ import SectionHeading from '../../../components/ui/SectionHeading'
 import Testimonials from '../../../components/testimonials/Testimonials'
 import CTABand from '../../../components/home/CTABand'
 import { breadcrumbJsonLd } from '../../../lib/structured-data'
+import { getPublishedTestimonials } from '../../../lib/testimonials-public'
 
 export const metadata = {
   title: 'Student Life',
@@ -60,7 +61,8 @@ const pillars = [
   }
 ]
 
-export default function StudentLifePage() {
+export default async function StudentLifePage() {
+  const testimonials = await getPublishedTestimonials(3)
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
   return (
     <>
@@ -131,7 +133,7 @@ export default function StudentLifePage() {
         <Container>
           <SectionHeading eyebrow="Student stories" title="What students say" />
           <div className="mt-8">
-            <Testimonials />
+            <Testimonials items={testimonials} />
           </div>
         </Container>
       </section>

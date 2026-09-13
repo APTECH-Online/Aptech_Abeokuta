@@ -140,3 +140,69 @@ export async function requireInsightsAccess(): Promise<Staff> {
   }
   return staff
 }
+
+/**
+ * The Gallery module reuses the same `can_manage_insights` flag rather than
+ * adding a second content-permission column: both modules are "Content
+ * Manager" work in practice (the Insights error message above already
+ * describes it that way to staff, not as "Insights access" specifically),
+ * and a staff member trusted to publish articles is the same person you'd
+ * trust to publish photos. If the two ever need to diverge, split this into
+ * its own `can_manage_gallery` column then.
+ */
+export function canManageGallery(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
+  return canManageInsights(staff)
+}
+
+/** Throws unless the current staff member can manage Gallery content. */
+export async function requireGalleryAccess(): Promise<Staff> {
+  const staff = await requireStaff()
+  if (!canManageGallery(staff)) {
+    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
+  }
+  return staff
+}
+
+/** Same reuse rationale as canManageGallery above. */
+export function canManageTestimonials(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
+  return canManageInsights(staff)
+}
+
+export async function requireTestimonialsAccess(): Promise<Staff> {
+  const staff = await requireStaff()
+  if (!canManageTestimonials(staff)) {
+    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
+  }
+  return staff
+}
+
+/** Same reuse rationale as canManageGallery above. */
+export function canManageFaqs(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
+  return canManageInsights(staff)
+}
+
+export async function requireFaqsAccess(): Promise<Staff> {
+  const staff = await requireStaff()
+  if (!canManageFaqs(staff)) {
+    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
+  }
+  return staff
+}
+
+/**
+ * Same reasoning as canManageGallery above: the Course catalogue is also
+ * Content Manager work, so it reuses the same `can_manage_insights` flag
+ * rather than a fourth permission column.
+ */
+export function canManageCourses(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
+  return canManageInsights(staff)
+}
+
+/** Throws unless the current staff member can manage the Course catalogue. */
+export async function requireCoursesAccess(): Promise<Staff> {
+  const staff = await requireStaff()
+  if (!canManageCourses(staff)) {
+    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
+  }
+  return staff
+}

@@ -1,4 +1,4 @@
-import { courses } from '../../../data/courses'
+import { getPublishedCourses } from '../../../lib/courses-public'
 import CourseSearch from '../../../components/courses/CourseSearch'
 import PageHero from '../../../components/shared/PageHero'
 import Container from '../../../components/ui/Container'
@@ -20,8 +20,9 @@ export const metadata = {
   }
 }
 
-export default function CoursesPage() {
+export default async function CoursesPage() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const courses = await getPublishedCourses()
   return (
     <>
       <script

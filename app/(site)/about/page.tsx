@@ -6,7 +6,7 @@ import Container from '../../../components/ui/Container'
 import SectionHeading from '../../../components/ui/SectionHeading'
 import CTABand from '../../../components/home/CTABand'
 import PartnerLogos from '../../../components/shared/PartnerLogos'
-import { courses } from '../../../data/courses'
+import { getPublishedCourses } from '../../../lib/courses-public'
 import { breadcrumbJsonLd } from '../../../lib/structured-data'
 
 export const metadata = {
@@ -52,7 +52,8 @@ const partners = [
   }
 ]
 
-export default function About() {
+export default async function About() {
+  const courses = await getPublishedCourses()
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
   return (
     <>

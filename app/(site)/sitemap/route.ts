@@ -1,4 +1,4 @@
-import { courses } from '../../../data/courses'
+import { getPublishedCourses } from '../../../lib/courses-public'
 import { getPublishedInsights } from '../../../lib/insights-public'
 
 export async function GET() {
@@ -16,6 +16,7 @@ export async function GET() {
     '/privacy',
     '/terms'
   ]
+  const courses = await getPublishedCourses()
   const courseUrls = courses.map((c) => `/courses/${c.slug}`)
   const insights = await getPublishedInsights()
   const insightUrls = insights.map((i) => `/insights/${i.slug}`)
