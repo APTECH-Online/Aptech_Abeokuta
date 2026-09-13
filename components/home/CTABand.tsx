@@ -31,7 +31,7 @@ export default function CTABand({
       </div>
       <div className="flex flex-wrap gap-3 shrink-0 relative">
         <Link href={primary.href} className="btn btn-accent">{primary.label}</Link>
-        <Link href={secondary.href} className="btn btn-secondary" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.3)' }}>{secondary.label}</Link>
+        <Link href={secondary.href} className="btn btn-secondary btn-secondary-on-dark">{secondary.label}</Link>
       </div>
     </div>
   )

@@ -1,7 +1,10 @@
 import { siteConfig } from '../data/site'
 
+import { getPublishedSocialLinks } from '../lib/social-links-public'
+
 /** EducationalOrganization schema, built only from verified siteConfig fields. */
-export function organizationJsonLd(baseUrl: string) {
+export async function organizationJsonLd(baseUrl: string) {
+  const socialLinks = await getPublishedSocialLinks()
   return {
     '@context': 'https://schema.org',
     '@type': 'EducationalOrganization',
@@ -17,7 +20,7 @@ export function organizationJsonLd(baseUrl: string) {
       addressRegion: 'Ogun State',
       addressCountry: 'NG'
     },
-    ...(siteConfig.social.facebook ? { sameAs: [siteConfig.social.facebook] } : {})
+    ...(socialLinks.length > 0 ? { sameAs: socialLinks.map((l) => l.url) } : {})
   }
 }
 

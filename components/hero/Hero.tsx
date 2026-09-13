@@ -24,8 +24,7 @@ export default function Hero() {
               <Link href="/courses" className="btn btn-accent">Explore courses</Link>
               <Link
                 href="/admissions"
-                className="btn btn-secondary"
-                style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.3)' }}
+                className="btn btn-secondary btn-secondary-on-dark"
               >
                 Apply for admission
               </Link>

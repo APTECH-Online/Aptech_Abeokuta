@@ -16,14 +16,12 @@ export const siteConfig = {
     { day: 'Monday – Friday', time: '9:00 AM – 5:00 PM' },
     { day: 'Saturday', time: '10:00 AM – 2:00 PM' },
     { day: 'Sunday', time: 'Closed' }
-  ],
+  ]
 
-  // Only include accounts that have been verified as belonging to the
-  // centre. Leave unverified channels out entirely rather than linking a
-  // placeholder or guessed handle.
-  social: {
-    facebook: 'https://www.facebook.com/aptechabk/'
-  }
+  // Social media links used to be hardcoded here (siteConfig.social). That
+  // content now lives in the social_links table (see migration
+  // 0010_social_links.sql), managed via the CRM at /admin/settings/social,
+  // and is fetched through lib/social-links-public.ts (getPublishedSocialLinks()).
 }
 
 // Top-level links shown directly in the nav bar.

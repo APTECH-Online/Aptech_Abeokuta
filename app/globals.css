@@ -260,6 +260,19 @@ a { color: inherit; }
 }
 .btn-secondary:hover { border-color: var(--color-navy-900); background: var(--color-navy-50); }
 
+/*
+ * Secondary buttons placed on dark backgrounds (hero/CTA sections) need
+ * white text and a light border instead of .btn-secondary's navy-on-transparent
+ * defaults. Previously this was done with an inline `style={{ color: '#fff' }}`
+ * override, but inline styles always win over :hover rules, so the button's
+ * hover background (--color-navy-50, near-white) was applied while the text
+ * stayed white — making the label unreadable on hover. This class keeps the
+ * same look at rest and reuses .btn-secondary's existing hover background,
+ * but also flips the hover text back to navy so it stays legible.
+ */
+.btn-secondary-on-dark { color: #fff; border-color: rgba(255,255,255,0.3); }
+.btn-secondary-on-dark:hover { color: var(--color-navy-900); border-color: var(--color-navy-900); background: var(--color-navy-50); }
+
 .btn-ghost {
   background: transparent;
   color: var(--color-navy-900);

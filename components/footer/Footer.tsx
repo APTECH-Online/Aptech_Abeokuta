@@ -1,16 +1,32 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { siteConfig, footerNav } from '../../data/site'
+import { getPublishedSocialLinks } from '../../lib/social-links-public'
+import { SocialIcon, SOCIAL_PLATFORM_DEFAULT_LABEL } from './SocialIcons'
 
-function FacebookGlyph({ size = 16 }: { size?: number }) {
+// Same underline mechanic as the header nav (components/navigation/Header.tsx):
+// an absolutely-positioned bar under the label, hidden at rest and scaled in
+// from the left on hover, with a matching transition. The header's hover bar
+// uses --color-line-strong, a warm tan tuned for its white background; the
+// footer sits on --color-navy-950, so it reuses --color-amber-400 — the same
+// accent already used for footer/dark-surface headings (.eyebrow-inverse) and
+// hover states (.btn-accent) elsewhere on the site.
+function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M13.5 21v-7.8h2.6l.4-3h-3v-1.9c0-.87.24-1.46 1.5-1.46h1.6V4.14C15.9 4.1 14.98 4 13.9 4c-2.24 0-3.78 1.37-3.78 3.88v2.32H7.5v3h2.62V21h3.38z" />
-    </svg>
+    <Link href={href} className="relative inline-block py-0.5 group hover:text-white transition-colors">
+      {children}
+      <span
+        aria-hidden="true"
+        className="absolute left-0 right-0 -bottom-0.5 h-[2px] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-200"
+        style={{ background: 'var(--color-amber-400)' }}
+      />
+    </Link>
   )
 }
 
-export default function Footer() {
+export default async function Footer() {
+  const socialLinks = await getPublishedSocialLinks()
+
   return (
     <footer className="pattern-adire" style={{ background: 'var(--color-navy-950)', color: 'rgba(255,255,255,0.65)' }}>
       <div className="container py-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] gap-10">
@@ -25,16 +41,24 @@ export default function Footer() {
             />
           </div>
           <p className="mt-5 text-sm leading-relaxed max-w-xs">{siteConfig.description}</p>
-          {siteConfig.social.facebook && (
-            <a
-              href={siteConfig.social.facebook}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="APTECH Abeokuta on Facebook"
-              className="mt-6 inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/[0.06] text-white/70 hover:bg-white/10 hover:text-white transition-colors"
-            >
-              <FacebookGlyph size={16} />
-            </a>
+          {socialLinks.length > 0 && (
+            <div className="mt-6 flex flex-wrap items-center gap-2">
+              {socialLinks.map((link) => {
+                const label = link.label || SOCIAL_PLATFORM_DEFAULT_LABEL[link.platform]
+                return (
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`APTECH Abeokuta on ${label}`}
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/[0.06] text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+                  >
+                    <SocialIcon platform={link.platform} size={16} />
+                  </a>
+                )
+              })}
+            </div>
           )}
         </div>
 
@@ -43,7 +67,7 @@ export default function Footer() {
           <ul className="mt-5 space-y-3 text-sm">
             {footerNav.explore.map((l) => (
               <li key={l.href}>
-                <Link href={l.href} className="hover:text-white transition-colors">{l.label}</Link>
+                <FooterLink href={l.href}>{l.label}</FooterLink>
               </li>
             ))}
           </ul>
@@ -54,7 +78,7 @@ export default function Footer() {
           <ul className="mt-5 space-y-3 text-sm">
             {footerNav.support.map((l) => (
               <li key={l.href}>
-                <Link href={l.href} className="hover:text-white transition-colors">{l.label}</Link>
+                <FooterLink href={l.href}>{l.label}</FooterLink>
               </li>
             ))}
           </ul>

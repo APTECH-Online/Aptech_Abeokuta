@@ -270,6 +270,30 @@ export interface Faq {
   updated_at: string
 }
 
+// Keep in sync with SOCIAL_PLATFORMS in lib/crm/social-links.ts and the
+// `social_links_platform_check` constraint in migration 0010_social_links.sql.
+export type SocialPlatform =
+  | 'facebook'
+  | 'instagram'
+  | 'twitter_x'
+  | 'linkedin'
+  | 'youtube'
+  | 'tiktok'
+  | 'whatsapp'
+  | 'other'
+
+export interface SocialLink {
+  id: string
+  platform: SocialPlatform
+  label: string | null
+  url: string
+  sort_order: number
+  is_published: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface AuditLog {
   id: string
   user_id: string | null

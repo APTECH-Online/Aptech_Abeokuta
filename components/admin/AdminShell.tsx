@@ -22,7 +22,8 @@ import {
   Images,
   BookOpen,
   MessageSquareQuote,
-  HelpCircle
+  HelpCircle,
+  Share2
 } from 'lucide-react'
 import type { Staff } from '../../types/db'
 import { STAFF_ROLE_LABELS } from '../../types/db'
@@ -38,6 +39,7 @@ const NAV_ITEMS = [
   { href: '/admin/courses', label: 'Courses', icon: BookOpen },
   { href: '/admin/testimonials', label: 'Testimonials', icon: MessageSquareQuote },
   { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
+  { href: '/admin/settings/social', label: 'Social media', icon: Share2 },
   { href: '/admin/programmes', label: 'Programmes', icon: GraduationCap },
   { href: '/admin/staff', label: 'Staff', icon: UserCog },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
@@ -57,7 +59,12 @@ export default function AdminShell({
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
-  const isActive = (href: string) => (href === '/admin' ? pathname === '/admin' : pathname?.startsWith(href))
+  // '/admin' and '/admin/settings' need exact matching rather than the
+  // startsWith below: '/admin/settings/social' is itself a nav item now, so
+  // without this, visiting it would highlight both "Social media" and
+  // "Settings" at once.
+  const isActive = (href: string) =>
+    href === '/admin' || href === '/admin/settings' ? pathname === href : pathname?.startsWith(href)
   const currentItem = NAV_ITEMS.find((item) => isActive(item.href))
 
   return (

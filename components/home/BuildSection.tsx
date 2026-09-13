@@ -35,7 +35,7 @@ export default function BuildSection() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/courses" className="btn btn-accent">See training tracks</Link>
-            <Link href="/about" className="btn btn-secondary" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.3)' }}>
+            <Link href="/about" className="btn btn-secondary btn-secondary-on-dark">
               Our approach
             </Link>
           </div>

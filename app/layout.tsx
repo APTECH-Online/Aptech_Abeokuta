@@ -47,15 +47,16 @@ export const metadata = {
  *   - app/(site)/layout.tsx  → public marketing site
  *   - app/admin/layout.tsx   → CRM / staff portal
  */
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const orgJsonLd = await organizationJsonLd(baseUrl)
   return (
     <html lang="en" className={`${sora.variable} ${manrope.variable} ${plexMono.variable}`}>
       <body>
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd(baseUrl)) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
         {children}
       </body>

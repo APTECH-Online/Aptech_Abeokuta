@@ -206,3 +206,21 @@ export async function requireCoursesAccess(): Promise<Staff> {
   }
   return staff
 }
+
+/**
+ * Same reasoning as canManageGallery above: the social media links shown in
+ * the footer are also Content Manager work, so this reuses the same
+ * `can_manage_insights` flag rather than a fifth permission column.
+ */
+export function canManageSocialLinks(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
+  return canManageInsights(staff)
+}
+
+/** Throws unless the current staff member can manage social media links. */
+export async function requireSocialLinksAccess(): Promise<Staff> {
+  const staff = await requireStaff()
+  if (!canManageSocialLinks(staff)) {
+    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
+  }
+  return staff
+}
