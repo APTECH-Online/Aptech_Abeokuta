@@ -1,12 +1,12 @@
 {
-  "crons": [
+   "crons": [
     {
       "path": "/api/cron/publish-insights",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 0 * * *"
     },
     {
       "path": "/api/cron/follow-up-reminders",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 1 * * *"
     }
   ]
 }
