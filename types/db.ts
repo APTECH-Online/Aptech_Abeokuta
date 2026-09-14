@@ -294,6 +294,62 @@ export interface SocialLink {
   updated_at: string
 }
 
+// Text cards under "Partners & alliances" on the About page (e.g. Avigo
+// Investment Limited, the Middlesex/Portsmouth alliance).
+export interface PartnerOrganization {
+  id: string
+  title: string
+  body: string
+  points: string[]
+  sort_order: number
+  is_published: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+// Logo grid under "Affiliated universities" on the Home and About pages.
+export interface AffiliatedUniversity {
+  id: string
+  name: string
+  logo_url: string
+  website_url: string | null
+  sort_order: number
+  is_published: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+// Singleton row backing the "Backed by Avigo..." highlight card on the
+// homepage — headline, supporting line, and its button.
+export interface PartnersHighlight {
+  id: string
+  headline: string
+  description: string
+  cta_label: string
+  cta_href: string
+  is_published: boolean
+  updated_by: string | null
+  updated_at: string
+}
+
+export interface ContactHour {
+  day: string
+  time: string
+}
+
+export interface ContactInfo {
+  id: string
+  phone: string
+  whatsapp: string
+  email: string
+  address: string
+  hours: ContactHour[]
+  updated_by: string | null
+  updated_at: string
+}
+
 export interface AuditLog {
   id: string
   user_id: string | null

@@ -7,7 +7,7 @@ import { Menu, X, ShieldCheck, MessageCircle, ChevronDown } from 'lucide-react'
 import { primaryNav, exploreNav } from '../../data/site'
 import { buildWhatsAppLink, WHATSAPP_DEFAULT_MESSAGE } from '../../lib/whatsapp'
 
-export default function Header() {
+export default function Header({ whatsapp }: { whatsapp: string }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -131,7 +131,7 @@ export default function Header() {
             Official Login
           </Link>
           <a
-            href={buildWhatsAppLink(WHATSAPP_DEFAULT_MESSAGE)}
+            href={buildWhatsAppLink(whatsapp, WHATSAPP_DEFAULT_MESSAGE)}
             target="_blank"
             rel="noopener noreferrer nofollow"
             className="btn btn-ghost btn-sm ml-2 inline-flex items-center gap-1.5"
@@ -196,7 +196,7 @@ export default function Header() {
               Apply Now
             </Link>
             <a
-              href={buildWhatsAppLink(WHATSAPP_DEFAULT_MESSAGE)}
+              href={buildWhatsAppLink(whatsapp, WHATSAPP_DEFAULT_MESSAGE)}
               target="_blank"
               rel="noopener noreferrer nofollow"
               className="btn btn-ghost btn-block mb-2 inline-flex items-center justify-center gap-1.5"

@@ -10,12 +10,14 @@ const VARIANT_CLASS: Record<Variant, string> = {
 }
 
 export default function WhatsAppButton({
+  whatsapp,
   message = WHATSAPP_DEFAULT_MESSAGE,
   label = 'Chat with Admissions',
   variant = 'secondary',
   className = '',
   showIcon = true
 }: {
+  whatsapp: string
   message?: string
   label?: string
   variant?: Variant
@@ -24,7 +26,7 @@ export default function WhatsAppButton({
 }) {
   return (
     <a
-      href={buildWhatsAppLink(message)}
+      href={buildWhatsAppLink(whatsapp, message)}
       target="_blank"
       rel="noopener noreferrer nofollow"
       className={`${VARIANT_CLASS[variant]} inline-flex items-center justify-center gap-2 ${className}`}

@@ -16,6 +16,7 @@ import PartnerLogos from '../../components/shared/PartnerLogos'
 import { getPublishedInsights } from '../../lib/insights-public'
 import { getPublishedTestimonials } from '../../lib/testimonials-public'
 import { getPublishedFaqs } from '../../lib/faqs-public'
+import { getPublishedPartnersHighlight } from '../../lib/partners-public'
 import { faqJsonLd } from '../../lib/structured-data'
 
 export const metadata = {
@@ -40,6 +41,7 @@ export default async function Home() {
   const courses = await getPublishedCourses()
   const testimonials = await getPublishedTestimonials(3)
   const faqs = await getPublishedFaqs()
+  const partnersHighlight = await getPublishedPartnersHighlight()
   return (
     <>
       <script
@@ -107,13 +109,15 @@ export default async function Home() {
             <div>
               <p className="eyebrow">Partners & alliances</p>
               <h2 className="h-section mt-2" style={{ fontSize: '1.35rem' }}>
-                Backed by Avigo Investment Limited, connected to Middlesex &amp; Portsmouth Universities
+                {partnersHighlight?.headline ?? 'Backed by Avigo Investment Limited, connected to Middlesex & Portsmouth Universities'}
               </h2>
               <p className="lede mt-2" style={{ fontSize: '0.95rem' }}>
-                A Nigerian-owned network partner, plus a pathway to a BSc in Software Engineering through our university alliance.
+                {partnersHighlight?.description ?? 'A Nigerian-owned network partner, plus a pathway to a BSc in Software Engineering through our university alliance.'}
               </p>
             </div>
-            <Link href="/about#partners" className="btn btn-secondary shrink-0">Meet our partners</Link>
+            <Link href={partnersHighlight?.cta_href ?? '/about#partners'} className="btn btn-secondary shrink-0">
+              {partnersHighlight?.cta_label ?? 'Meet our partners'}
+            </Link>
           </div>
           <PartnerLogos />
         </Container>

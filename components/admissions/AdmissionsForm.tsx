@@ -49,7 +49,7 @@ function SubmitButton() {
   )
 }
 
-export default function AdmissionsForm({ programmes }: { programmes: ProgrammeOption[] }) {
+export default function AdmissionsForm({ programmes, whatsapp }: { programmes: ProgrammeOption[]; whatsapp: string }) {
   const [state, formAction] = useActionState(submitEnquiry, initialState)
   const searchParams = useSearchParams()
   const formRef = useRef<HTMLFormElement>(null)
@@ -114,6 +114,7 @@ export default function AdmissionsForm({ programmes }: { programmes: ProgrammeOp
                 <p>{state.message}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <WhatsAppButton
+                    whatsapp={whatsapp}
                     variant="secondary"
                     label="Contact Admissions"
                     message="Hi APTECH Abeokuta, I tried to apply on your website but it didn't go through. Can you help?"

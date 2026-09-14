@@ -1,21 +1,23 @@
 import { siteConfig } from '../data/site'
 
 import { getPublishedSocialLinks } from '../lib/social-links-public'
+import { getPublicContactInfo } from '../lib/contact-info-public'
 
 /** EducationalOrganization schema, built only from verified siteConfig fields. */
 export async function organizationJsonLd(baseUrl: string) {
   const socialLinks = await getPublishedSocialLinks()
+  const contactInfo = await getPublicContactInfo()
   return {
     '@context': 'https://schema.org',
     '@type': 'EducationalOrganization',
     name: siteConfig.name,
     description: siteConfig.description,
     url: baseUrl,
-    telephone: siteConfig.phone,
-    email: siteConfig.email,
+    telephone: contactInfo.phone,
+    email: contactInfo.email,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: siteConfig.address,
+      streetAddress: contactInfo.address,
       addressLocality: 'Abeokuta',
       addressRegion: 'Ogun State',
       addressCountry: 'NG'
@@ -90,7 +92,7 @@ export function articleJsonLd(
 }
 
 /** Event schema for a single published Event-type Insight. */
-export function eventJsonLd(
+export async function eventJsonLd(
   baseUrl: string,
   insight: {
     title: string
@@ -102,6 +104,7 @@ export function eventJsonLd(
     event_venue: string | null
   }
 ) {
+  const contactInfo = await getPublicContactInfo()
   return {
     '@context': 'https://schema.org',
     '@type': 'Event',
@@ -117,7 +120,7 @@ export function eventJsonLd(
       ? {
           '@type': 'Place',
           name: insight.event_venue,
-          address: siteConfig.address
+          address: contactInfo.address
         }
       : undefined,
     organizer: {

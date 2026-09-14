@@ -45,6 +45,7 @@ export default async function InsightArticlePage({ params }: Props) {
   const related = await getRelatedInsights(post)
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
   const isEvent = post.content_type === 'event'
+  const articleOrEventJsonLd = isEvent ? await eventJsonLd(baseUrl, post) : articleJsonLd(baseUrl, post)
   const crumbs = [
     { label: 'Home', href: '/' },
     { label: 'Insights', href: '/insights' },
@@ -59,7 +60,7 @@ export default async function InsightArticlePage({ params }: Props) {
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(isEvent ? eventJsonLd(baseUrl, post) : articleJsonLd(baseUrl, post)) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleOrEventJsonLd) }}
       />
 
       <section className="border-b hairline pattern-adire" style={{ background: 'var(--color-navy-900)' }}>

@@ -9,6 +9,7 @@ import { admissionsSteps, admissionsRequirements } from '../../../data/site'
 import { getPublishedFaqs } from '../../../lib/faqs-public'
 import { getActiveProgrammesForPublicForm } from './programmes'
 import { breadcrumbJsonLd } from '../../../lib/structured-data'
+import { getPublicContactInfo } from '../../../lib/contact-info-public'
 
 export const metadata = {
   title: 'Admissions',
@@ -30,6 +31,7 @@ export default async function Admissions() {
   const faqs = await getPublishedFaqs(3)
   const faqItems = faqs.map((f) => ({ id: f.id, title: f.question, content: f.answer }))
   const programmes = await getActiveProgrammesForPublicForm()
+  const { whatsapp } = await getPublicContactInfo()
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
 
   return (
@@ -109,7 +111,7 @@ export default async function Admissions() {
           <SectionHeading eyebrow="Application" title="Submit an enquiry" description="Tell us about yourself and the programme you're interested in — the admissions team will follow up with next steps." />
           {programmes.length > 0 ? (
             <Suspense fallback={<div className="mt-8 card p-8 text-sm" style={{ color: 'var(--color-muted)' }}>Loading form…</div>}>
-              <AdmissionsForm programmes={programmes} />
+              <AdmissionsForm programmes={programmes} whatsapp={whatsapp} />
             </Suspense>
           ) : (
             <div className="mt-8 card p-6 sm:p-8 text-sm" style={{ color: 'var(--color-muted)' }}>

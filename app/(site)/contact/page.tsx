@@ -1,9 +1,9 @@
-import { siteConfig } from '../../../data/site'
 import PageHero from '../../../components/shared/PageHero'
 import Container from '../../../components/ui/Container'
 import ContactForm from '../../../components/contact/ContactForm'
 import { Mail, MapPin, Phone, Clock } from 'lucide-react'
 import { breadcrumbJsonLd } from '../../../lib/structured-data'
+import { getPublicContactInfo } from '../../../lib/contact-info-public'
 
 export const metadata = {
   title: 'Contact',
@@ -21,8 +21,9 @@ export const metadata = {
   }
 }
 
-export default function Contact() {
+export default async function Contact() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const contactInfo = await getPublicContactInfo()
   return (
     <>
       <script
@@ -47,21 +48,21 @@ export default function Contact() {
                   <MapPin aria-hidden="true" className="w-5 h-5 mt-0.5 shrink-0" style={{ color: 'var(--color-teal-700)' }} />
                   <div>
                     <p className="font-semibold text-[var(--color-ink)] text-sm">Campus address</p>
-                    <p className="mt-1 text-sm" style={{ color: 'var(--color-body)' }}>{siteConfig.address}</p>
+                    <p className="mt-1 text-sm" style={{ color: 'var(--color-body)' }}>{contactInfo.address}</p>
                   </div>
                 </div>
                 <div className="card p-5 flex items-start gap-4">
                   <Phone aria-hidden="true" className="w-5 h-5 mt-0.5 shrink-0" style={{ color: 'var(--color-teal-700)' }} />
                   <div>
                     <p className="font-semibold text-[var(--color-ink)] text-sm">Phone / WhatsApp</p>
-                    <p className="mt-1 text-sm" style={{ color: 'var(--color-body)' }}>{siteConfig.phone}</p>
+                    <p className="mt-1 text-sm" style={{ color: 'var(--color-body)' }}>{contactInfo.phone}</p>
                   </div>
                 </div>
                 <div className="card p-5 flex items-start gap-4">
                   <Mail aria-hidden="true" className="w-5 h-5 mt-0.5 shrink-0" style={{ color: 'var(--color-teal-700)' }} />
                   <div>
                     <p className="font-semibold text-[var(--color-ink)] text-sm">Email</p>
-                    <p className="mt-1 text-sm" style={{ color: 'var(--color-body)' }}>{siteConfig.email}</p>
+                    <p className="mt-1 text-sm" style={{ color: 'var(--color-body)' }}>{contactInfo.email}</p>
                   </div>
                 </div>
                 <div className="card p-5 flex items-start gap-4">
@@ -69,7 +70,7 @@ export default function Contact() {
                   <div>
                     <p className="font-semibold text-[var(--color-ink)] text-sm">Office hours</p>
                     <ul className="mt-1 text-sm space-y-0.5" style={{ color: 'var(--color-body)' }}>
-                      {siteConfig.hours.map((h) => (
+                      {contactInfo.hours.map((h) => (
                         <li key={h.day} className="flex justify-between gap-6">
                           <span>{h.day}</span>
                           <span>{h.time}</span>
@@ -86,7 +87,7 @@ export default function Contact() {
               >
                 <iframe
                   title="Map showing the APTECH Abeokuta campus address"
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(siteConfig.address + ', Abeokuta, Nigeria')}&output=embed`}
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(contactInfo.address + ', Abeokuta, Nigeria')}&output=embed`}
                   className="w-full h-full border-0"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
@@ -99,7 +100,7 @@ export default function Contact() {
               <p className="mt-2 text-sm" style={{ color: 'var(--color-muted)' }}>
                 We typically respond within one to two business days.
               </p>
-              <ContactForm />
+              <ContactForm whatsapp={contactInfo.whatsapp} />
             </div>
           </div>
         </Container>

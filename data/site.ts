@@ -5,18 +5,13 @@ export const siteConfig = {
   shortName: 'APTECH',
   tagline: 'Career-focused technology education in Abeokuta',
   description:
-    'Advanced software engineering, Smart Pro, and networking education delivered through APTECH Abeokuta.',
+    'Advanced software engineering, Smart Pro, and networking education delivered through APTECH Abeokuta.'
 
-  // Contact
-  phone: '+234 (0) 803 415 2557',
-  whatsapp: '+234 (0) 803 415 2557',
-  email: 'aptech.abeokuta@gmail.com',
-  address: '#22 Quarry Road, Old Savannah Bank Building, Panseke, Ibara, Abeokuta',
-  hours: [
-    { day: 'Monday – Friday', time: '9:00 AM – 5:00 PM' },
-    { day: 'Saturday', time: '10:00 AM – 2:00 PM' },
-    { day: 'Sunday', time: 'Closed' }
-  ]
+  // Contact details (phone, WhatsApp, email, address, office hours) used to
+  // be hardcoded here. That content now lives in the contact_info table
+  // (see migration 0012_contact_info.sql), managed via the CRM at
+  // /admin/settings/contact, and is fetched through
+  // lib/contact-info-public.ts (getPublicContactInfo()).
 
   // Social media links used to be hardcoded here (siteConfig.social). That
   // content now lives in the social_links table (see migration

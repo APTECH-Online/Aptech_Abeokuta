@@ -9,7 +9,7 @@ import { buildWhatsAppLink, WHATSAPP_DEFAULT_MESSAGE } from '../../lib/whatsapp'
  * added in SiteLayout so it never overlaps the footer or a form's submit
  * button.
  */
-export default function StickyMobileCTA() {
+export default function StickyMobileCTA({ whatsapp }: { whatsapp: string }) {
   return (
     <div
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 grid grid-cols-2"
@@ -21,7 +21,7 @@ export default function StickyMobileCTA() {
       }}
     >
       <a
-        href={buildWhatsAppLink(WHATSAPP_DEFAULT_MESSAGE)}
+        href={buildWhatsAppLink(whatsapp, WHATSAPP_DEFAULT_MESSAGE)}
         target="_blank"
         rel="noopener noreferrer nofollow"
         className="flex items-center justify-center gap-1.5 py-3 text-sm font-semibold"

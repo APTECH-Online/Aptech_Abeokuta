@@ -5,8 +5,10 @@ import PageHero from '../../../components/shared/PageHero'
 import Container from '../../../components/ui/Container'
 import SectionHeading from '../../../components/ui/SectionHeading'
 import CTABand from '../../../components/home/CTABand'
+import StatsBand from '../../../components/home/StatsBand'
 import PartnerLogos from '../../../components/shared/PartnerLogos'
 import { getPublishedCourses } from '../../../lib/courses-public'
+import { getPublishedPartnerOrganizations } from '../../../lib/partners-public'
 import { breadcrumbJsonLd } from '../../../lib/structured-data'
 
 export const metadata = {
@@ -31,29 +33,9 @@ const values = [
   { title: 'Locally rooted', body: 'A campus in Abeokuta, built for students in Ogun State and the wider region.' }
 ]
 
-const partners = [
-  {
-    title: 'Avigo Investment Limited',
-    body: 'AVIGO, a Nigerian environmental and IT services firm, provides network solutions and employs a diverse team of tech professionals.',
-    points: [
-      '100% Nigerian-Owned',
-      'Diverse Team of Professionals',
-      'Leading Environmental and Allied Services Company'
-    ]
-  },
-  {
-    title: 'Our Alliance',
-    body: 'Avigo prioritizes quality and excellence. Aptech Abeokuta partners with Middlesex and Portsmouth Universities, offering students a pathway to a BSc in Software Engineering.',
-    points: [
-      'Global Reach and Networking',
-      'Academic Excellence and Research Opportunities',
-      'Industry Connections and Job Prospects'
-    ]
-  }
-]
-
 export default async function About() {
   const courses = await getPublishedCourses()
+  const partners = await getPublishedPartnerOrganizations()
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
   return (
     <>
@@ -128,49 +110,34 @@ export default async function About() {
         </Container>
       </section>
 
-      <section className="section">
-        <Container>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="card p-5 text-center">
-              <div className="h-display" style={{ fontSize: '1.75rem' }}>3</div>
-              <div className="mt-1 text-sm" style={{ color: 'var(--color-muted)' }}>Main programme areas</div>
-            </div>
-            <div className="card p-5 text-center">
-              <div className="h-display" style={{ fontSize: '1.75rem' }}>{courses.length}</div>
-              <div className="mt-1 text-sm" style={{ color: 'var(--color-muted)' }}>Courses on offer</div>
-            </div>
-            <div className="card p-5 text-center">
-              <div className="h-display" style={{ fontSize: '1.75rem' }}>4</div>
-              <div className="mt-1 text-sm" style={{ color: 'var(--color-muted)' }}>Academic &amp; accreditation alliances</div>
-            </div>
-            <div className="card p-5 text-center">
-              <div className="h-display" style={{ fontSize: '1.75rem' }}>Global</div>
-              <div className="mt-1 text-sm" style={{ color: 'var(--color-muted)' }}>Part of the Aptech network</div>
-            </div>
-          </div>
-        </Container>
-      </section>
+      <StatsBand courses={courses} />
 
       <section id="partners" className="section-tight scroll-mt-24" style={{ background: 'var(--color-paper-alt)', borderTop: '1px solid var(--color-line)', borderBottom: '1px solid var(--color-line)' }}>
         <Container>
           <SectionHeading eyebrow="Partners & alliances" title="Backed by industry, connected to academia" />
-          <PartnerLogos />
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {partners.map((p) => (
-              <div key={p.title} className="card p-6 sm:p-8">
-                <h3 className="font-display font-semibold text-[1.15rem] text-[var(--color-ink)]">{p.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>{p.body}</p>
-                <ul className="mt-5 space-y-2.5">
-                  {p.points.map((point) => (
-                    <li key={point} className="flex items-start gap-2 text-sm" style={{ color: 'var(--color-body)' }}>
-                      <CheckCircle2 className="shrink-0 mt-0.5" size={16} style={{ color: 'var(--color-amber-500)' }} />
-                      <span>{point}</span>
-                    </li>
-                  ))}
-                </ul>
+          {partners.length > 0 && (
+            <>
+              <p className="eyebrow mt-2">Industry partners</p>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                {partners.map((p) => (
+                  <div key={p.id} className="card p-6 sm:p-8">
+                    <h3 className="font-display font-semibold text-[1.15rem] text-[var(--color-ink)]">{p.title}</h3>
+                    <p className="mt-3 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>{p.body}</p>
+                    <ul className="mt-5 space-y-2.5">
+                      {p.points.map((point) => (
+                        <li key={point} className="flex items-start gap-2 text-sm" style={{ color: 'var(--color-body)' }}>
+                          <CheckCircle2 className="shrink-0 mt-0.5" size={16} style={{ color: 'var(--color-amber-500)' }} />
+                          <span>{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
+
+          <PartnerLogos />
         </Container>
       </section>
 

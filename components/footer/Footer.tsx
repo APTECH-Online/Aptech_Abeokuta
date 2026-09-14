@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { siteConfig, footerNav } from '../../data/site'
 import { getPublishedSocialLinks } from '../../lib/social-links-public'
+import { getPublicContactInfo } from '../../lib/contact-info-public'
 import { SocialIcon, SOCIAL_PLATFORM_DEFAULT_LABEL } from './SocialIcons'
 
 // Same underline mechanic as the header nav (components/navigation/Header.tsx):
@@ -26,6 +27,7 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
 
 export default async function Footer() {
   const socialLinks = await getPublishedSocialLinks()
+  const contactInfo = await getPublicContactInfo()
 
   return (
     <footer className="pattern-adire" style={{ background: 'var(--color-navy-950)', color: 'rgba(255,255,255,0.65)' }}>
@@ -87,9 +89,9 @@ export default async function Footer() {
         <div>
           <h2 className="eyebrow eyebrow-inverse">Contact</h2>
           <ul className="mt-5 space-y-3 text-sm">
-            <li>{siteConfig.address}</li>
-            <li>{siteConfig.phone}</li>
-            <li>{siteConfig.email}</li>
+            <li>{contactInfo.address}</li>
+            <li>{contactInfo.phone}</li>
+            <li>{contactInfo.email}</li>
           </ul>
         </div>
       </div>

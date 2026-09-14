@@ -1,13 +1,14 @@
-import { siteConfig } from '../data/site'
-
 /**
- * Builds a wa.me deep link using the centre's verified WhatsApp number from
- * data/site.ts. Never hardcode a phone number at the call site — always go
- * through this so every WhatsApp CTA on the site points at the same,
- * verified number.
+ * Builds a wa.me deep link from a WhatsApp number and optional message.
+ * Pure and synchronous by design so it can be called from client
+ * components — the number itself is no longer imported from static
+ * config; it comes from the CRM (contact_info table, see migration
+ * 0012_contact_info.sql / lib/contact-info-public.ts) and is passed in by
+ * the caller, usually threaded down from a server component that already
+ * fetched it. Never hardcode a phone number at the call site.
  */
-export function buildWhatsAppLink(message?: string) {
-  const digits = siteConfig.whatsapp.replace(/[^\d]/g, '')
+export function buildWhatsAppLink(whatsappNumber: string, message?: string) {
+  const digits = whatsappNumber.replace(/[^\d]/g, '')
   const base = `https://wa.me/${digits}`
   return message ? `${base}?text=${encodeURIComponent(message)}` : base
 }

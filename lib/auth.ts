@@ -224,3 +224,39 @@ export async function requireSocialLinksAccess(): Promise<Staff> {
   }
   return staff
 }
+
+/**
+ * Partner organizations, affiliated universities and the homepage highlight
+ * card are all Content Manager work too — same reasoning as canManageGallery
+ * and canManageSocialLinks above.
+ */
+export function canManagePartners(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
+  return canManageInsights(staff)
+}
+
+/** Throws unless the current staff member can manage Partners & alliances content. */
+export async function requirePartnersAccess(): Promise<Staff> {
+  const staff = await requireStaff()
+  if (!canManagePartners(staff)) {
+    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
+  }
+  return staff
+}
+
+/**
+ * Contact info (phone, WhatsApp, email, address, office hours) is core
+ * information every page depends on, but editing it is still Content
+ * Manager work — same reasoning as canManagePartners above.
+ */
+export function canManageContactInfo(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
+  return canManageInsights(staff)
+}
+
+/** Throws unless the current staff member can manage contact info. */
+export async function requireContactInfoAccess(): Promise<Staff> {
+  const staff = await requireStaff()
+  if (!canManageContactInfo(staff)) {
+    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
+  }
+  return staff
+}

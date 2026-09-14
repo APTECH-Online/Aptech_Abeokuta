@@ -22,7 +22,7 @@ function SubmitButton() {
   )
 }
 
-export default function ContactForm() {
+export default function ContactForm({ whatsapp }: { whatsapp: string }) {
   const [state, formAction] = useActionState(submitContactMessage, initialState)
   const formRef = useRef<HTMLFormElement>(null)
   const fieldErrors = state.status === 'error' ? state.fieldErrors ?? {} : {}
@@ -51,6 +51,7 @@ export default function ContactForm() {
                 <p>{state.message}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <WhatsAppButton
+                    whatsapp={whatsapp}
                     variant="secondary"
                     label="Contact Admissions"
                     message="Hi APTECH Abeokuta, I tried to send a message on your website but it didn't go through. Can you help?"

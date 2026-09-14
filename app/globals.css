@@ -300,6 +300,32 @@ a { color: inherit; }
   transform: translateY(-3px);
 }
 
+/*
+ * Stat tiles — components/home/StatsBand.tsx (homepage + About page "at a
+ * glance" numbers). Sits on the dark navy pattern-adire band, so this is a
+ * dark-surface sibling of .card-interactive rather than a reuse of it: a
+ * faint glass tile that lifts and picks up an amber border on hover, with
+ * the number itself rendered as a soft white-to-amber metallic gradient
+ * for a bit of shine against the flat navy background.
+ */
+.stat-tile {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
+}
+.stat-tile:hover {
+  transform: translateY(-4px);
+  border-color: rgba(239,192,119,0.35);
+  background: rgba(255,255,255,0.05);
+}
+.stat-value {
+  display: inline-block;
+  background: linear-gradient(135deg, #fff 0%, var(--color-amber-100) 55%, var(--color-amber-400) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 /* Signature element: terminal-style "console card", used sparingly for
    hero, course-status, and system-style messaging (404 / errors). */
 .console-card {

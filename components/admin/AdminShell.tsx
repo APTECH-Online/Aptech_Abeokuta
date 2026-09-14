@@ -23,7 +23,9 @@ import {
   BookOpen,
   MessageSquareQuote,
   HelpCircle,
-  Share2
+  Share2,
+  Handshake,
+  Phone
 } from 'lucide-react'
 import type { Staff } from '../../types/db'
 import { STAFF_ROLE_LABELS } from '../../types/db'
@@ -40,6 +42,8 @@ const NAV_ITEMS = [
   { href: '/admin/testimonials', label: 'Testimonials', icon: MessageSquareQuote },
   { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
   { href: '/admin/settings/social', label: 'Social media', icon: Share2 },
+  { href: '/admin/settings/partners', label: 'Partners & alliances', icon: Handshake },
+  { href: '/admin/settings/contact', label: 'Contact info', icon: Phone },
   { href: '/admin/programmes', label: 'Programmes', icon: GraduationCap },
   { href: '/admin/staff', label: 'Staff', icon: UserCog },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
