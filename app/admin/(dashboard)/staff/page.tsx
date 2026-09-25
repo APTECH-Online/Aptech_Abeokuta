@@ -1,7 +1,7 @@
 import { createClient } from '../../../../lib/supabase/server'
 import { requireRole } from '../../../../lib/auth'
 import { type Staff } from '../../../../types/db'
-import { InviteStaffForm, StaffRow } from '../../../../components/admin/StaffForms'
+import { AddStaffForm, StaffRow } from '../../../../components/admin/StaffForms'
 
 export const metadata = { title: 'Staff | Admissions CRM' }
 export const dynamic = 'force-dynamic'
@@ -26,7 +26,7 @@ export default async function StaffPage() {
         <section className="grid gap-4">
           <div className="flex items-center justify-between">
             <p className="eyebrow">Staff &amp; roles</p>
-            <InviteStaffForm />
+            <AddStaffForm />
           </div>
           <div className="admin-table-wrap">
             <table className="admin-table">

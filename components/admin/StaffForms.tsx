@@ -1,9 +1,9 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
-import { inviteStaffMember, updateStaffRole, toggleStaffActive, resetStaffPassword, type ActionResult } from '../../app/admin/(dashboard)/staff/actions'
+import { createStaffMember, updateStaffRole, toggleStaffActive, resetStaffPassword, type ActionResult } from '../../app/admin/(dashboard)/staff/actions'
 import { STAFF_ROLE_LABELS, type Staff, type StaffRole } from '../../types/db'
 
 const initial: ActionResult = { ok: true }
@@ -25,17 +25,23 @@ function PermissionSummary({ role }: { role: StaffRole }) {
   return <div className="flex flex-wrap gap-1.5">{permissions.map((p) => <span key={p} className="text-xs rounded-full px-2 py-1" style={{ background: 'var(--color-navy-50)', color: 'var(--color-ink)' }}>{p}</span>)}</div>
 }
 
-export function InviteStaffForm() {
-  const [state, formAction] = useActionState(inviteStaffMember, initial)
+export function AddStaffForm() {
+  const [state, formAction] = useActionState(createStaffMember, initial)
   const [open, setOpen] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    if (state.ok && state.message) formRef.current?.reset()
+  }, [state])
+
   if (!open) return <button type="button" onClick={() => setOpen(true)} className="btn btn-primary btn-sm">Add Staff</button>
 
   return (
-    <form action={formAction} className="card p-5 sm:p-6 grid gap-4 w-full">
+    <form ref={formRef} action={formAction} className="card p-5 sm:p-6 grid gap-4 w-full">
       <p className="eyebrow">Add staff account</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div><label htmlFor="fullName" className="field-label">Full name</label><input id="fullName" name="fullName" required className="field-input" /></div>
-        <div><label htmlFor="email" className="field-label">Work email</label><input id="email" name="email" type="email" required className="field-input" /></div>
+        <div><label htmlFor="email" className="field-label">Work email</label><input id="email" name="email" type="email" required className="field-input" autoComplete="off" /></div>
       </div>
       <div>
         <label htmlFor="role" className="field-label">Role</label>
@@ -43,7 +49,19 @@ export function InviteStaffForm() {
           {ROLES.map((r) => <option key={r} value={r}>{STAFF_ROLE_LABELS[r]}</option>)}
         </select>
       </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="staffPassword" className="field-label">Password</label>
+          <input id="staffPassword" name="password" type="password" minLength={8} maxLength={128} required className="field-input" autoComplete="new-password" />
+          <p className="text-xs mt-1" style={{ color: 'var(--color-muted)' }}>At least 8 characters.</p>
+        </div>
+        <div>
+          <label htmlFor="staffConfirmPassword" className="field-label">Confirm password</label>
+          <input id="staffConfirmPassword" name="confirmPassword" type="password" minLength={8} maxLength={128} required className="field-input" autoComplete="new-password" />
+        </div>
+      </div>
       {!state.ok ? <FormAlert variant="error" title="Couldn't create staff account"><p>{state.message}</p></FormAlert> : state.message ? <FormAlert variant="success" title="Staff account created"><p>{state.message}</p></FormAlert> : null}
+      <p className="text-xs" style={{ color: 'var(--color-muted)' }}>No invitation email is sent. Provide the initial credentials to the staff member through your organization&apos;s secure method.</p>
       <div className="flex gap-2"><SubmitButton>Create account</SubmitButton><button type="button" onClick={() => setOpen(false)} className="btn btn-ghost btn-sm">Close</button></div>
     </form>
   )
@@ -55,6 +73,11 @@ export function StaffRow({ member, isSelf }: { member: Staff; isSelf: boolean })
   const [passwordState, passwordAction] = useActionState(resetStaffPassword, initial)
   const [resetOpen, setResetOpen] = useState(false)
   const [permissionsOpen, setPermissionsOpen] = useState(false)
+  const resetFormRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    if (passwordState.ok && passwordState.message) resetFormRef.current?.reset()
+  }, [passwordState])
 
   return (
     <tr>
@@ -80,7 +103,14 @@ export function StaffRow({ member, isSelf }: { member: Staff; isSelf: boolean })
       </td>
       <td>
         <button type="button" onClick={() => setResetOpen((v) => !v)} className="btn btn-ghost btn-sm">Reset Password</button>
-        {resetOpen && <form action={passwordAction} className="mt-2 grid gap-2"><input type="hidden" name="staffId" value={member.id} /><input name="password" type="password" minLength={8} required placeholder="New password" className="field-input" /><SubmitButton>Set password</SubmitButton></form>}
+        {resetOpen && (
+          <form ref={resetFormRef} action={passwordAction} className="mt-2 grid gap-2">
+            <input type="hidden" name="staffId" value={member.id} />
+            <input name="password" type="password" minLength={8} maxLength={128} required placeholder="New password" autoComplete="new-password" className="field-input" />
+            <input name="confirmPassword" type="password" minLength={8} maxLength={128} required placeholder="Confirm new password" autoComplete="new-password" className="field-input" />
+            <SubmitButton>Set password</SubmitButton>
+          </form>
+        )}
         {passwordState.message && <p className="text-xs mt-1" style={{ color: passwordState.ok ? 'var(--color-success)' : 'var(--color-danger)' }}>{passwordState.message}</p>}
       </td>
     </tr>

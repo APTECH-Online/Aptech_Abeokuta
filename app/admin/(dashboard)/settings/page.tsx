@@ -28,7 +28,7 @@ export default async function SettingsPage() {
 
       {currentStaff.role === 'super_admin' && (
         <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
-          Looking to invite or manage staff accounts? That&apos;s now under{' '}
+          Staff account creation and management are now handled under{' '}
           <a href="/admin/staff" className="font-semibold underline" style={{ color: 'var(--color-ink)' }}>
             Staff
           </a>{' '}
