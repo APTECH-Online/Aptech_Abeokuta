@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '../supabase/server'
-import { requireStaff } from '../auth'
+import { requireRole } from '../auth'
 import type { GalleryItem } from '../../types/db'
 
 export interface GalleryFilter {
@@ -18,7 +18,7 @@ export interface GalleryFilter {
  * rest of the CRM.
  */
 export async function getGalleryItems(filter: GalleryFilter) {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const page = filter.page ?? 1
   const pageSize = filter.pageSize ?? 24
@@ -48,7 +48,7 @@ export async function getGalleryItems(filter: GalleryFilter) {
 }
 
 export async function getGalleryItemById(id: string): Promise<GalleryItem | null> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const { data, error } = await supabase.from('gallery_items').select('*').eq('id', id).maybeSingle()
   if (error || !data) return null
@@ -57,7 +57,7 @@ export async function getGalleryItemById(id: string): Promise<GalleryItem | null
 
 /** Highest sort_order currently in use, for placing a new item at the end. */
 export async function getNextSortOrder(): Promise<number> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const { data } = await supabase
     .from('gallery_items')

@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-import { requireStaff } from '../../../../../../lib/auth'
+import { requireInsightsAccess } from '../../../../../../lib/auth'
 import { getInsightById } from '../../../../../../lib/crm/insights'
 import StatusBadge from '../../../../../../components/admin/StatusBadge'
 import { INSIGHT_STATUS_LABELS, INSIGHT_CONTENT_TYPE_LABELS } from '../../../../../../types/db'
@@ -10,7 +10,7 @@ export const metadata = { title: 'Preview | Admissions CRM', robots: { index: fa
 export const dynamic = 'force-dynamic'
 
 export default async function InsightPreviewPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireStaff()
+  await requireInsightsAccess()
   const { id } = await params
   const insight = await getInsightById(id)
   if (!insight) notFound()

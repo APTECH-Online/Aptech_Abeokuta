@@ -1,4 +1,5 @@
 import 'server-only'
+import { cache } from 'react'
 import { createAdminClient } from './supabase/admin'
 import type { PartnerOrganization, AffiliatedUniversity, PartnersHighlight } from '../types/db'
 
@@ -6,9 +7,14 @@ import type { PartnerOrganization, AffiliatedUniversity, PartnersHighlight } fro
  * All three tables here are staff-only under RLS (migration 0011). These
  * run entirely on the server via the service-role client, filtered to
  * is_published = true, ordered the same way staff arrange them in the CRM.
+ *
+ * Each is wrapped in React's cache() so that if a page ever ends up calling
+ * one of these more than once in a single render (as happened organically
+ * with getPublicContactInfo — see lib/contact-info-public.ts), it dedupes
+ * to a single query for free rather than needing a second look later.
  */
 
-export async function getPublishedPartnerOrganizations(): Promise<PartnerOrganization[]> {
+export const getPublishedPartnerOrganizations = cache(async (): Promise<PartnerOrganization[]> => {
   try {
     const admin = createAdminClient()
     const { data, error } = await admin
@@ -25,9 +31,9 @@ export async function getPublishedPartnerOrganizations(): Promise<PartnerOrganiz
     console.error('[partners] unexpected error loading published partner organizations', err)
     return []
   }
-}
+})
 
-export async function getPublishedAffiliatedUniversities(): Promise<AffiliatedUniversity[]> {
+export const getPublishedAffiliatedUniversities = cache(async (): Promise<AffiliatedUniversity[]> => {
   try {
     const admin = createAdminClient()
     const { data, error } = await admin
@@ -44,9 +50,9 @@ export async function getPublishedAffiliatedUniversities(): Promise<AffiliatedUn
     console.error('[partners] unexpected error loading published affiliated universities', err)
     return []
   }
-}
+})
 
-export async function getPublishedPartnersHighlight(): Promise<PartnersHighlight | null> {
+export const getPublishedPartnersHighlight = cache(async (): Promise<PartnersHighlight | null> => {
   try {
     const admin = createAdminClient()
     const { data, error } = await admin
@@ -62,4 +68,4 @@ export async function getPublishedPartnersHighlight(): Promise<PartnersHighlight
     console.error('[partners] unexpected error loading partners highlight', err)
     return null
   }
-}
+})

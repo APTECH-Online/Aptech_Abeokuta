@@ -36,7 +36,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
   }
 
   const supabase = await createClient()
-  const unreadNotifications = await getUnreadNotificationCount(supabase, staff)
+  const unreadNotifications = staff.role === 'super_admin' ? await getUnreadNotificationCount(supabase, staff) : 0
 
   return (
     <AdminShell staff={staff} unreadNotifications={unreadNotifications}>

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../../../../../lib/supabase/admin'
-import { requireStaff, requireAnyRole, canEditLead, canAssignLeads, ForbiddenError, UnauthorizedError } from '../../../../../lib/auth'
+import { requireAdmissionsAccess, canEditLead, canAssignLeads, ForbiddenError, UnauthorizedError } from '../../../../../lib/auth'
 import { logAudit } from '../../../../../lib/audit'
 import { generateApplicationReference } from '../../../../../lib/reference'
 import {
@@ -24,7 +24,7 @@ function friendlyAuthError(err: unknown): ActionResult {
 
 export async function addInteraction(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireStaff()
+    const staff = await requireAdmissionsAccess()
     if (!canEditLead(staff.role)) return { ok: false, message: "You don't have permission to add interactions." }
 
     const parsed = noteFormSchema.safeParse(Object.fromEntries(formData.entries()))
@@ -60,7 +60,7 @@ export async function addInteraction(_prev: ActionResult, formData: FormData): P
 
 export async function changeLeadStatus(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireStaff()
+    const staff = await requireAdmissionsAccess()
     if (!canEditLead(staff.role)) return { ok: false, message: "You don't have permission to change lead status." }
 
     const leadId = String(formData.get('leadId') || '')
@@ -101,8 +101,8 @@ export async function changeLeadStatus(_prev: ActionResult, formData: FormData):
 
 export async function assignLead(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireStaff()
-    if (!canAssignLeads(staff.role)) return { ok: false, message: 'Only admissions managers can reassign leads.' }
+    const staff = await requireAdmissionsAccess()
+    if (!canAssignLeads(staff.role)) return { ok: false, message: 'Only Admissions Officers or Super Admins can reassign leads.' }
 
     const leadId = String(formData.get('leadId') || '')
     const assignedTo = String(formData.get('assignedTo') || '') || null
@@ -144,7 +144,7 @@ export async function assignLead(_prev: ActionResult, formData: FormData): Promi
 
 export async function scheduleFollowUp(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireStaff()
+    const staff = await requireAdmissionsAccess()
     if (!canEditLead(staff.role)) return { ok: false, message: "You don't have permission to schedule follow-ups." }
 
     const parsed = followUpFormSchema.safeParse(Object.fromEntries(formData.entries()))
@@ -189,7 +189,7 @@ export async function scheduleFollowUp(_prev: ActionResult, formData: FormData):
 
 export async function updateFollowUpStatus(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireStaff()
+    const staff = await requireAdmissionsAccess()
     if (!canEditLead(staff.role)) return { ok: false, message: "You don't have permission to update follow-ups." }
 
     const followUpId = String(formData.get('followUpId') || '')
@@ -224,7 +224,7 @@ export async function updateFollowUpStatus(_prev: ActionResult, formData: FormDa
 
 export async function editLeadInfo(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireStaff()
+    const staff = await requireAdmissionsAccess()
     if (!canEditLead(staff.role)) return { ok: false, message: "You don't have permission to edit lead information." }
 
     const parsed = leadEditSchema.safeParse(Object.fromEntries(formData.entries()))
@@ -268,7 +268,7 @@ export async function editLeadInfo(_prev: ActionResult, formData: FormData): Pro
 
 export async function startApplication(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireStaff()
+    const staff = await requireAdmissionsAccess()
     if (!canEditLead(staff.role)) return { ok: false, message: "You don't have permission to start an application." }
 
     const leadId = String(formData.get('leadId') || '')

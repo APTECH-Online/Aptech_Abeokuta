@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { requireStaff } from '../../../../lib/auth'
+import { requireRole } from '../../../../lib/auth'
 import { createAdminClient } from '../../../../lib/supabase/admin'
 
 export type ActionResult = { ok: boolean; message?: string }
@@ -14,7 +14,7 @@ export type ActionResult = { ok: boolean; message?: string }
  */
 export async function markNotificationRead(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireStaff()
+    const staff = await requireRole('super_admin')
     const notificationId = String(formData.get('notificationId') || '')
     if (!notificationId) return { ok: false, message: 'Missing notification.' }
 
@@ -39,7 +39,7 @@ export async function markNotificationRead(_prev: ActionResult, formData: FormDa
 /** Marks every notification currently visible to this staff member as read. */
 export async function markAllNotificationsRead(_prev: ActionResult, _formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireStaff()
+    const staff = await requireRole('super_admin')
     const admin = createAdminClient()
 
     const { data: notifications, error: fetchError } = await admin

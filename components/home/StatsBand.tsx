@@ -3,19 +3,35 @@ import type { Course } from '../../data/courses'
 
 // Every figure here is derived from the site's own verified data (course
 // catalogue, partner list) rather than invented — see
-// components/shared/PartnerLogos.tsx. Course count comes from the
-// `courses` prop (fetched via lib/courses-public.ts, backed by the
-// `courses` table — see migration 0007) rather than a module-level
-// constant, since the catalogue is now CRM-managed and can change without
-// a deploy.
+// components/shared/PartnerLogos.tsx. Course count and programme-area count
+// both come from the `courses` prop (fetched via lib/courses-public.ts,
+// backed by the `courses` table — see migration 0007) rather than a
+// module-level constant, since the catalogue is now CRM-managed and can
+// change without a deploy. Programme areas used to be a hand-typed "3",
+// which had quietly drifted out of sync with the actual category list in
+// data/courses.ts (currently 4: Advanced Diploma, Smart Pro, Aptech
+// Certified Network Specialist, Short Term Courses) — counting the
+// distinct categories actually present among published courses means this
+// can't go stale again.
+//
+// "Academic & accreditation alliances" is deliberately left as an
+// editorial figure rather than derived from the partner_organizations /
+// affiliated_universities tables (migration 0011) — those two tables
+// currently total 6 rows between them, which doesn't obviously map to a
+// single "alliances" count, and at least one of the four affiliated
+// university logos may not reflect a real Aptech partnership (see the
+// admin note at /admin/settings/partners/universities). Revisit this
+// number once that's sorted out.
 //
 // Used on both the homepage and About page (app/(site)/about/page.tsx) so
 // the two "at a glance" stat rows stay visually and numerically consistent
 // rather than drifting into two hand-maintained versions of the same facts.
 
 export default function StatsBand({ courses }: { courses: Course[] }) {
+  const programmeAreaCount = new Set(courses.map((c) => c.category)).size
+
   const stats = [
-    { icon: Layers, value: '3', label: 'Programme areas' },
+    { icon: Layers, value: String(programmeAreaCount || 3), label: 'Programme areas' },
     { icon: BookOpen, value: String(courses.length), label: 'Courses across those areas' },
     { icon: Award, value: '4', label: 'Academic & accreditation alliances' },
     { icon: Globe, value: 'Global', label: 'Part of the Aptech network' }

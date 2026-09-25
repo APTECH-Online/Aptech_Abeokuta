@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '../supabase/server'
-import { requireStaff } from '../auth'
+import { requireAdmissionsAccess } from '../auth'
 import type { FollowUpStatus } from '../../types/db'
 
 export interface FollowUpsFilter {
@@ -11,7 +11,7 @@ export interface FollowUpsFilter {
 }
 
 export async function getFollowUps(filter: FollowUpsFilter) {
-  await requireStaff()
+  await requireAdmissionsAccess()
   const supabase = await createClient()
   const page = filter.page ?? 1
   const pageSize = filter.pageSize ?? 20

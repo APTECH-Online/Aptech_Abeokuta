@@ -12,7 +12,7 @@ export type ActionResult = { ok: true; message?: string } | { ok: false; message
 const inviteSchema = z.object({
   fullName: z.string().trim().min(1, 'Name is required'),
   email: z.string().trim().email('Enter a valid email address'),
-  role: z.enum(['super_admin', 'admissions_manager', 'admissions_officer', 'counsellor', 'viewer'])
+  role: z.enum(['super_admin', 'content_manager', 'admissions_officer'])
 })
 
 function authError(err: unknown): ActionResult {
@@ -120,6 +120,28 @@ export async function toggleStaffActive(_prev: ActionResult, formData: FormData)
 
     revalidatePath('/admin/staff')
     return { ok: true }
+  } catch (err) {
+    return authError(err)
+  }
+}
+
+
+export async function resetStaffPassword(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  try {
+    const staff = await requireRole('super_admin')
+    const staffId = String(formData.get('staffId') || '')
+    const password = String(formData.get('password') || '')
+    if (!staffId || password.length < 8) return { ok: false, message: 'A password of at least 8 characters is required.' }
+
+    const admin = createAdminClient()
+    const { error } = await admin.auth.admin.updateUserById(staffId, { password })
+    if (error) {
+      console.error('[crm] failed to reset staff password', error)
+      return { ok: false, message: 'Could not reset the password.' }
+    }
+
+    await logAudit(admin, { userId: staff.id, action: 'staff.password_reset', entity: 'staff', entityId: staffId })
+    return { ok: true, message: 'Password reset successfully.' }
   } catch (err) {
     return authError(err)
   }

@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '../supabase/server'
-import { requireStaff } from '../auth'
+import { requireRole } from '../auth'
 import type { Testimonial } from '../../types/db'
 
 export interface TestimonialsFilter {
@@ -11,7 +11,7 @@ export interface TestimonialsFilter {
 }
 
 export async function getTestimonials(filter: TestimonialsFilter) {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const page = filter.page ?? 1
   const pageSize = filter.pageSize ?? 24
@@ -40,7 +40,7 @@ export async function getTestimonials(filter: TestimonialsFilter) {
 }
 
 export async function getTestimonialById(id: string): Promise<Testimonial | null> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const { data, error } = await supabase.from('testimonials').select('*').eq('id', id).maybeSingle()
   if (error || !data) return null
@@ -48,7 +48,7 @@ export async function getTestimonialById(id: string): Promise<Testimonial | null
 }
 
 export async function getNextTestimonialSortOrder(): Promise<number> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const { data } = await supabase
     .from('testimonials')

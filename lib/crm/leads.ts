@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '../supabase/server'
-import { requireStaff } from '../auth'
+import { requireAdmissionsAccess } from '../auth'
 import type { LeadStatus, LeadSource } from '../../types/db'
 
 export interface LeadsFilter {
@@ -32,7 +32,7 @@ export interface LeadRow {
 }
 
 export async function getLeads(filter: LeadsFilter) {
-  await requireStaff()
+  await requireAdmissionsAccess()
   const supabase = await createClient()
   const page = filter.page ?? 1
   const pageSize = filter.pageSize ?? 20
@@ -107,7 +107,7 @@ export async function getLeads(filter: LeadsFilter) {
 }
 
 export async function getLeadFilterOptions() {
-  await requireStaff()
+  await requireAdmissionsAccess()
   const supabase = await createClient()
   const [{ data: staff }, { data: programmes }] = await Promise.all([
     supabase.from('staff').select('id, full_name').eq('is_active', true).order('full_name'),

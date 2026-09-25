@@ -12,7 +12,7 @@ export type ActionResult = { ok: true; message?: string } | { ok: false; message
 const inviteSchema = z.object({
   fullName: z.string().trim().min(1, 'Name is required'),
   email: z.string().trim().email('Enter a valid email address'),
-  role: z.enum(['super_admin', 'admissions_manager', 'admissions_officer', 'counsellor', 'viewer'])
+  role: z.enum(['super_admin', 'content_manager', 'admissions_officer'])
 })
 
 function authError(err: unknown): ActionResult {

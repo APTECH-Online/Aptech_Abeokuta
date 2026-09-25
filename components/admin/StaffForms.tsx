@@ -3,59 +3,48 @@
 import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
-import { inviteStaffMember, updateStaffRole, toggleStaffActive, toggleInsightsPermission, type ActionResult } from '../../app/admin/(dashboard)/staff/actions'
+import { inviteStaffMember, updateStaffRole, toggleStaffActive, resetStaffPassword, type ActionResult } from '../../app/admin/(dashboard)/staff/actions'
 import { STAFF_ROLE_LABELS, type Staff, type StaffRole } from '../../types/db'
 
 const initial: ActionResult = { ok: true }
-const ROLES: StaffRole[] = ['super_admin', 'admissions_manager', 'admissions_officer', 'counsellor', 'viewer']
+const ROLES: StaffRole[] = ['super_admin', 'content_manager', 'admissions_officer']
 
 function SubmitButton({ children }: { children: string }) {
   const { pending } = useFormStatus()
-  return (
-    <button type="submit" disabled={pending} className="btn btn-primary btn-sm disabled:opacity-60">
-      {pending ? 'Working…' : children}
-    </button>
-  )
+  return <button type="submit" disabled={pending} className="btn btn-primary btn-sm disabled:opacity-60">{pending ? 'Working…' : children}</button>
+}
+
+function PermissionSummary({ role }: { role: StaffRole }) {
+  const permissions = role === 'super_admin'
+    ? ['All modules', 'All CRUD', 'Staff & settings']
+    : role === 'content_manager'
+      ? ['News', 'Blog', 'Insights']
+      : role === 'admissions_officer'
+        ? ['Enquiries', 'Applications', 'Follow-ups']
+        : []
+  return <div className="flex flex-wrap gap-1.5">{permissions.map((p) => <span key={p} className="text-xs rounded-full px-2 py-1" style={{ background: 'var(--color-navy-50)', color: 'var(--color-ink)' }}>{p}</span>)}</div>
 }
 
 export function InviteStaffForm() {
   const [state, formAction] = useActionState(inviteStaffMember, initial)
   const [open, setOpen] = useState(false)
-
-  if (!open) {
-    return <button type="button" onClick={() => setOpen(true)} className="btn btn-primary btn-sm">Invite staff member</button>
-  }
+  if (!open) return <button type="button" onClick={() => setOpen(true)} className="btn btn-primary btn-sm">Add Staff</button>
 
   return (
-    <form action={formAction} className="card p-5 sm:p-6 grid gap-4">
-      <p className="eyebrow">Invite staff member</p>
+    <form action={formAction} className="card p-5 sm:p-6 grid gap-4 w-full">
+      <p className="eyebrow">Add staff account</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="fullName" className="field-label">Full name</label>
-          <input id="fullName" name="fullName" required className="field-input" />
-        </div>
-        <div>
-          <label htmlFor="email" className="field-label">Work email</label>
-          <input id="email" name="email" type="email" required className="field-input" />
-        </div>
+        <div><label htmlFor="fullName" className="field-label">Full name</label><input id="fullName" name="fullName" required className="field-input" /></div>
+        <div><label htmlFor="email" className="field-label">Work email</label><input id="email" name="email" type="email" required className="field-input" /></div>
       </div>
       <div>
         <label htmlFor="role" className="field-label">Role</label>
         <select id="role" name="role" defaultValue="admissions_officer" className="field-select">
-          {ROLES.map((r) => (
-            <option key={r} value={r}>{STAFF_ROLE_LABELS[r]}</option>
-          ))}
+          {ROLES.map((r) => <option key={r} value={r}>{STAFF_ROLE_LABELS[r]}</option>)}
         </select>
       </div>
-      {!state.ok ? (
-        <FormAlert variant="error" title="Couldn't send invite"><p>{state.message}</p></FormAlert>
-      ) : state.message ? (
-        <FormAlert variant="success" title="Invite sent"><p>{state.message}</p></FormAlert>
-      ) : null}
-      <div className="flex gap-2">
-        <SubmitButton>Send invite</SubmitButton>
-        <button type="button" onClick={() => setOpen(false)} className="btn btn-ghost btn-sm">Close</button>
-      </div>
+      {!state.ok ? <FormAlert variant="error" title="Couldn't create staff account"><p>{state.message}</p></FormAlert> : state.message ? <FormAlert variant="success" title="Staff account created"><p>{state.message}</p></FormAlert> : null}
+      <div className="flex gap-2"><SubmitButton>Create account</SubmitButton><button type="button" onClick={() => setOpen(false)} className="btn btn-ghost btn-sm">Close</button></div>
     </form>
   )
 }
@@ -63,7 +52,9 @@ export function InviteStaffForm() {
 export function StaffRow({ member, isSelf }: { member: Staff; isSelf: boolean }) {
   const [roleState, roleAction] = useActionState(updateStaffRole, initial)
   const [activeState, activeAction] = useActionState(toggleStaffActive, initial)
-  const [insightsState, insightsAction] = useActionState(toggleInsightsPermission, initial)
+  const [passwordState, passwordAction] = useActionState(resetStaffPassword, initial)
+  const [resetOpen, setResetOpen] = useState(false)
+  const [permissionsOpen, setPermissionsOpen] = useState(false)
 
   return (
     <tr>
@@ -73,37 +64,24 @@ export function StaffRow({ member, isSelf }: { member: Staff; isSelf: boolean })
         <form action={roleAction} className="flex items-center gap-2">
           <input type="hidden" name="staffId" value={member.id} />
           <select name="role" defaultValue={member.role} className="admin-select" disabled={isSelf}>
-            {ROLES.map((r) => (
-              <option key={r} value={r}>{STAFF_ROLE_LABELS[r]}</option>
-            ))}
+            {ROLES.map((r) => <option key={r} value={r}>{STAFF_ROLE_LABELS[r]}</option>)}
           </select>
           {!isSelf && <SubmitButton>Save</SubmitButton>}
         </form>
         {!roleState.ok && <p className="text-xs mt-1" style={{ color: 'var(--color-danger)' }}>{roleState.message}</p>}
       </td>
+      <td><PermissionSummary role={member.role} />
+        <button type="button" onClick={() => setPermissionsOpen((v) => !v)} className="btn btn-ghost btn-sm mt-2">Manage Permissions</button>
+        {permissionsOpen && <p className="text-xs mt-2 max-w-xs" style={{ color: 'var(--color-muted)' }}>Permissions are role-derived. Change the role above to change the assigned access. Super Admin is the only role allowed to administer staff and system settings.</p>}
+      </td>
       <td>
-        <form action={activeAction}>
-          <input type="hidden" name="staffId" value={member.id} />
-          <input type="hidden" name="nextActive" value={(!member.is_active).toString()} />
-          <button type="submit" disabled={isSelf} className="btn btn-ghost btn-sm disabled:opacity-40">
-            {member.is_active ? 'Deactivate' : 'Activate'}
-          </button>
-        </form>
+        <form action={activeAction}><input type="hidden" name="staffId" value={member.id} /><input type="hidden" name="nextActive" value={(!member.is_active).toString()} /><button type="submit" disabled={isSelf} className="btn btn-ghost btn-sm disabled:opacity-40">{member.is_active ? 'Deactivate' : 'Activate'}</button></form>
         {!activeState.ok && <p className="text-xs mt-1" style={{ color: 'var(--color-danger)' }}>{activeState.message}</p>}
       </td>
       <td>
-        {member.role === 'super_admin' ? (
-          <span className="text-xs" style={{ color: 'var(--color-muted)' }}>Always on</span>
-        ) : (
-          <form action={insightsAction}>
-            <input type="hidden" name="staffId" value={member.id} />
-            <input type="hidden" name="nextValue" value={(!member.can_manage_insights).toString()} />
-            <button type="submit" className="btn btn-ghost btn-sm">
-              {member.can_manage_insights ? 'Revoke' : 'Grant'}
-            </button>
-          </form>
-        )}
-        {!insightsState.ok && <p className="text-xs mt-1" style={{ color: 'var(--color-danger)' }}>{insightsState.message}</p>}
+        <button type="button" onClick={() => setResetOpen((v) => !v)} className="btn btn-ghost btn-sm">Reset Password</button>
+        {resetOpen && <form action={passwordAction} className="mt-2 grid gap-2"><input type="hidden" name="staffId" value={member.id} /><input name="password" type="password" minLength={8} required placeholder="New password" className="field-input" /><SubmitButton>Set password</SubmitButton></form>}
+        {passwordState.message && <p className="text-xs mt-1" style={{ color: passwordState.ok ? 'var(--color-success)' : 'var(--color-danger)' }}>{passwordState.message}</p>}
       </td>
     </tr>
   )

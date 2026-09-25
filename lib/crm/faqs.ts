@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '../supabase/server'
-import { requireStaff } from '../auth'
+import { requireRole } from '../auth'
 import type { Faq } from '../../types/db'
 
 export interface FaqsFilter {
@@ -11,7 +11,7 @@ export interface FaqsFilter {
 }
 
 export async function getFaqs(filter: FaqsFilter) {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const page = filter.page ?? 1
   const pageSize = filter.pageSize ?? 24
@@ -40,7 +40,7 @@ export async function getFaqs(filter: FaqsFilter) {
 }
 
 export async function getFaqById(id: string): Promise<Faq | null> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const { data, error } = await supabase.from('faqs').select('*').eq('id', id).maybeSingle()
   if (error || !data) return null
@@ -48,7 +48,7 @@ export async function getFaqById(id: string): Promise<Faq | null> {
 }
 
 export async function getNextFaqSortOrder(): Promise<number> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const { data } = await supabase
     .from('faqs')

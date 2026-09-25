@@ -1,4 +1,4 @@
-import { requireStaff } from '../../../../lib/auth'
+import { requireRole } from '../../../../lib/auth'
 import { createClient } from '../../../../lib/supabase/server'
 import { getNotificationsForStaff } from '../../../../lib/notifications'
 import NotificationsList from '../../../../components/admin/NotificationsList'
@@ -7,7 +7,7 @@ export const metadata = { title: 'Notifications | Admissions CRM' }
 export const dynamic = 'force-dynamic'
 
 export default async function NotificationsPage() {
-  const staff = await requireStaff()
+  const staff = await requireRole('super_admin')
   const supabase = await createClient()
   const notifications = await getNotificationsForStaff(supabase, staff)
 

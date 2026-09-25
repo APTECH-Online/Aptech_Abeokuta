@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '../supabase/server'
-import { requireStaff } from '../auth'
+import { requireInsightsAccess } from '../auth'
 import type { Insight, InsightContentType, InsightStatus } from '../../types/db'
 
 export interface InsightsFilter {
@@ -25,7 +25,7 @@ export interface InsightRow extends Insight {
  * rest of the CRM (compare lib/crm/leads.ts vs. the programmes actions).
  */
 export async function getInsights(filter: InsightsFilter) {
-  await requireStaff()
+  await requireInsightsAccess()
   const supabase = await createClient()
   const page = filter.page ?? 1
   const pageSize = filter.pageSize ?? 20
@@ -65,7 +65,7 @@ export async function getInsights(filter: InsightsFilter) {
 }
 
 export async function getInsightById(id: string): Promise<InsightRow | null> {
-  await requireStaff()
+  await requireInsightsAccess()
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('insights')
@@ -88,7 +88,7 @@ export interface InsightsDashboardStats {
 }
 
 export async function getInsightsDashboardStats(): Promise<InsightsDashboardStats> {
-  await requireStaff()
+  await requireInsightsAccess()
   const supabase = await createClient()
   const nowIso = new Date().toISOString()
 
@@ -134,7 +134,7 @@ export async function getInsightsDashboardStats(): Promise<InsightsDashboardStat
 
 /** Used by the editor to warn about (and the action to reject) duplicate slugs. */
 export async function isSlugTaken(slug: string, excludeId?: string): Promise<boolean> {
-  await requireStaff()
+  await requireInsightsAccess()
   const supabase = await createClient()
   let query = supabase.from('insights').select('id').eq('slug', slug).limit(1)
   if (excludeId) query = query.neq('id', excludeId)
@@ -143,7 +143,7 @@ export async function isSlugTaken(slug: string, excludeId?: string): Promise<boo
 }
 
 export async function getInsightAuthors() {
-  await requireStaff()
+  await requireInsightsAccess()
   const supabase = await createClient()
   const { data } = await supabase.from('staff').select('id, full_name').eq('is_active', true).order('full_name')
   return data ?? []

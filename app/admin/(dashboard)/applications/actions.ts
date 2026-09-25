@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../../../../lib/supabase/admin'
-import { requireStaff, canEditLead, ForbiddenError, UnauthorizedError } from '../../../../lib/auth'
+import { requireAdmissionsAccess, canEditLead, ForbiddenError, UnauthorizedError } from '../../../../lib/auth'
 import { logAudit } from '../../../../lib/audit'
 import { APPLICATION_STATUS_LABELS, type ApplicationStatus } from '../../../../types/db'
 
@@ -10,7 +10,7 @@ export type ActionResult = { ok: true } | { ok: false; message: string }
 
 export async function updateApplicationStatus(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireStaff()
+    const staff = await requireAdmissionsAccess()
     if (!canEditLead(staff.role)) return { ok: false, message: "You don't have permission to update applications." }
 
     const applicationId = String(formData.get('applicationId') || '')

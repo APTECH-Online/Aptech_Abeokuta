@@ -16,19 +16,30 @@ export class ForbiddenError extends Error {
   }
 }
 
-/**
- * Resolves both whether there's a Supabase session at all, and (if so)
- * whether it maps to an active staff row. Used by the protected layout to
- * distinguish "not signed in" (→ redirect to login) from "signed in but not
- * provisioned as staff" (→ show an access-pending message rather than a
- * redirect loop).
- */
+export type CrmModule = 'content' | 'admissions' | 'staff' | 'admin'
+
+export function canAccessModule(role: StaffRole, module: CrmModule): boolean {
+  if (role === 'super_admin') return true
+  if (module === 'content') return role === 'content_manager'
+  if (module === 'admissions') return role === 'admissions_officer'
+  return false
+}
+
+export function canAccessPath(role: StaffRole, pathname: string): boolean {
+  if (role === 'super_admin') return true
+  if (role === 'content_manager') {
+    return pathname === '/admin' || pathname.startsWith('/admin/insights')
+  }
+  if (role === 'admissions_officer') {
+    return pathname === '/admin' || pathname.startsWith('/admin/leads') || pathname.startsWith('/admin/applications') || pathname.startsWith('/admin/follow-ups')
+  }
+  return false
+}
+
+/** Resolves the signed-in Supabase user to an active CRM staff row. */
 export async function getSessionAndStaff(): Promise<{ hasSession: boolean; staff: Staff | null }> {
   const supabase = await createClient()
-  const {
-    data: { user }
-  } = await supabase.auth.getUser()
-
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { hasSession: false, staff: null }
 
   const { data } = await supabase
@@ -41,17 +52,9 @@ export async function getSessionAndStaff(): Promise<{ hasSession: boolean; staff
   return { hasSession: true, staff: (data as Staff) ?? null }
 }
 
-/**
- * Resolves the signed-in Supabase user (if any) to their `staff` row.
- * Returns null if there's no session, or if the session doesn't correspond
- * to an active staff account.
- */
 export async function getCurrentStaff(): Promise<Staff | null> {
   const supabase = await createClient()
-  const {
-    data: { user }
-  } = await supabase.auth.getUser()
-
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
   const { data, error } = await supabase
@@ -65,42 +68,28 @@ export async function getCurrentStaff(): Promise<Staff | null> {
   return data as Staff
 }
 
-/** Throws if there is no signed-in, active staff member. */
 export async function requireStaff(): Promise<Staff> {
   const staff = await getCurrentStaff()
   if (!staff) throw new UnauthorizedError()
   return staff
 }
 
-// Simple role hierarchy used for permission checks across the CRM.
-const ROLE_RANK: Record<StaffRole, number> = {
-  viewer: 0,
-  counsellor: 1,
-  admissions_officer: 2,
-  admissions_manager: 3,
-  super_admin: 4
+export async function requireModuleAccess(module: CrmModule): Promise<Staff> {
+  const staff = await requireStaff()
+  if (!canAccessModule(staff.role, module)) throw new ForbiddenError()
+  return staff
 }
 
-/** Throws unless the current staff member's role is >= the given role. */
 export async function requireRole(minRole: StaffRole): Promise<Staff> {
   const staff = await requireStaff()
-  if (ROLE_RANK[staff.role] < ROLE_RANK[minRole]) {
-    throw new ForbiddenError()
-  }
+  if (minRole === 'super_admin' && staff.role !== 'super_admin') throw new ForbiddenError()
   return staff
 }
 
-/** Throws unless the current staff member's role is one of the given roles. */
 export async function requireAnyRole(roles: StaffRole[]): Promise<Staff> {
   const staff = await requireStaff()
-  if (!roles.includes(staff.role)) {
-    throw new ForbiddenError()
-  }
+  if (!roles.includes(staff.role)) throw new ForbiddenError()
   return staff
-}
-
-export function canManageProgrammes(role: StaffRole) {
-  return role === 'super_admin' || role === 'admissions_manager'
 }
 
 export function canManageStaff(role: StaffRole) {
@@ -108,155 +97,47 @@ export function canManageStaff(role: StaffRole) {
 }
 
 export function canExportData(role: StaffRole) {
-  return role !== 'viewer'
+  return role === 'super_admin' || role === 'admissions_officer'
 }
 
 export function canAssignLeads(role: StaffRole) {
-  return role === 'super_admin' || role === 'admissions_manager'
+  return role === 'super_admin' || role === 'admissions_officer'
 }
 
 export function canEditLead(role: StaffRole) {
-  return role !== 'viewer'
+  return role === 'super_admin' || role === 'admissions_officer'
 }
 
-/**
- * Content-management permission for the Insights & Events module. This is
- * intentionally NOT folded into the `role` hierarchy above: several of the
- * helpers in this file (canEditLead, canExportData) grant access to anyone
- * whose role isn't 'viewer', which would be the wrong behaviour for a
- * permission meant only to unlock Insights. super_admin always has access;
- * everyone else needs the explicit `can_manage_insights` flag on their
- * staff row (see migration 0004_insights.sql).
- */
-export function canManageInsights(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
-  return staff.role === 'super_admin' || staff.can_manage_insights === true
+export function canManageProgrammes(role: StaffRole) {
+  return role === 'super_admin'
 }
 
-/** Throws unless the current staff member can manage Insights content. */
+export function canManageInsights(staff: Pick<Staff, 'role'>) {
+  return staff.role === 'super_admin' || staff.role === 'content_manager'
+}
+
 export async function requireInsightsAccess(): Promise<Staff> {
-  const staff = await requireStaff()
-  if (!canManageInsights(staff)) {
-    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
-  }
-  return staff
+  return requireModuleAccess('content')
 }
 
-/**
- * The Gallery module reuses the same `can_manage_insights` flag rather than
- * adding a second content-permission column: both modules are "Content
- * Manager" work in practice (the Insights error message above already
- * describes it that way to staff, not as "Insights access" specifically),
- * and a staff member trusted to publish articles is the same person you'd
- * trust to publish photos. If the two ever need to diverge, split this into
- * its own `can_manage_gallery` column then.
- */
-export function canManageGallery(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
-  return canManageInsights(staff)
-}
+// These legacy content helpers remain for existing pages/actions, but the new
+// RBAC deliberately restricts those modules to Super Admin. Content Manager
+// access is limited to News/Blog/Insights (the existing CMS is /admin/insights).
+export function canManageGallery(staff: Pick<Staff, 'role'>) { return staff.role === 'super_admin' }
+export async function requireGalleryAccess(): Promise<Staff> { return requireRole('super_admin') }
+export function canManageTestimonials(staff: Pick<Staff, 'role'>) { return staff.role === 'super_admin' }
+export async function requireTestimonialsAccess(): Promise<Staff> { return requireRole('super_admin') }
+export function canManageFaqs(staff: Pick<Staff, 'role'>) { return staff.role === 'super_admin' }
+export async function requireFaqsAccess(): Promise<Staff> { return requireRole('super_admin') }
+export function canManageCourses(staff: Pick<Staff, 'role'>) { return staff.role === 'super_admin' }
+export async function requireCoursesAccess(): Promise<Staff> { return requireRole('super_admin') }
+export function canManageSocialLinks(staff: Pick<Staff, 'role'>) { return staff.role === 'super_admin' }
+export async function requireSocialLinksAccess(): Promise<Staff> { return requireRole('super_admin') }
+export function canManagePartners(staff: Pick<Staff, 'role'>) { return staff.role === 'super_admin' }
+export async function requirePartnersAccess(): Promise<Staff> { return requireRole('super_admin') }
+export function canManageContactInfo(staff: Pick<Staff, 'role'>) { return staff.role === 'super_admin' }
+export async function requireContactInfoAccess(): Promise<Staff> { return requireRole('super_admin') }
 
-/** Throws unless the current staff member can manage Gallery content. */
-export async function requireGalleryAccess(): Promise<Staff> {
-  const staff = await requireStaff()
-  if (!canManageGallery(staff)) {
-    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
-  }
-  return staff
-}
-
-/** Same reuse rationale as canManageGallery above. */
-export function canManageTestimonials(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
-  return canManageInsights(staff)
-}
-
-export async function requireTestimonialsAccess(): Promise<Staff> {
-  const staff = await requireStaff()
-  if (!canManageTestimonials(staff)) {
-    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
-  }
-  return staff
-}
-
-/** Same reuse rationale as canManageGallery above. */
-export function canManageFaqs(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
-  return canManageInsights(staff)
-}
-
-export async function requireFaqsAccess(): Promise<Staff> {
-  const staff = await requireStaff()
-  if (!canManageFaqs(staff)) {
-    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
-  }
-  return staff
-}
-
-/**
- * Same reasoning as canManageGallery above: the Course catalogue is also
- * Content Manager work, so it reuses the same `can_manage_insights` flag
- * rather than a fourth permission column.
- */
-export function canManageCourses(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
-  return canManageInsights(staff)
-}
-
-/** Throws unless the current staff member can manage the Course catalogue. */
-export async function requireCoursesAccess(): Promise<Staff> {
-  const staff = await requireStaff()
-  if (!canManageCourses(staff)) {
-    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
-  }
-  return staff
-}
-
-/**
- * Same reasoning as canManageGallery above: the social media links shown in
- * the footer are also Content Manager work, so this reuses the same
- * `can_manage_insights` flag rather than a fifth permission column.
- */
-export function canManageSocialLinks(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
-  return canManageInsights(staff)
-}
-
-/** Throws unless the current staff member can manage social media links. */
-export async function requireSocialLinksAccess(): Promise<Staff> {
-  const staff = await requireStaff()
-  if (!canManageSocialLinks(staff)) {
-    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
-  }
-  return staff
-}
-
-/**
- * Partner organizations, affiliated universities and the homepage highlight
- * card are all Content Manager work too — same reasoning as canManageGallery
- * and canManageSocialLinks above.
- */
-export function canManagePartners(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
-  return canManageInsights(staff)
-}
-
-/** Throws unless the current staff member can manage Partners & alliances content. */
-export async function requirePartnersAccess(): Promise<Staff> {
-  const staff = await requireStaff()
-  if (!canManagePartners(staff)) {
-    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
-  }
-  return staff
-}
-
-/**
- * Contact info (phone, WhatsApp, email, address, office hours) is core
- * information every page depends on, but editing it is still Content
- * Manager work — same reasoning as canManagePartners above.
- */
-export function canManageContactInfo(staff: Pick<Staff, 'role' | 'can_manage_insights'>) {
-  return canManageInsights(staff)
-}
-
-/** Throws unless the current staff member can manage contact info. */
-export async function requireContactInfoAccess(): Promise<Staff> {
-  const staff = await requireStaff()
-  if (!canManageContactInfo(staff)) {
-    throw new ForbiddenError('You need Content Manager access to do that. Ask a Super Admin to grant it in Staff settings.')
-  }
-  return staff
+export async function requireAdmissionsAccess(): Promise<Staff> {
+  return requireModuleAccess('admissions')
 }

@@ -1,9 +1,9 @@
 import 'server-only'
 import { createClient } from '../supabase/server'
-import { requireStaff } from '../auth'
+import { requireAdmissionsAccess } from '../auth'
 
 export async function getLeadDetail(leadId: string) {
-  await requireStaff()
+  await requireAdmissionsAccess()
   const supabase = await createClient()
 
   const [

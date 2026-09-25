@@ -1,12 +1,12 @@
 import { STAFF_ROLE_LABELS } from '../../../../types/db'
-import { requireStaff } from '../../../../lib/auth'
+import { requireRole } from '../../../../lib/auth'
 import StatusBadge from '../../../../components/admin/StatusBadge'
 
 export const metadata = { title: 'Settings | Admissions CRM' }
 export const dynamic = 'force-dynamic'
 
 export default async function SettingsPage() {
-  const currentStaff = await requireStaff()
+  const currentStaff = await requireRole('super_admin')
 
   return (
     <div className="grid gap-6">

@@ -1,4 +1,5 @@
 import 'server-only'
+import { cache } from 'react'
 import { createAdminClient } from './supabase/admin'
 import type { ContactInfo } from '../types/db'
 
@@ -31,8 +32,15 @@ const DEFAULT_CONTACT_INFO: PublicContactInfo = {
  * DEFAULT_CONTACT_INFO rather than throwing or returning nulls, since every
  * consumer (footer, contact page, WhatsApp CTAs, structured data) needs a
  * value to render.
+ *
+ * Wrapped in React's cache() so the several call sites that all need this
+ * on a single page render (root layout for JSON-LD, the site layout for
+ * the WhatsApp number, Footer, and the Contact/Admissions pages
+ * themselves) share one query instead of hitting Supabase up to four times
+ * per request. cache() dedupes by argument identity within a single
+ * server-render pass — safe here since this function takes no arguments.
  */
-export async function getPublicContactInfo(): Promise<PublicContactInfo> {
+export const getPublicContactInfo = cache(async (): Promise<PublicContactInfo> => {
   try {
     const admin = createAdminClient()
     const { data, error } = await admin
@@ -51,4 +59,4 @@ export async function getPublicContactInfo(): Promise<PublicContactInfo> {
     console.error('[contact-info] unexpected error loading contact info', err)
     return DEFAULT_CONTACT_INFO
   }
-}
+})

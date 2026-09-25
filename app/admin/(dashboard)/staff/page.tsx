@@ -1,5 +1,5 @@
 import { createClient } from '../../../../lib/supabase/server'
-import { requireStaff } from '../../../../lib/auth'
+import { requireRole } from '../../../../lib/auth'
 import { type Staff } from '../../../../types/db'
 import { InviteStaffForm, StaffRow } from '../../../../components/admin/StaffForms'
 
@@ -7,7 +7,7 @@ export const metadata = { title: 'Staff | Admissions CRM' }
 export const dynamic = 'force-dynamic'
 
 export default async function StaffPage() {
-  const currentStaff = await requireStaff()
+  const currentStaff = await requireRole('super_admin')
   const supabase = await createClient()
   const { data } = await supabase.from('staff').select('*').order('created_at', { ascending: true })
   const staffList = (data ?? []) as Staff[]
@@ -36,7 +36,8 @@ export default async function StaffPage() {
                   <th>Email</th>
                   <th>Role</th>
                   <th>Status</th>
-                  <th>Insights access</th>
+                  <th>Assigned permissions</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>

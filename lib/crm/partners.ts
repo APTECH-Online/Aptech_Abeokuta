@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '../supabase/server'
-import { requireStaff } from '../auth'
+import { requireRole } from '../auth'
 import type { PartnerOrganization, AffiliatedUniversity, PartnersHighlight } from '../../types/db'
 
 export interface PartnersFilter {
@@ -14,7 +14,7 @@ export interface PartnersFilter {
 // ---------------------------------------------------------------------------
 
 export async function getPartnerOrganizations(filter: PartnersFilter = {}) {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const page = filter.page ?? 1
   const pageSize = filter.pageSize ?? 25
@@ -35,7 +35,7 @@ export async function getPartnerOrganizations(filter: PartnersFilter = {}) {
 }
 
 export async function getPartnerOrganizationById(id: string): Promise<PartnerOrganization | null> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const { data, error } = await supabase.from('partner_organizations').select('*').eq('id', id).maybeSingle()
   if (error || !data) return null
@@ -43,7 +43,7 @@ export async function getPartnerOrganizationById(id: string): Promise<PartnerOrg
 }
 
 export async function getNextPartnerOrgSortOrder(): Promise<number> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const { data } = await supabase
     .from('partner_organizations')
@@ -59,7 +59,7 @@ export async function getNextPartnerOrgSortOrder(): Promise<number> {
 // ---------------------------------------------------------------------------
 
 export async function getAffiliatedUniversities(filter: PartnersFilter = {}) {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const page = filter.page ?? 1
   const pageSize = filter.pageSize ?? 25
@@ -80,7 +80,7 @@ export async function getAffiliatedUniversities(filter: PartnersFilter = {}) {
 }
 
 export async function getAffiliatedUniversityById(id: string): Promise<AffiliatedUniversity | null> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const { data, error } = await supabase.from('affiliated_universities').select('*').eq('id', id).maybeSingle()
   if (error || !data) return null
@@ -88,7 +88,7 @@ export async function getAffiliatedUniversityById(id: string): Promise<Affiliate
 }
 
 export async function getNextUniversitySortOrder(): Promise<number> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const { data } = await supabase
     .from('affiliated_universities')
@@ -105,7 +105,7 @@ export async function getNextUniversitySortOrder(): Promise<number> {
 
 /** There is only ever meant to be one row; this returns the earliest one. */
 export async function getPartnersHighlight(): Promise<PartnersHighlight | null> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('partners_highlight')

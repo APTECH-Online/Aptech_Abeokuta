@@ -64,7 +64,7 @@ async function runFollowUpReminders() {
       entity: 'follow_up',
       entityId: followUp.id,
       recipientId: followUp.assigned_to,
-      targetRoles: followUp.assigned_to ? null : ['admissions_officer', 'admissions_manager', 'super_admin']
+      targetRoles: followUp.assigned_to ? null : ['admissions_officer', 'super_admin']
     })
 
     await admin.from('follow_ups').update({ reminder_sent_at: nowIso }).eq('id', followUp.id)

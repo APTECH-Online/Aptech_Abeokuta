@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '../supabase/server'
-import { requireStaff } from '../auth'
+import { requireAdmissionsAccess } from '../auth'
 import type { ApplicationStatus } from '../../types/db'
 
 export interface ApplicationsFilter {
@@ -11,7 +11,7 @@ export interface ApplicationsFilter {
 }
 
 export async function getApplications(filter: ApplicationsFilter) {
-  await requireStaff()
+  await requireAdmissionsAccess()
   const supabase = await createClient()
   const page = filter.page ?? 1
   const pageSize = filter.pageSize ?? 20

@@ -3,8 +3,11 @@
 
 export type StaffRole =
   | 'super_admin'
-  | 'admissions_manager'
+  | 'content_manager'
   | 'admissions_officer'
+  // Legacy values remain in the database enum for backwards-compatible migrations,
+  // but the CRM no longer grants them permissions or exposes them in staff creation.
+  | 'admissions_manager'
   | 'counsellor'
   | 'viewer'
 
@@ -448,6 +451,7 @@ export const FOLLOW_UP_STATUS_LABELS: Record<FollowUpStatus, string> = {
 
 export const STAFF_ROLE_LABELS: Record<StaffRole, string> = {
   super_admin: 'Super Admin',
+  content_manager: 'Content Manager',
   admissions_manager: 'Admissions Manager',
   admissions_officer: 'Admissions Officer',
   counsellor: 'Counsellor',

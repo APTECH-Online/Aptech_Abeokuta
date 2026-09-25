@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '../supabase/server'
-import { requireStaff } from '../auth'
+import { requireRole } from '../auth'
 import type { Course, CourseCategory, CourseStatus } from '../../types/db'
 
 export interface CoursesFilter {
@@ -17,7 +17,7 @@ export interface CoursesFilter {
  * app/admin/(dashboard)/courses/actions.ts.
  */
 export async function getCourses(filter: CoursesFilter) {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const page = filter.page ?? 1
   const pageSize = filter.pageSize ?? 20
@@ -50,7 +50,7 @@ export async function getCourses(filter: CoursesFilter) {
 }
 
 export async function getCourseById(id: string): Promise<Course | null> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const { data, error } = await supabase.from('courses').select('*').eq('id', id).maybeSingle()
   if (error || !data) return null
@@ -58,7 +58,7 @@ export async function getCourseById(id: string): Promise<Course | null> {
 }
 
 export async function isCourseSlugTaken(slug: string, excludeId?: string): Promise<boolean> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   let query = supabase.from('courses').select('id').eq('slug', slug).limit(1)
   if (excludeId) query = query.neq('id', excludeId)

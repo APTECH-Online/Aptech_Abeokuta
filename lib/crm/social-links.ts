@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '../supabase/server'
-import { requireStaff } from '../auth'
+import { requireRole } from '../auth'
 import type { SocialLink } from '../../types/db'
 
 // Re-exported so existing staff-side imports of SOCIAL_PLATFORMS from this
@@ -16,7 +16,7 @@ export interface SocialLinksFilter {
 }
 
 export async function getSocialLinks(filter: SocialLinksFilter = {}) {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const page = filter.page ?? 1
   const pageSize = filter.pageSize ?? 25
@@ -41,7 +41,7 @@ export async function getSocialLinks(filter: SocialLinksFilter = {}) {
 }
 
 export async function getSocialLinkById(id: string): Promise<SocialLink | null> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const { data, error } = await supabase.from('social_links').select('*').eq('id', id).maybeSingle()
   if (error || !data) return null
@@ -49,7 +49,7 @@ export async function getSocialLinkById(id: string): Promise<SocialLink | null> 
 }
 
 export async function getNextSocialLinkSortOrder(): Promise<number> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
   const { data } = await supabase
     .from('social_links')

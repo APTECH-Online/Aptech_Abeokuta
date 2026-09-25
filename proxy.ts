@@ -43,6 +43,30 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/admin', request.url))
   }
 
+  if (isAdminRoute && !isLoginRoute && user) {
+    const { data: staff } = await supabase
+      .from('staff')
+      .select('role, is_active')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (!staff?.is_active) {
+      return new NextResponse('Access Denied', { status: 403 })
+    }
+
+    if (pathname === '/admin') {
+      if (staff.role === 'content_manager') return NextResponse.redirect(new URL('/admin/insights', request.url))
+      if (staff.role === 'admissions_officer') return NextResponse.redirect(new URL('/admin/leads', request.url))
+    }
+
+    const allowed =
+      staff.role === 'super_admin' ||
+      (staff.role === 'content_manager' && pathname.startsWith('/admin/insights')) ||
+      (staff.role === 'admissions_officer' && (pathname.startsWith('/admin/leads') || pathname.startsWith('/admin/applications') || pathname.startsWith('/admin/follow-ups')))
+
+    if (!allowed) return new NextResponse('Access Denied', { status: 403 })
+  }
+
   return response
 }
 

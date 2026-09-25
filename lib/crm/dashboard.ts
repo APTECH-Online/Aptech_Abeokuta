@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '../supabase/server'
-import { requireStaff } from '../auth'
+import { requireRole } from '../auth'
 import { LEAD_STATUS_LABELS, LEAD_SOURCE_LABELS, PIPELINE_STAGES, type LeadStatus } from '../../types/db'
 
 export interface DashboardData {
@@ -23,7 +23,7 @@ export interface DashboardData {
 }
 
 export async function getDashboardData(): Promise<DashboardData> {
-  await requireStaff()
+  await requireRole('super_admin')
   const supabase = await createClient()
 
   const [

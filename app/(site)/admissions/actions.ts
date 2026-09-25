@@ -234,7 +234,7 @@ export async function submitEnquiry(
         link: `/admin/leads/${leadId}`,
         entity: 'lead',
         entityId: leadId,
-        targetRoles: ['admissions_officer', 'admissions_manager', 'super_admin']
+        targetRoles: ['admissions_officer', 'super_admin']
       })
     ])
 

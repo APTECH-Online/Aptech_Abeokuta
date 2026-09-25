@@ -36,7 +36,7 @@ const NAV_ITEMS = [
   { href: '/admin/leads', label: 'Enquiries', icon: Users },
   { href: '/admin/applications', label: 'Applications', icon: FileText },
   { href: '/admin/follow-ups', label: 'Follow-ups', icon: CalendarClock },
-  { href: '/admin/insights', label: 'Insights', icon: Newspaper },
+  { href: '/admin/insights', label: 'News / Blog / Insights', icon: Newspaper },
   { href: '/admin/gallery', label: 'Gallery', icon: Images },
   { href: '/admin/courses', label: 'Courses', icon: BookOpen },
   { href: '/admin/testimonials', label: 'Testimonials', icon: MessageSquareQuote },
@@ -69,7 +69,13 @@ export default function AdminShell({
   // "Settings" at once.
   const isActive = (href: string) =>
     href === '/admin' || href === '/admin/settings' ? pathname === href : pathname?.startsWith(href)
-  const currentItem = NAV_ITEMS.find((item) => isActive(item.href))
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (staff.role === 'super_admin') return true
+    if (staff.role === 'content_manager') return item.href === '/admin/insights'
+    if (staff.role === 'admissions_officer') return ['/admin/leads', '/admin/applications', '/admin/follow-ups'].includes(item.href)
+    return false
+  })
+  const currentItem = visibleNavItems.find((item) => isActive(item.href))
 
   return (
     <div className="admin-shell">
@@ -99,7 +105,7 @@ export default function AdminShell({
           <p className="admin-sidebar-tag">Admissions CRM · Live</p>
         </div>
         <nav className="admin-sidebar-nav" aria-label="Admin navigation">
-          {NAV_ITEMS.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon
             return (
               <Link
@@ -136,13 +142,15 @@ export default function AdminShell({
             <p className="text-[0.65rem] font-semibold tracking-wider uppercase text-white/35 mb-1">Official Account</p>
             <p className="text-sm font-semibold text-white truncate">{staff.full_name}</p>
             <p className="text-xs text-white/50 mt-0.5">{STAFF_ROLE_LABELS[staff.role]}</p>
-            <Link
-              href="/admin/settings"
-              onClick={() => setOpen(false)}
-              className="admin-nav-link !px-0 hover:!bg-transparent hover:!text-white mt-3 gap-2"
-            >
-              <UserCircle size={15} aria-hidden="true" /> Profile
-            </Link>
+            {staff.role === 'super_admin' && (
+              <Link
+                href="/admin/settings"
+                onClick={() => setOpen(false)}
+                className="admin-nav-link !px-0 hover:!bg-transparent hover:!text-white mt-3 gap-2"
+              >
+                <UserCircle size={15} aria-hidden="true" /> Profile
+              </Link>
+            )}
             <form action={signOut}>
               <button type="submit" className="admin-nav-link !px-0 hover:!bg-transparent hover:!text-amber-300 gap-2">
                 <LogOut size={15} aria-hidden="true" /> Logout
@@ -166,17 +174,16 @@ export default function AdminShell({
             <p className="admin-topbar-eyebrow">Official Administration Portal</p>
             <p className="admin-topbar-title truncate">{currentItem?.label ?? 'Dashboard'}</p>
           </div>
-          <Link href="/admin/notifications" className="relative shrink-0" style={{ color: 'var(--color-ink)' }} aria-label="Notifications">
-            <Bell size={20} aria-hidden="true" />
-            {unreadNotifications > 0 && (
-              <span
-                className="absolute -top-1.5 -right-1.5 text-[0.6rem] font-semibold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1"
-                style={{ background: 'var(--color-primary)', color: 'white' }}
-              >
-                {unreadNotifications > 99 ? '99+' : unreadNotifications}
-              </span>
-            )}
-          </Link>
+          {staff.role === 'super_admin' && (
+            <Link href="/admin/notifications" className="relative shrink-0" style={{ color: 'var(--color-ink)' }} aria-label="Notifications">
+              <Bell size={20} aria-hidden="true" />
+              {unreadNotifications > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 text-[0.6rem] font-semibold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1" style={{ background: 'var(--color-primary)', color: 'white' }}>
+                  {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                </span>
+              )}
+            </Link>
+          )}
           <span className="admin-avatar hidden sm:flex" style={{ width: 32, height: 32, fontSize: '0.7rem' }} aria-hidden="true">
             {staff.full_name
               .split(' ')
