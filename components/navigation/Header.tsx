@@ -107,7 +107,7 @@ function NavDropdown({
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-controls={panelId}
-        className="relative px-3.5 py-2 text-sm font-semibold transition-colors inline-flex items-center gap-1"
+        className="relative px-3 py-2 text-sm font-semibold whitespace-nowrap transition-colors inline-flex items-center gap-1"
         style={{ color: isDark ? (groupActive ? '#fff' : 'rgba(255,255,255,0.72)') : (groupActive ? 'var(--color-navy-900)' : 'var(--color-body)') }}
       >
         {group.label}
@@ -255,7 +255,7 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
           />
         </Link>
 
-        <nav className="hidden xl:flex items-center gap-1.5" aria-label="Primary">
+        <nav className="hidden 2xl:flex items-center gap-1" aria-label="Primary">
           {primaryNav.map((item) => (
             <span key={item.href} className="contents">
               {item.label === 'Contact' && (
@@ -281,7 +281,7 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
               <Link
                 href={item.href}
                 aria-current={isActive(item.href) ? 'page' : undefined}
-                className="relative px-3.5 py-2 text-sm font-semibold transition-colors group"
+                className="relative px-3 py-2 text-sm font-semibold whitespace-nowrap transition-colors group"
                 style={{ color: isDark ? (isActive(item.href) ? '#fff' : 'rgba(255,255,255,0.72)') : (isActive(item.href) ? 'var(--color-navy-900)' : 'var(--color-body)') }}
               >
                 {item.label}
@@ -332,7 +332,7 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
           aria-expanded={open}
           aria-controls="mobile-nav"
           onClick={() => setOpen((v) => !v)}
-          className={`xl:hidden p-2 rounded-md ${isDark ? 'site-header__menu' : ''}`}
+          className={`2xl:hidden p-2 rounded-md ${isDark ? 'site-header__menu' : ''}`}
           style={{ color: isDark ? '#fff' : 'var(--color-navy-900)' }}
         >
           {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
@@ -340,7 +340,7 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
       </div>
 
       {open && (
-        <div id="mobile-nav" className={`xl:hidden ${isDark ? 'site-header__mobile-nav site-header__mobile-nav--dark' : 'site-header__mobile-nav'}`} style={{ borderTop: isDark ? '1px solid rgba(255,255,255,.08)' : '1px solid var(--color-line)' }}>
+        <div id="mobile-nav" className={`2xl:hidden ${isDark ? 'site-header__mobile-nav site-header__mobile-nav--dark' : 'site-header__mobile-nav'}`} style={{ borderTop: isDark ? '1px solid rgba(255,255,255,.08)' : '1px solid var(--color-line)' }}>
           <nav className="container py-3 flex flex-col" aria-label="Mobile">
             {primaryNav.map((item) => (
               <span key={item.href} className="contents">
