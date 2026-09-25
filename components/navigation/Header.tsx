@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { Menu, X, ShieldCheck, MessageCircle, ChevronDown } from 'lucide-react'
+import { Menu, X, ShieldCheck, MessageCircle, ChevronDown, ArrowRight, ExternalLink } from 'lucide-react'
 import { primaryNav, exploreNav } from '../../data/site'
 import { buildWhatsAppLink, WHATSAPP_DEFAULT_MESSAGE } from '../../lib/whatsapp'
 
@@ -42,19 +42,23 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
     }
   }, [exploreOpen])
 
-  const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href))
+  const isActive = (href: string) => {
+    const path = href.split('?')[0]
+    if (path === '/') return pathname === '/'
+    return pathname === path || pathname.startsWith(`${path}/`)
+  }
   const isExploreActive = exploreNav.some((item) => isActive(item.href))
 
   return (
     <header
-      className="sticky top-0 z-50 bg-white transition-all duration-200"
+      className={`sticky top-0 z-50 transition-all duration-200 ${pathname === '/' ? 'site-header site-header--dark' : 'site-header'}`}
       style={{
-        borderBottom: '1px solid var(--color-line)',
-        boxShadow: scrolled ? '0 8px 24px rgba(19,12,46,0.08)' : 'none'
+        borderBottom: pathname === '/' ? '1px solid rgba(255,255,255,0.08)' : '1px solid var(--color-line)',
+        boxShadow: pathname === '/' ? (scrolled ? '0 12px 32px rgba(5,4,22,0.34)' : 'none') : (scrolled ? '0 8px 24px rgba(19,12,46,0.08)' : 'none')
       }}
     >
       <div
-        className="container flex items-center justify-between transition-all duration-200"
+        className="container flex items-center justify-between transition-all duration-200 site-header__inner"
         style={{ paddingBlock: scrolled ? '0.7rem' : '1.1rem' }}
       >
         <Link href="/" className="flex items-center shrink-0 group" aria-label="APTECH Abeokuta home">
@@ -68,14 +72,14 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
           />
         </Link>
 
-        <nav className="hidden xl:flex items-center gap-1" aria-label="Primary">
+        <nav className="hidden xl:flex items-center gap-1.5" aria-label="Primary">
           {primaryNav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               aria-current={isActive(item.href) ? 'page' : undefined}
               className="relative px-3.5 py-2 text-sm font-semibold transition-colors group"
-              style={{ color: isActive(item.href) ? 'var(--color-navy-900)' : 'var(--color-body)' }}
+              style={{ color: pathname === '/' ? (isActive(item.href) ? '#fff' : 'rgba(255,255,255,0.72)') : (isActive(item.href) ? 'var(--color-navy-900)' : 'var(--color-body)') }}
             >
               {item.label}
               <span
@@ -101,23 +105,23 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
               aria-expanded={exploreOpen}
               aria-haspopup="true"
               className="relative px-3.5 py-2 text-sm font-semibold transition-colors inline-flex items-center gap-1"
-              style={{ color: isExploreActive ? 'var(--color-navy-900)' : 'var(--color-body)' }}
+              style={{ color: pathname === '/' ? (isExploreActive ? '#fff' : 'rgba(255,255,255,0.72)') : (isExploreActive ? 'var(--color-navy-900)' : 'var(--color-body)') }}
             >
               Explore
               <ChevronDown size={14} aria-hidden="true" className={`transition-transform ${exploreOpen ? 'rotate-180' : ''}`} />
             </button>
             {exploreOpen && (
               <div
-                className="absolute left-0 top-full mt-1 min-w-[180px] rounded-xl bg-white py-2 z-50"
-                style={{ border: '1px solid var(--color-line)', boxShadow: '0 12px 32px rgba(19,12,46,0.14)' }}
+                className={`site-header__explore-menu absolute left-0 top-full mt-2 min-w-[190px] rounded-xl py-2 z-50 ${pathname === '/' ? 'site-header__explore-menu--dark' : ''}`}
+                style={{ border: pathname === '/' ? '1px solid rgba(132,113,232,.32)' : '1px solid var(--color-line)', boxShadow: pathname === '/' ? '0 18px 40px rgba(5,4,22,.38)' : '0 12px 32px rgba(19,12,46,.14)' }}
               >
                 {exploreNav.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
                     aria-current={isActive(item.href) ? 'page' : undefined}
-                    className="block px-4 py-2 text-sm font-medium"
-                    style={{ color: isActive(item.href) ? 'var(--color-navy-900)' : 'var(--color-body)' }}
+                    className="site-header__explore-item block px-4 py-2 text-sm font-medium"
+                    style={{ color: pathname === '/' ? (isActive(item.href) ? '#fff' : 'rgba(255,255,255,.72)') : (isActive(item.href) ? 'var(--color-navy-900)' : 'var(--color-body)') }}
                   >
                     {item.label}
                   </Link>
@@ -126,22 +130,29 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
             )}
           </div>
 
-          <Link href="/admin/login" className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium ml-1" style={{ color: 'var(--color-muted)' }}>
-            <ShieldCheck size={13} aria-hidden="true" />
-            Official Login
-          </Link>
-          <a
-            href={buildWhatsAppLink(whatsapp, WHATSAPP_DEFAULT_MESSAGE)}
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            className="btn btn-ghost btn-sm ml-2 inline-flex items-center gap-1.5"
-          >
-            <MessageCircle size={14} aria-hidden="true" />
-            Talk to Admissions
-          </a>
-          <Link href="/admissions" className="btn btn-primary btn-sm ml-2">
-            Apply Now
-          </Link>
+          <div className="site-header__actions">
+            <Link
+              href="/admin/login"
+              className="site-header__login"
+              style={{ color: pathname === '/' ? 'rgba(255,255,255,0.72)' : 'var(--color-muted)' }}
+            >
+              <ShieldCheck size={14} aria-hidden="true" />
+              Official Login
+            </Link>
+            <a
+              href={buildWhatsAppLink(whatsapp, WHATSAPP_DEFAULT_MESSAGE)}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className={`site-header__contact ${pathname === '/' ? 'site-header__contact--dark' : ''}`}
+            >
+              <MessageCircle size={14} aria-hidden="true" />
+              Talk to Admissions
+            </a>
+            <Link href="/admissions" className="site-header__apply">
+              Apply Now
+              <ArrowRight size={14} aria-hidden="true" />
+            </Link>
+          </div>
         </nav>
 
         <button
@@ -149,15 +160,15 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
           aria-expanded={open}
           aria-controls="mobile-nav"
           onClick={() => setOpen((v) => !v)}
-          className="xl:hidden p-2 rounded-md"
-          style={{ color: 'var(--color-navy-900)' }}
+          className={`xl:hidden p-2 rounded-md ${pathname === '/' ? 'site-header__menu' : ''}`}
+          style={{ color: pathname === '/' ? '#fff' : 'var(--color-navy-900)' }}
         >
           {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
         </button>
       </div>
 
       {open && (
-        <div id="mobile-nav" className="xl:hidden bg-white" style={{ borderTop: '1px solid var(--color-line)' }}>
+        <div id="mobile-nav" className={`xl:hidden ${pathname === '/' ? 'site-header__mobile-nav site-header__mobile-nav--dark' : 'site-header__mobile-nav'}`} style={{ borderTop: pathname === '/' ? '1px solid rgba(255,255,255,.08)' : '1px solid var(--color-line)' }}>
           <nav className="container py-3 flex flex-col" aria-label="Mobile">
             {primaryNav.map((item) => (
               <Link
@@ -166,15 +177,15 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
                 aria-current={isActive(item.href) ? 'page' : undefined}
                 className="py-3 text-[0.95rem] font-semibold flex items-center gap-2"
                 style={{
-                  color: isActive(item.href) ? 'var(--color-navy-900)' : 'var(--color-body)',
-                  borderBottom: '1px solid var(--color-line)'
+                  color: pathname === '/' ? (isActive(item.href) ? '#fff' : 'rgba(255,255,255,.78)') : (isActive(item.href) ? 'var(--color-navy-900)' : 'var(--color-body)'),
+                  borderBottom: pathname === '/' ? '1px solid rgba(255,255,255,.08)' : '1px solid var(--color-line)'
                 }}
               >
                 {isActive(item.href) && <span className="node-mark" aria-hidden="true" />}
                 {item.label}
               </Link>
             ))}
-            <p className="pt-4 pb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-muted)' }}>
+            <p className="pt-4 pb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: pathname === '/' ? 'rgba(255,255,255,.52)' : 'var(--color-muted)' }}>
               Explore
             </p>
             {exploreNav.map((item) => (
@@ -184,34 +195,34 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
                 aria-current={isActive(item.href) ? 'page' : undefined}
                 className="py-3 text-[0.95rem] font-semibold flex items-center gap-2"
                 style={{
-                  color: isActive(item.href) ? 'var(--color-navy-900)' : 'var(--color-body)',
-                  borderBottom: '1px solid var(--color-line)'
+                  color: pathname === '/' ? (isActive(item.href) ? '#fff' : 'rgba(255,255,255,.78)') : (isActive(item.href) ? 'var(--color-navy-900)' : 'var(--color-body)'),
+                  borderBottom: pathname === '/' ? '1px solid rgba(255,255,255,.08)' : '1px solid var(--color-line)'
                 }}
               >
                 {isActive(item.href) && <span className="node-mark" aria-hidden="true" />}
                 {item.label}
               </Link>
             ))}
-            <Link href="/admissions" className="btn btn-primary btn-block mt-4 mb-2">
-              Apply Now
-            </Link>
-            <a
-              href={buildWhatsAppLink(whatsapp, WHATSAPP_DEFAULT_MESSAGE)}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="btn btn-ghost btn-block mb-2 inline-flex items-center justify-center gap-1.5"
-            >
-              <MessageCircle size={14} aria-hidden="true" />
-              Talk to Admissions
-            </a>
-            <Link
-              href="/admin/login"
-              className="flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium"
-              style={{ color: 'var(--color-muted)', borderTop: '1px solid var(--color-line)' }}
-            >
-              <ShieldCheck size={13} aria-hidden="true" />
-              Official Login
-            </Link>
+            <div className="site-header__mobile-actions">
+              <Link href="/admissions" className="site-header__apply site-header__apply--mobile">
+                Apply Now
+                <ArrowRight size={15} aria-hidden="true" />
+              </Link>
+              <a
+                href={buildWhatsAppLink(whatsapp, WHATSAPP_DEFAULT_MESSAGE)}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="site-header__contact site-header__contact--mobile"
+              >
+                <MessageCircle size={15} aria-hidden="true" />
+                Talk to Admissions
+              </a>
+              <Link href="/admin/login" className="site-header__login site-header__login--mobile">
+                <ShieldCheck size={14} aria-hidden="true" />
+                Official Login
+                <ExternalLink size={13} aria-hidden="true" />
+              </Link>
+            </div>
           </nav>
         </div>
       )}

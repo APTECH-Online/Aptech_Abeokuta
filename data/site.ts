@@ -22,9 +22,10 @@ export const siteConfig = {
 // Top-level links shown directly in the nav bar.
 export const primaryNav = [
   { label: 'Home', href: '/' },
-  { label: 'About', href: '/about' },
   { label: 'Courses', href: '/courses' },
+  { label: 'About', href: '/about' },
   { label: 'Admissions', href: '/admissions' },
+  { label: 'Events', href: '/insights?view=events' },
   { label: 'Contact', href: '/contact' }
 ]
 

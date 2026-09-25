@@ -1,68 +1,135 @@
 import Link from 'next/link'
-import Image from 'next/image'
+import {
+  ArrowRight,
+  BarChart3,
+  Check,
+  Code2,
+  FileCode2,
+  Folder,
+  GraduationCap,
+  Laptop,
+  Terminal
+} from 'lucide-react'
+
+function OrbitalIllustration() {
+  return (
+    <div className="hero-orbit" aria-hidden="true">
+      <div className="hero-orbit__halo hero-orbit__halo--one" />
+      <div className="hero-orbit__halo hero-orbit__halo--two" />
+      <div className="hero-orbit__ring hero-orbit__ring--one" />
+      <div className="hero-orbit__ring hero-orbit__ring--two" />
+      <div className="hero-orbit__ring hero-orbit__ring--three" />
+      <div className="hero-orbit__cross hero-orbit__cross--vertical" />
+      <div className="hero-orbit__cross hero-orbit__cross--horizontal" />
+      <span className="hero-orbit__node hero-orbit__node--top" />
+      <span className="hero-orbit__node hero-orbit__node--right" />
+      <span className="hero-orbit__node hero-orbit__node--bottom" />
+      <span className="hero-orbit__node hero-orbit__node--left" />
+
+      <div className="hero-code-window">
+        <div className="hero-code-window__bar">
+          <span className="hero-window-dot hero-window-dot--red" />
+          <span className="hero-window-dot hero-window-dot--amber" />
+          <span className="hero-window-dot hero-window-dot--green" />
+          <span className="hero-code-window__title">project / src / main.py</span>
+        </div>
+        <div className="hero-code-window__body">
+          <aside className="hero-code-tree">
+            <div><Folder size={12} /> project</div>
+            <div className="hero-code-tree__indent"><Folder size={12} /> src</div>
+            <div className="hero-code-tree__file"><FileCode2 size={12} /> main.py</div>
+            <div className="hero-code-tree__indent"><Folder size={12} /> components</div>
+            <div className="hero-code-tree__indent"><Folder size={12} /> utils</div>
+            <div className="hero-code-tree__indent"><FileCode2 size={12} /> README.md</div>
+          </aside>
+          <div className="hero-code-lines">
+            <div><span>1</span><code><i>def</i> <b>build_future</b>():</code></div>
+            <div><span>2</span><code>&nbsp;&nbsp;skills = [</code></div>
+            <div><span>3</span><code>&nbsp;&nbsp;&nbsp;&nbsp;<em>"Python"</em>,</code></div>
+            <div><span>4</span><code>&nbsp;&nbsp;&nbsp;&nbsp;<em>"Web Development"</em>,</code></div>
+            <div><span>5</span><code>&nbsp;&nbsp;&nbsp;&nbsp;<em>"Cloud &amp; DevOps"</em>,</code></div>
+            <div><span>6</span><code>&nbsp;&nbsp;&nbsp;&nbsp;<em>"Problem Solving"</em></code></div>
+            <div><span>7</span><code>&nbsp;&nbsp;]</code></div>
+            <div><span>8</span><code>&nbsp;</code></div>
+            <div><span>9</span><code>&nbsp;&nbsp;<strong>return</strong> skills</code></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="hero-status-pill">
+        <span className="hero-status-pill__dot" />
+        Applications Open
+      </div>
+
+      <div className="hero-learning-pills">
+        <span><GraduationCap size={15} /> Learn</span>
+        <span><Code2 size={15} /> Build</span>
+        <span><BarChart3 size={15} /> Grow</span>
+      </div>
+
+      <div className="hero-feature-card">
+        <div className="hero-feature-card__icon"><Laptop size={19} /></div>
+        <div>
+          <p>FEATURED PROGRAMME</p>
+          <strong>Software Development</strong>
+          <span>Learn · Build · Launch</span>
+        </div>
+        <ArrowRight size={17} />
+      </div>
+    </div>
+  )
+}
 
 export default function Hero() {
+  const benefits = [
+    'Hands-on practical learning',
+    'Industry-relevant curriculum',
+    'Certified and globally recognised'
+  ]
+
   return (
-    <section
-      className="relative pattern-adire overflow-hidden border-b hairline"
-      style={{ background: 'var(--color-navy-950)' }}
-    >
-      <div className="container py-16 sm:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-14 lg:gap-10 items-center">
-          <div>
-            <p className="eyebrow eyebrow-inverse">APTECH Abeokuta · IT training centre</p>
-            <h1 className="h-display mt-4" style={{ color: '#fff' }}>
-              Build your future with practical technology skills.
+    <section className="hero-premium relative overflow-hidden">
+      <div className="hero-premium__grid" aria-hidden="true" />
+      <div className="hero-premium__glow hero-premium__glow--one" aria-hidden="true" />
+      <div className="hero-premium__glow hero-premium__glow--two" aria-hidden="true" />
+
+      <div className="container relative z-10 py-14 sm:py-20 lg:py-20 xl:py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-[0.94fr_1.06fr] gap-10 xl:gap-4 items-center">
+          <div className="max-w-2xl">
+            <div className="hero-eyebrow">
+              <Terminal size={14} aria-hidden="true" />
+              <span>SOFTWARE DEVELOPMENT &amp; TECH PROGRAMMES</span>
+            </div>
+
+            <h1 className="hero-title mt-6">
+              Build your future with <span>practical technology</span> skills.
             </h1>
-            <p className="mt-5 max-w-lg text-[1.05rem] leading-relaxed" style={{ color: 'rgba(255,255,255,0.72)' }}>
-              Career-focused technology education across our programme areas: Advanced Diploma in
-              Software Engineering, Smart Pro, Aptech Certified Network Specialist, and a range of
-              short-term courses.
+
+            <p className="hero-description mt-6 max-w-xl">
+              Career-focused technology education across our programme areas: Advanced Diploma in Software Engineering, Smart Pro, Aptech Certified Network Specialist, and a range of short-term courses.
             </p>
 
-            <div className="mt-9 flex flex-wrap gap-3">
-              <Link href="/courses" className="btn btn-accent">Explore courses</Link>
-              <Link
-                href="/admissions"
-                className="btn btn-secondary btn-secondary-on-dark"
-              >
-                Apply for admission
+            <div className="mt-8 flex flex-wrap gap-3.5">
+              <Link href="/courses" className="hero-btn hero-btn--primary">
+                Explore Courses <ArrowRight size={17} aria-hidden="true" />
+              </Link>
+              <Link href="/admissions" className="hero-btn hero-btn--secondary">
+                Apply for Admission
               </Link>
             </div>
 
-            <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm">
-              {['Hands-on, project-based learning', 'Small, instructor-led cohorts', 'Career-focused curriculum'].map((t) => (
-                <li key={t} className="flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.62)' }}>
-                  <span className="node-mark" aria-hidden="true" />
-                  {t}
+            <ul className="hero-benefits mt-8" aria-label="Programme benefits">
+              {benefits.map((benefit) => (
+                <li key={benefit}>
+                  <span><Check size={11} strokeWidth={3} /></span>
+                  {benefit}
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="relative">
-            <div className="relative mx-auto max-w-md lg:max-w-none">
-              <Image
-                src="/images/hero-tech.svg"
-                alt="Illustration of a code editor at the centre of a circuit and adire-pattern medallion"
-                width={640}
-                height={640}
-                className="w-full h-auto"
-                priority
-              />
-
-              <div className="float-card absolute -top-4 right-2 sm:right-6 px-4 py-2.5 flex items-center gap-2">
-                <span className="console-status">Applications open</span>
-              </div>
-
-              <div className="float-card absolute -bottom-6 -left-2 sm:-left-8 p-4 w-52 sm:w-60">
-                <p className="eyebrow" style={{ fontSize: '0.62rem' }}>Featured programme</p>
-                <p className="mt-1.5 font-display font-semibold text-[0.95rem]" style={{ color: 'var(--color-ink)' }}>
-                  Software Development
-                </p>
-                <p className="mt-1 text-xs" style={{ color: 'var(--color-muted)' }}>6 months · Beginner–Intermediate</p>
-              </div>
-            </div>
+          <div className="hero-visual-wrap">
+            <OrbitalIllustration />
           </div>
         </div>
       </div>
