@@ -19,25 +19,33 @@ export const siteConfig = {
   // and is fetched through lib/social-links-public.ts (getPublishedSocialLinks()).
 }
 
-// Top-level links shown directly in the nav bar, in display order. Two of
-// these ('News & Insights') render as a dropdown instead of a plain link —
-// see Header.tsx, which special-cases any entry with an `items` array.
+// Top-level links shown directly in the nav bar, in display order. These are
+// the highest-priority destinations, so each stays a single, direct click —
+// no page here is nested inside a dropdown. Two further groups
+// ('News & Events' and 'Campus Life') render as accessible dropdowns — see
+// Header.tsx / NavDropdown, which take an `items` array.
 export const primaryNav = [
   { label: 'Home', href: '/' },
   { label: 'Courses', href: '/courses' },
-  { label: 'About', href: '/about' },
   { label: 'Admissions', href: '/admissions' },
-  { label: 'Events', href: '/insights/events' },
+  { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' }
 ]
 
-// CRM-backed content, grouped under a "News & Insights" dropdown in the
-// main nav (between Events and Contact — see Header.tsx). Each route is a
-// dedicated public listing filtered by content type; see
+// CRM-backed content, grouped under a "News & Events" dropdown in the main
+// nav — see Header.tsx. Every item here is a content-type filter of the
+// same Insights section (compare components/insights/InsightsSubNav.tsx,
+// which lists these exact five destinations as sibling tabs of one
+// section), so — unlike in an earlier version of this nav — Events is kept
+// here alongside News/Blog/Announcements rather than broken out as its own
+// top-level item. It's listed first since open days and info sessions tend
+// to be the most time-sensitive, actionable items for prospective students.
+// Each route is a dedicated public listing filtered by content type; see
 // lib/insights-public.ts and app/(site)/insights/*.
 export const newsInsightsNav = {
-  label: 'News & Insights',
+  label: 'News & Events',
   items: [
+    { label: 'Events', href: '/insights/events' },
     { label: 'All Updates', href: '/insights' },
     { label: 'News', href: '/insights/news' },
     { label: 'Blog / Insights', href: '/insights/blog' },
@@ -45,14 +53,24 @@ export const newsInsightsNav = {
   ]
 }
 
-// Secondary links grouped under an "Explore" dropdown, so the nav bar stays
-// uncluttered as more pages are added. Header.tsx treats being on any of
-// these routes as keeping the "Explore" trigger visually active.
-export const exploreNav = [
-  { label: 'Student Life', href: '/student-life' },
-  { label: 'Gallery', href: '/gallery' },
-  { label: 'Testimonials', href: '/testimonials' }
-]
+// Campus-experience pages grouped under a "Campus Life" dropdown, so the
+// nav bar stays uncluttered as more pages are added. These three routes all
+// answer "what's it like to study here?", which is a clearer, more
+// discoverable grouping than the previous generic "Explore" label.
+// Header.tsx treats being on any of these routes as keeping the
+// "Campus Life" trigger visually active.
+export const campusNav = {
+  label: 'Campus Life',
+  items: [
+    { label: 'Student Life', href: '/student-life' },
+    { label: 'Gallery', href: '/gallery' },
+    { label: 'Testimonials', href: '/testimonials' }
+  ]
+}
+
+// Deprecated alias kept only in case something outside Header.tsx still
+// imports the old flat array — prefer `campusNav` for new code.
+export const exploreNav = campusNav.items
 
 export const footerNav = {
   explore: [
