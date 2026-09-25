@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useEffect, useRef, useState } from 'react'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
 import { createStaffMember, updateStaffRole, toggleStaffActive, resetStaffPassword, type ActionResult } from '../../app/admin/(dashboard)/staff/actions'
@@ -27,6 +28,7 @@ function PermissionSummary({ role }: { role: StaffRole }) {
 
 export function AddStaffForm() {
   const [state, formAction] = useActionState(createStaffMember, initial)
+  useActionFeedback(state, 'Create staff member completed successfully.')
   const [open, setOpen] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
@@ -69,8 +71,11 @@ export function AddStaffForm() {
 
 export function StaffRow({ member, isSelf }: { member: Staff; isSelf: boolean }) {
   const [roleState, roleAction] = useActionState(updateStaffRole, initial)
+  useActionFeedback(roleState, 'Update staff role completed successfully.')
   const [activeState, activeAction] = useActionState(toggleStaffActive, initial)
+  useActionFeedback(activeState, 'Toggle staff active completed successfully.')
   const [passwordState, passwordAction] = useActionState(resetStaffPassword, initial)
+  useActionFeedback(passwordState, 'Reset staff password completed successfully.')
   const [resetOpen, setResetOpen] = useState(false)
   const [permissionsOpen, setPermissionsOpen] = useState(false)
   const resetFormRef = useRef<HTMLFormElement>(null)

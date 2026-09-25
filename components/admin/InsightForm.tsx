@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useEffect, useState } from 'react'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -49,6 +50,7 @@ function SubmitButton({
 export default function InsightForm({ mode, insight }: { mode: 'create' | 'edit'; insight?: InsightRow }) {
   const action = mode === 'create' ? createInsight : updateInsight
   const [state, formAction] = useActionState(action, initial)
+  useActionFeedback(state, 'Action completed successfully.')
   const fieldErrors = !state.ok ? state.fieldErrors : undefined
   const router = useRouter()
 

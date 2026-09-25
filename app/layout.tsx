@@ -3,6 +3,7 @@ import { ReactNode } from 'react'
 import { Sora, Manrope, IBM_Plex_Mono } from 'next/font/google'
 import { siteConfig } from '../data/site'
 import { organizationJsonLd } from '../lib/structured-data'
+import { AdminFeedbackProvider } from '../components/admin/AdminFeedbackProvider'
 
 const sora = Sora({
   subsets: ['latin'],
@@ -58,7 +59,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
-        {children}
+        <AdminFeedbackProvider>{children}</AdminFeedbackProvider>
       </body>
     </html>
   )

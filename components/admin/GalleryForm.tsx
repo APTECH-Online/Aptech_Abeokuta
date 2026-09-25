@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useEffect, useState } from 'react'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -23,6 +24,7 @@ function SubmitButton({ children }: { children: string }) {
 export default function GalleryForm({ mode, item }: { mode: 'create' | 'edit'; item?: GalleryItem }) {
   const action = mode === 'create' ? createGalleryItem : updateGalleryItem
   const [state, formAction] = useActionState(action, initial)
+  useActionFeedback(state, 'Action completed successfully.')
   const fieldErrors = !state.ok ? state.fieldErrors : undefined
   const router = useRouter()
 

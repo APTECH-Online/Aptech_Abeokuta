@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import Link from 'next/link'
 import { BellRing, CheckCheck } from 'lucide-react'
 import { markNotificationRead, markAllNotificationsRead, type ActionResult } from '../../app/admin/(dashboard)/notifications/actions'
@@ -27,7 +28,8 @@ function formatWhen(value: string): string {
 }
 
 function MarkReadButton({ notificationId }: { notificationId: string }) {
-  const [, formAction, pending] = useActionState(markNotificationRead, initial)
+  const [readState, formAction, pending] = useActionState(markNotificationRead, initial)
+  useActionFeedback(readState, 'Mark notification read completed successfully.')
   return (
     <form action={formAction}>
       <input type="hidden" name="notificationId" value={notificationId} />
@@ -39,7 +41,8 @@ function MarkReadButton({ notificationId }: { notificationId: string }) {
 }
 
 function MarkAllReadButton() {
-  const [, formAction, pending] = useActionState(markAllNotificationsRead, initial)
+  const [readAllState, formAction, pending] = useActionState(markAllNotificationsRead, initial)
+  useActionFeedback(readAllState, 'Mark all notifications read completed successfully.')
   return (
     <form action={formAction}>
       <button type="submit" className="btn btn-secondary btn-sm gap-2" disabled={pending}>

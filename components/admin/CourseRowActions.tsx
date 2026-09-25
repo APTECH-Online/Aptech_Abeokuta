@@ -1,6 +1,8 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useAdminFeedback } from './AdminFeedbackProvider'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import Link from 'next/link'
 import {
   publishCourse,
@@ -22,7 +24,8 @@ function QuickActionForm({
   courseId: string
   label: string
 }) {
-  const [, formAction, pending] = useActionState(action, initial)
+  const [actionState, formAction, pending] = useActionState(action, initial)
+  useActionFeedback(actionState, 'Action completed successfully.')
   return (
     <form action={formAction}>
       <input type="hidden" name="courseId" value={courseId} />
@@ -34,14 +37,16 @@ function QuickActionForm({
 }
 
 function DeleteForm({ course }: { course: Course }) {
+  const { confirm } = useAdminFeedback()
   const [state, formAction] = useActionState(deleteCourse, initial)
+  useActionFeedback(state, 'Delete course completed successfully.')
   return (
     <form
       action={formAction}
-      onSubmit={(e) => {
-        if (!window.confirm(`Permanently delete "${course.title}"? This cannot be undone.`)) {
-          e.preventDefault()
-        }
+      onSubmit={async (e) => {
+        e.preventDefault()
+        const accepted = await confirm({ title: 'Delete course?', message: `Permanently delete \"${course.title}\"? This cannot be undone.`, confirmLabel: 'Delete', danger: true })
+        if (accepted) e.currentTarget.requestSubmit()
       }}
     >
       <input type="hidden" name="courseId" value={course.id} />

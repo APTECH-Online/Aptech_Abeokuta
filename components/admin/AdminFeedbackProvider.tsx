@@ -86,13 +86,15 @@ export function useAdminFeedback() {
   return context
 }
 
-export function useActionFeedback<T extends { ok: boolean; message?: string }>(state: T, successMessage: string) {
+export function useActionFeedback<T extends { ok?: boolean; status?: string; message?: string }>(state: T, successMessage: string) {
   const { success, error } = useAdminFeedback()
   const previous = useRef(state)
   useEffect(() => {
     if (previous.current === state) return
     previous.current = state
-    if (state.ok) success(successMessage)
-    else if (state.message) error(state.message)
+    const succeeded = state.ok === true || state.status === 'success'
+    const failed = state.ok === false || state.status === 'error'
+    if (succeeded) success(successMessage)
+    else if (failed && state.message) error(state.message)
   }, [state, success, error, successMessage])
 }

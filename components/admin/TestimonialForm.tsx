@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useState } from 'react'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import Image from 'next/image'
 import FormAlert from '../shared/FormAlert'
@@ -21,6 +22,7 @@ function SubmitButton({ children }: { children: string }) {
 export default function TestimonialForm({ mode, item }: { mode: 'create' | 'edit'; item?: Testimonial }) {
   const action = mode === 'create' ? createTestimonial : updateTestimonial
   const [state, formAction] = useActionState(action, initial)
+  useActionFeedback(state, 'Action completed successfully.')
   const fieldErrors = !state.ok ? state.fieldErrors : undefined
 
   const [imagePreview, setImagePreview] = useState<string | null>(item?.image_url ?? null)

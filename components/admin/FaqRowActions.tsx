@@ -1,6 +1,8 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useAdminFeedback } from './AdminFeedbackProvider'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import Link from 'next/link'
 import { toggleFaqPublished, deleteFaq, type ActionResult } from '../../app/admin/(dashboard)/faqs/actions'
 import type { Faq } from '../../types/db'
@@ -8,7 +10,8 @@ import type { Faq } from '../../types/db'
 const initial: ActionResult = { ok: true }
 
 function ToggleForm({ item }: { item: Faq }) {
-  const [, formAction, pending] = useActionState(toggleFaqPublished, initial)
+  const [toggleState, formAction, pending] = useActionState(toggleFaqPublished, initial)
+  useActionFeedback(toggleState, 'Toggle faq published completed successfully.')
   return (
     <form action={formAction}>
       <input type="hidden" name="itemId" value={item.id} />
@@ -22,13 +25,14 @@ function ToggleForm({ item }: { item: Faq }) {
 
 function DeleteForm({ item }: { item: Faq }) {
   const [state, formAction] = useActionState(deleteFaq, initial)
+  useActionFeedback(state, 'Delete faq completed successfully.')
   return (
     <form
       action={formAction}
-      onSubmit={(e) => {
-        if (!window.confirm('Permanently delete this FAQ? This cannot be undone.')) {
-          e.preventDefault()
-        }
+      onSubmit={async (e) => {
+        e.preventDefault()
+        const accepted = await confirm({ title: 'Delete FAQ?', message: 'This action is permanent and cannot be undone.', confirmLabel: 'Delete', danger: true })
+        if (accepted) e.currentTarget.requestSubmit()
       }}
     >
       <input type="hidden" name="itemId" value={item.id} />

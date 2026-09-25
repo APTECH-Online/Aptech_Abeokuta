@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
 import { createFaq, updateFaq, type ActionResult } from '../../app/admin/(dashboard)/faqs/actions'
@@ -20,6 +21,7 @@ function SubmitButton({ children }: { children: string }) {
 export default function FaqForm({ mode, item }: { mode: 'create' | 'edit'; item?: Faq }) {
   const action = mode === 'create' ? createFaq : updateFaq
   const [state, formAction] = useActionState(action, initial)
+  useActionFeedback(state, 'Action completed successfully.')
   const fieldErrors = !state.ok ? state.fieldErrors : undefined
 
   return (

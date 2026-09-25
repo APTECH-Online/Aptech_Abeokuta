@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useState } from 'react'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
 import {
@@ -60,6 +61,7 @@ function Fields({ programme, fieldErrors }: { programme?: Programme; fieldErrors
 
 export function CreateProgrammeForm() {
   const [state, formAction] = useActionState(createProgramme, initial)
+  useActionFeedback(state, 'Programme created successfully.')
   const [open, setOpen] = useState(false)
 
   if (!open) {
@@ -83,6 +85,7 @@ export function CreateProgrammeForm() {
 
 export function EditProgrammeForm({ programme }: { programme: Programme }) {
   const [state, formAction] = useActionState(updateProgramme, initial)
+  useActionFeedback(state, 'Programme updated successfully.')
   const [open, setOpen] = useState(false)
 
   if (!open) {
@@ -107,6 +110,7 @@ export function EditProgrammeForm({ programme }: { programme: Programme }) {
 
 export function ToggleProgrammeStatusForm({ programme }: { programme: Programme }) {
   const [state, formAction] = useActionState(toggleProgrammeStatus, initial)
+  useActionFeedback(state, 'Programme status updated successfully.')
   const nextStatus = programme.status === 'active' ? 'inactive' : 'active'
 
   return (

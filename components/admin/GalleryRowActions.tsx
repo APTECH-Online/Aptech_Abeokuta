@@ -1,6 +1,8 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useAdminFeedback } from './AdminFeedbackProvider'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import Link from 'next/link'
 import { togglePublished, deleteGalleryItem, type ActionResult } from '../../app/admin/(dashboard)/gallery/actions'
 import type { GalleryItem } from '../../types/db'
@@ -8,7 +10,8 @@ import type { GalleryItem } from '../../types/db'
 const initial: ActionResult = { ok: true }
 
 function ToggleForm({ item }: { item: GalleryItem }) {
-  const [, formAction, pending] = useActionState(togglePublished, initial)
+  const [toggleState, formAction, pending] = useActionState(togglePublished, initial)
+  useActionFeedback(toggleState, 'Toggle published completed successfully.')
   return (
     <form action={formAction}>
       <input type="hidden" name="itemId" value={item.id} />
@@ -21,14 +24,16 @@ function ToggleForm({ item }: { item: GalleryItem }) {
 }
 
 function DeleteForm({ item }: { item: GalleryItem }) {
+  const { confirm } = useAdminFeedback()
   const [state, formAction] = useActionState(deleteGalleryItem, initial)
+  useActionFeedback(state, 'Delete gallery item completed successfully.')
   return (
     <form
       action={formAction}
-      onSubmit={(e) => {
-        if (!window.confirm(`Permanently delete "${item.title}"? This cannot be undone.`)) {
-          e.preventDefault()
-        }
+      onSubmit={async (e) => {
+        e.preventDefault()
+        const accepted = await confirm({ title: 'Delete gallery item?', message: `Permanently delete \"${item.title}\"? This cannot be undone.`, confirmLabel: 'Delete', danger: true })
+        if (accepted) e.currentTarget.requestSubmit()
       }}
     >
       <input type="hidden" name="itemId" value={item.id} />

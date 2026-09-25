@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useState } from 'react'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
 import { createSocialLink, updateSocialLink, type ActionResult } from '../../app/admin/(dashboard)/settings/social/actions'
@@ -21,6 +22,7 @@ function SubmitButton({ children }: { children: string }) {
 export default function SocialLinkForm({ mode, item }: { mode: 'create' | 'edit'; item?: SocialLink }) {
   const action = mode === 'create' ? createSocialLink : updateSocialLink
   const [state, formAction] = useActionState(action, initial)
+  useActionFeedback(state, 'Action completed successfully.')
   const fieldErrors = !state.ok ? state.fieldErrors : undefined
   const [platform, setPlatform] = useState(item?.platform ?? 'facebook')
 

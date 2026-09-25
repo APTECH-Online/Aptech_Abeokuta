@@ -1,6 +1,8 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useAdminFeedback } from './AdminFeedbackProvider'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import Link from 'next/link'
 import { toggleTestimonialPublished, deleteTestimonial, type ActionResult } from '../../app/admin/(dashboard)/testimonials/actions'
 import type { Testimonial } from '../../types/db'
@@ -8,7 +10,8 @@ import type { Testimonial } from '../../types/db'
 const initial: ActionResult = { ok: true }
 
 function ToggleForm({ item }: { item: Testimonial }) {
-  const [, formAction, pending] = useActionState(toggleTestimonialPublished, initial)
+  const [toggleState, formAction, pending] = useActionState(toggleTestimonialPublished, initial)
+  useActionFeedback(toggleState, 'Toggle testimonial published completed successfully.')
   return (
     <form action={formAction}>
       <input type="hidden" name="itemId" value={item.id} />
@@ -21,14 +24,16 @@ function ToggleForm({ item }: { item: Testimonial }) {
 }
 
 function DeleteForm({ item }: { item: Testimonial }) {
+  const { confirm } = useAdminFeedback()
   const [state, formAction] = useActionState(deleteTestimonial, initial)
+  useActionFeedback(state, 'Delete testimonial completed successfully.')
   return (
     <form
       action={formAction}
-      onSubmit={(e) => {
-        if (!window.confirm(`Permanently delete the testimonial from "${item.name}"? This cannot be undone.`)) {
-          e.preventDefault()
-        }
+      onSubmit={async (e) => {
+        e.preventDefault()
+        const accepted = await confirm({ title: 'Delete testimonial?', message: `Permanently delete the testimonial from \"${item.name}\"? This cannot be undone.`, confirmLabel: 'Delete', danger: true })
+        if (accepted) e.currentTarget.requestSubmit()
       }}
     >
       <input type="hidden" name="itemId" value={item.id} />

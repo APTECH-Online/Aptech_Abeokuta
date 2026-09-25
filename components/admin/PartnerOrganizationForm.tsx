@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
 import {
@@ -24,6 +25,7 @@ function SubmitButton({ children }: { children: string }) {
 export default function PartnerOrganizationForm({ mode, item }: { mode: 'create' | 'edit'; item?: PartnerOrganization }) {
   const action = mode === 'create' ? createPartnerOrganization : updatePartnerOrganization
   const [state, formAction] = useActionState(action, initial)
+  useActionFeedback(state, 'Action completed successfully.')
   const fieldErrors = !state.ok ? state.fieldErrors : undefined
 
   return (

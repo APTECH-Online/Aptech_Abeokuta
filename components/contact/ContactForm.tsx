@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef } from 'react'
 import { useFormStatus } from 'react-dom'
+import { useActionFeedback } from '../admin/AdminFeedbackProvider'
 import FormAlert from '../shared/FormAlert'
 import WhatsAppButton from '../shared/WhatsAppButton'
 import { submitContactMessage, type SubmitContactState } from '../../app/(site)/contact/actions'
@@ -24,6 +25,7 @@ function SubmitButton() {
 
 export default function ContactForm({ whatsapp }: { whatsapp: string }) {
   const [state, formAction] = useActionState(submitContactMessage, initialState)
+  useActionFeedback(state, 'Message sent successfully.')
   const formRef = useRef<HTMLFormElement>(null)
   const fieldErrors = state.status === 'error' ? state.fieldErrors ?? {} : {}
   const errorClass = (field: string) => (fieldErrors[field] ? 'field-error' : '')

@@ -1,6 +1,8 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useAdminFeedback } from './AdminFeedbackProvider'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import Link from 'next/link'
 import {
   publishInsightNow,
@@ -28,6 +30,7 @@ function QuickActionForm({
   className?: string
 }) {
   const [state, formAction] = useActionState(action, initial)
+  useActionFeedback(state, 'Action completed successfully.')
   return (
     <form action={formAction} className="inline-block">
       <input type="hidden" name="insightId" value={insightId} />
@@ -39,15 +42,16 @@ function QuickActionForm({
 }
 
 function DeleteActionForm({ insightId, title }: { insightId: string; title: string }) {
+  const { confirm } = useAdminFeedback()
   const [state, formAction] = useActionState(deleteInsight, initial)
   return (
     <form
       action={formAction}
       className="inline-block"
-      onSubmit={(e) => {
-        if (!window.confirm(`Permanently delete "${title}"? This cannot be undone.`)) {
-          e.preventDefault()
-        }
+      onSubmit={async (e) => {
+        e.preventDefault()
+        const accepted = await confirm({ title: 'Delete insight?', message: `Permanently delete \"${title}\"? This cannot be undone.`, confirmLabel: 'Delete', danger: true })
+        if (accepted) e.currentTarget.requestSubmit()
       }}
     >
       <input type="hidden" name="insightId" value={insightId} />

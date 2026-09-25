@@ -1,6 +1,8 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useAdminFeedback } from './AdminFeedbackProvider'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import Link from 'next/link'
 import { toggleSocialLinkPublished, deleteSocialLink, type ActionResult } from '../../app/admin/(dashboard)/settings/social/actions'
 import type { SocialLink } from '../../types/db'
@@ -8,7 +10,8 @@ import type { SocialLink } from '../../types/db'
 const initial: ActionResult = { ok: true }
 
 function ToggleForm({ item }: { item: SocialLink }) {
-  const [, formAction, pending] = useActionState(toggleSocialLinkPublished, initial)
+  const [toggleState, formAction, pending] = useActionState(toggleSocialLinkPublished, initial)
+  useActionFeedback(toggleState, 'Toggle social link published completed successfully.')
   return (
     <form action={formAction}>
       <input type="hidden" name="itemId" value={item.id} />
@@ -22,13 +25,14 @@ function ToggleForm({ item }: { item: SocialLink }) {
 
 function DeleteForm({ item }: { item: SocialLink }) {
   const [state, formAction] = useActionState(deleteSocialLink, initial)
+  useActionFeedback(state, 'Delete social link completed successfully.')
   return (
     <form
       action={formAction}
-      onSubmit={(e) => {
-        if (!window.confirm('Permanently delete this social link? This cannot be undone.')) {
-          e.preventDefault()
-        }
+      onSubmit={async (e) => {
+        e.preventDefault()
+        const accepted = await confirm({ title: 'Delete social link?', message: 'This action is permanent and cannot be undone.', confirmLabel: 'Delete', danger: true })
+        if (accepted) e.currentTarget.requestSubmit()
       }}
     >
       <input type="hidden" name="itemId" value={item.id} />

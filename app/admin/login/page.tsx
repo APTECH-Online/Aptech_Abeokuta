@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { signInStaff } from './actions'
 import FormAlert from '../../../components/shared/FormAlert'
+import { useAdminFeedback } from '../../../components/admin/AdminFeedbackProvider'
 
 function LoginForm() {
   const router = useRouter()
@@ -14,6 +15,7 @@ function LoginForm() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { success, error: toastError } = useAdminFeedback()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -24,11 +26,13 @@ function LoginForm() {
 
     if (result.error) {
       setError(result.error)
+      toastError(result.error)
       setLoading(false)
       return
     }
 
     const next = searchParams.get('next') || '/admin'
+    success('Signed in successfully.')
     router.push(next)
     router.refresh()
   }

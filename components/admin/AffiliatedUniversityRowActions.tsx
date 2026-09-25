@@ -1,6 +1,8 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useAdminFeedback } from './AdminFeedbackProvider'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import Link from 'next/link'
 import {
   toggleAffiliatedUniversityPublished,
@@ -12,7 +14,8 @@ import type { AffiliatedUniversity } from '../../types/db'
 const initial: ActionResult = { ok: true }
 
 function ToggleForm({ item }: { item: AffiliatedUniversity }) {
-  const [, formAction, pending] = useActionState(toggleAffiliatedUniversityPublished, initial)
+  const [toggleState, formAction, pending] = useActionState(toggleAffiliatedUniversityPublished, initial)
+  useActionFeedback(toggleState, 'Toggle affiliated university published completed successfully.')
   return (
     <form action={formAction}>
       <input type="hidden" name="itemId" value={item.id} />
@@ -26,13 +29,14 @@ function ToggleForm({ item }: { item: AffiliatedUniversity }) {
 
 function DeleteForm({ item }: { item: AffiliatedUniversity }) {
   const [state, formAction] = useActionState(deleteAffiliatedUniversity, initial)
+  useActionFeedback(state, 'Delete affiliated university completed successfully.')
   return (
     <form
       action={formAction}
-      onSubmit={(e) => {
-        if (!window.confirm('Permanently delete this university logo? This cannot be undone.')) {
-          e.preventDefault()
-        }
+      onSubmit={async (e) => {
+        e.preventDefault()
+        const accepted = await confirm({ title: 'Delete university logo?', message: 'This action is permanent and cannot be undone.', confirmLabel: 'Delete', danger: true })
+        if (accepted) e.currentTarget.requestSubmit()
       }}
     >
       <input type="hidden" name="itemId" value={item.id} />

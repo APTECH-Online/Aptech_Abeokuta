@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useSearchParams } from 'next/navigation'
+import { useActionFeedback } from '../admin/AdminFeedbackProvider'
 import FormAlert from '../shared/FormAlert'
 import WhatsAppButton from '../shared/WhatsAppButton'
 import { submitEnquiry, type SubmitEnquiryState } from '../../app/(site)/admissions/actions'
@@ -51,6 +52,7 @@ function SubmitButton() {
 
 export default function AdmissionsForm({ programmes, whatsapp }: { programmes: ProgrammeOption[]; whatsapp: string }) {
   const [state, formAction] = useActionState(submitEnquiry, initialState)
+  useActionFeedback(state, 'Application submitted successfully.')
   const searchParams = useSearchParams()
   const formRef = useRef<HTMLFormElement>(null)
   const [hasSubmittedOnce, setHasSubmittedOnce] = useState(false)

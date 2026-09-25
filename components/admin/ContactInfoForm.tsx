@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
 import { updateContactInfo, type ActionResult } from '../../app/admin/(dashboard)/settings/contact/actions'
@@ -24,6 +25,7 @@ function hoursToLines(hours: ContactInfo['hours']): string {
 
 export default function ContactInfoForm({ contactInfo }: { contactInfo: ContactInfo | null }) {
   const [state, formAction] = useActionState(updateContactInfo, initial)
+  useActionFeedback(state, 'Update contact info completed successfully.')
   const fieldErrors = !state.ok ? state.fieldErrors : undefined
 
   return (

@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useState } from 'react'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import Image from 'next/image'
 import FormAlert from '../shared/FormAlert'
@@ -25,6 +26,7 @@ function SubmitButton({ children }: { children: string }) {
 export default function AffiliatedUniversityForm({ mode, item }: { mode: 'create' | 'edit'; item?: AffiliatedUniversity }) {
   const action = mode === 'create' ? createAffiliatedUniversity : updateAffiliatedUniversity
   const [state, formAction] = useActionState(action, initial)
+  useActionFeedback(state, 'Action completed successfully.')
   const fieldErrors = !state.ok ? state.fieldErrors : undefined
   const [logoPreview, setLogoPreview] = useState<string | null>(item?.logo_url ?? null)
 

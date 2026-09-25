@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
 import { updatePartnersHighlight, type ActionResult } from '../../app/admin/(dashboard)/settings/partners/actions'
@@ -19,6 +20,7 @@ function SubmitButton() {
 
 export default function PartnersHighlightForm({ highlight }: { highlight: PartnersHighlight | null }) {
   const [state, formAction] = useActionState(updatePartnersHighlight, initial)
+  useActionFeedback(state, 'Update partners highlight completed successfully.')
   const fieldErrors = !state.ok ? state.fieldErrors : undefined
 
   return (

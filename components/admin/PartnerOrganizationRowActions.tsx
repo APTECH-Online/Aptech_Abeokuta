@@ -1,6 +1,8 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useAdminFeedback } from './AdminFeedbackProvider'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import Link from 'next/link'
 import {
   togglePartnerOrganizationPublished,
@@ -12,7 +14,8 @@ import type { PartnerOrganization } from '../../types/db'
 const initial: ActionResult = { ok: true }
 
 function ToggleForm({ item }: { item: PartnerOrganization }) {
-  const [, formAction, pending] = useActionState(togglePartnerOrganizationPublished, initial)
+  const [toggleState, formAction, pending] = useActionState(togglePartnerOrganizationPublished, initial)
+  useActionFeedback(toggleState, 'Toggle partner organization published completed successfully.')
   return (
     <form action={formAction}>
       <input type="hidden" name="itemId" value={item.id} />
@@ -26,13 +29,14 @@ function ToggleForm({ item }: { item: PartnerOrganization }) {
 
 function DeleteForm({ item }: { item: PartnerOrganization }) {
   const [state, formAction] = useActionState(deletePartnerOrganization, initial)
+  useActionFeedback(state, 'Delete partner organization completed successfully.')
   return (
     <form
       action={formAction}
-      onSubmit={(e) => {
-        if (!window.confirm('Permanently delete this partner? This cannot be undone.')) {
-          e.preventDefault()
-        }
+      onSubmit={async (e) => {
+        e.preventDefault()
+        const accepted = await confirm({ title: 'Delete partner?', message: 'This action is permanent and cannot be undone.', confirmLabel: 'Delete', danger: true })
+        if (accepted) e.currentTarget.requestSubmit()
       }}
     >
       <input type="hidden" name="itemId" value={item.id} />
