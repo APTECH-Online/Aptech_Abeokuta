@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useState } from 'react'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
 import {
@@ -36,6 +37,7 @@ function Feedback({ state }: { state: ActionResult }) {
 
 export function StatusChangeForm({ leadId, currentStatus }: { leadId: string; currentStatus: LeadStatus }) {
   const [state, formAction] = useActionState(changeLeadStatus, initial)
+  useActionFeedback(state, 'Enquiry status updated successfully.')
   return (
     <form action={formAction} className="grid gap-2">
       <input type="hidden" name="leadId" value={leadId} />
@@ -63,6 +65,7 @@ export function AssignForm({
   staffOptions: { id: string; full_name: string }[]
 }) {
   const [state, formAction] = useActionState(assignLead, initial)
+  useActionFeedback(state, 'Enquiry assignment updated successfully.')
   return (
     <form action={formAction} className="grid gap-2">
       <input type="hidden" name="leadId" value={leadId} />
@@ -83,6 +86,7 @@ export function AssignForm({
 
 export function InteractionForm({ leadId }: { leadId: string }) {
   const [state, formAction] = useActionState(addInteraction, initial)
+  useActionFeedback(state, 'Interaction added successfully.')
   const [type, setType] = useState('note')
 
   return (
@@ -126,6 +130,7 @@ export function FollowUpForm({
   currentStaffId: string
 }) {
   const [state, formAction] = useActionState(scheduleFollowUp, initial)
+  useActionFeedback(state, 'Follow-up scheduled successfully.')
 
   return (
     <form action={formAction} className="grid gap-3">
@@ -168,6 +173,7 @@ export function FollowUpForm({
 
 export function EditLeadForm({ lead }: { lead: any }) {
   const [state, formAction] = useActionState(editLeadInfo, initial)
+  useActionFeedback(state, 'Enquiry updated successfully.')
   const [open, setOpen] = useState(false)
 
   if (!open) {
@@ -248,6 +254,7 @@ export function StartApplicationForm({
   defaultProgrammeId?: string
 }) {
   const [state, formAction] = useActionState(startApplication, initial)
+  useActionFeedback(state, 'Application created successfully.')
 
   return (
     <form action={formAction} className="grid gap-2">

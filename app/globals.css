@@ -1445,3 +1445,28 @@ a { color: inherit; }
 @media (max-width: 1279px) {
   .site-header__inner { padding-inline: 1rem; }
 }
+
+/* Premium CRM feedback: confirmations and toast notifications. */
+.crm-toast-stack { position: fixed; z-index: 10000; top: 1.15rem; right: 1.15rem; width: min(390px, calc(100vw - 2rem)); display: grid; gap: .7rem; pointer-events: none; }
+.crm-toast { pointer-events: auto; display: flex; align-items: center; gap: .75rem; padding: .82rem .9rem; border: 1px solid rgba(17,16,42,.08); border-radius: 14px; background: rgba(255,255,255,.96); box-shadow: 0 18px 45px rgba(16,15,48,.16), 0 2px 8px rgba(16,15,48,.08); backdrop-filter: blur(16px); animation: crmToastIn .24s ease-out both; }
+.crm-toast__icon { width: 28px; height: 28px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 9px; font-weight: 800; font-size: .85rem; }
+.crm-toast--success .crm-toast__icon { color: #087443; background: rgba(16,185,129,.12); }
+.crm-toast--error .crm-toast__icon { color: #b42318; background: rgba(239,68,68,.12); }
+.crm-toast--warning .crm-toast__icon { color: #9a6700; background: rgba(245,189,53,.16); }
+.crm-toast__message { min-width: 0; flex: 1; color: var(--color-ink); font-size: .82rem; font-weight: 650; line-height: 1.35; }
+.crm-toast__close { width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: var(--color-muted); font-size: 1.05rem; cursor: pointer; }
+.crm-toast__close:hover { background: rgba(16,15,48,.06); color: var(--color-ink); }
+.crm-alert-backdrop { position: fixed; z-index: 10001; inset: 0; display: grid; place-items: center; padding: 1.25rem; background: rgba(10,9,30,.54); backdrop-filter: blur(7px); animation: crmFadeIn .16s ease-out both; }
+.crm-alert { width: min(440px, 100%); padding: 1.55rem; border: 1px solid rgba(255,255,255,.2); border-radius: 22px; background: rgba(255,255,255,.98); box-shadow: 0 30px 90px rgba(0,0,0,.28); animation: crmAlertIn .2s ease-out both; }
+.crm-alert__icon { width: 48px; height: 48px; display: grid; place-items: center; margin-bottom: 1rem; border-radius: 15px; color: var(--color-navy-900); background: rgba(245,189,53,.17); font-size: 1.25rem; font-weight: 850; }
+.crm-alert__icon--danger { color: #b42318; background: rgba(239,68,68,.11); }
+.crm-alert__title { margin: 0; color: var(--color-ink); font-family: var(--font-display); font-size: 1.18rem; font-weight: 750; }
+.crm-alert__message { margin: .55rem 0 0; color: var(--color-body); font-size: .86rem; line-height: 1.6; }
+.crm-alert__actions { display: flex; justify-content: flex-end; gap: .55rem; margin-top: 1.35rem; }
+.crm-alert__danger-button { color: #fff; background: #c9342f; border-color: #c9342f; box-shadow: 0 8px 20px rgba(201,52,47,.18); }
+.crm-alert__danger-button:hover { background: #b52b27; }
+@keyframes crmToastIn { from { opacity: 0; transform: translateY(-8px) translateX(8px); } to { opacity: 1; transform: translateY(0) translateX(0); } }
+@keyframes crmFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes crmAlertIn { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .crm-toast, .crm-alert-backdrop, .crm-alert { animation: none; } }
+@media (max-width: 640px) { .crm-toast-stack { top: .75rem; right: .75rem; left: .75rem; width: auto; } .crm-alert { padding: 1.25rem; border-radius: 18px; } .crm-alert__actions { display: grid; grid-template-columns: 1fr 1fr; } }

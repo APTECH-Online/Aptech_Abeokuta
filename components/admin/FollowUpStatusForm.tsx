@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import { updateFollowUpStatus } from '../../app/admin/(dashboard)/leads/[id]/actions'
 import type { ActionResult } from '../../app/admin/(dashboard)/leads/[id]/actions'
@@ -19,6 +20,8 @@ function Button({ children }: { children: string }) {
 export default function FollowUpStatusForm({ followUpId, leadId }: { followUpId: string; leadId: string }) {
   const [completeState, completeAction] = useActionState(updateFollowUpStatus, initial)
   const [cancelState, cancelAction] = useActionState(updateFollowUpStatus, initial)
+  useActionFeedback(completeState, 'Follow-up marked as completed successfully.')
+  useActionFeedback(cancelState, 'Follow-up cancelled successfully.')
 
   return (
     <div className="flex items-center gap-1.5">

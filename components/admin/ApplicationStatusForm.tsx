@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import { updateApplicationStatus, type ActionResult } from '../../app/admin/(dashboard)/applications/actions'
 import { APPLICATION_STATUS_LABELS, type ApplicationStatus } from '../../types/db'
@@ -35,6 +36,7 @@ export default function ApplicationStatusForm({
   currentStatus: ApplicationStatus
 }) {
   const [state, formAction] = useActionState(updateApplicationStatus, initial)
+  useActionFeedback(state, 'Application status updated successfully.')
   return (
     <form action={formAction} className="flex items-center gap-2">
       <input type="hidden" name="applicationId" value={applicationId} />

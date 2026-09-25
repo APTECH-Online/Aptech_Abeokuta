@@ -3,6 +3,7 @@ import { getSessionAndStaff } from '../../../lib/auth'
 import { createClient } from '../../../lib/supabase/server'
 import { getUnreadNotificationCount } from '../../../lib/notifications'
 import AdminShell from '../../../components/admin/AdminShell'
+import { AdminFeedbackProvider } from '../../../components/admin/AdminFeedbackProvider'
 import { signOut } from '../actions'
 
 export const metadata = {
@@ -39,8 +40,10 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
   const unreadNotifications = staff.role === 'super_admin' ? await getUnreadNotificationCount(supabase, staff) : 0
 
   return (
-    <AdminShell staff={staff} unreadNotifications={unreadNotifications}>
-      {children}
-    </AdminShell>
+    <AdminFeedbackProvider>
+      <AdminShell staff={staff} unreadNotifications={unreadNotifications}>
+        {children}
+      </AdminShell>
+    </AdminFeedbackProvider>
   )
 }
