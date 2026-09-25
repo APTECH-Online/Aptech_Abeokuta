@@ -5,7 +5,8 @@ import { createClient } from '../../../lib/supabase/server'
 export async function signInStaff(email: string, password: string) {
   try {
     const supabase = await createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const normalizedEmail = email.trim().toLowerCase()
+    const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password })
 
     if (error) {
       return { error: 'Incorrect email or password.' }

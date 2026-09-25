@@ -171,7 +171,33 @@ export async function resetStaffPassword(_prev: ActionResult, formData: FormData
     }
 
     const admin = createAdminClient()
+    const { data: staffRecord, error: staffLookupError } = await admin
+      .from('staff')
+      .select('id, email, is_active')
+      .eq('id', parsed.data.staffId)
+      .maybeSingle()
+
+    if (staffLookupError || !staffRecord) {
+      return { ok: false, message: 'Could not find that staff account.' }
+    }
+
+    if (!staffRecord.is_active) {
+      return { ok: false, message: 'Cannot reset the password for an inactive staff account.' }
+    }
+
+    // Legacy staff accounts may have been created through the old invitation
+    // flow and can therefore have an unconfirmed Auth email. Keep Auth and
+    // the CRM staff record aligned while resetting the credential so the
+    // existing Work Email + new password can sign in immediately.
+    const { data: authUser, error: authLookupError } = await admin.auth.admin.getUserById(parsed.data.staffId)
+    if (authLookupError || !authUser?.user) {
+      console.error('[crm] failed to find staff auth account', authLookupError)
+      return { ok: false, message: 'No authentication account is linked to this staff member.' }
+    }
+
     const { error } = await admin.auth.admin.updateUserById(parsed.data.staffId, {
+      email: staffRecord.email.toLowerCase(),
+      email_confirm: true,
       password: parsed.data.password
     })
     if (error) {
