@@ -923,3 +923,48 @@ a { color: inherit; }
 }
 .insight-content a { color: var(--color-teal-700); text-decoration: underline; text-underline-offset: 2px; }
 .insight-content img { border-radius: 12px; margin: 1.4rem 0; max-width: 100%; height: auto; }
+
+/* ========================================================================
+   CRM responsive hardening (final overrides)
+   ======================================================================== */
+.admin-shell, .admin-shell *, .admin-shell *::before, .admin-shell *::after { box-sizing: border-box; }
+.admin-content, .admin-content > *, .admin-content .card, .admin-content form, .admin-content section, .admin-content article { min-width: 0; max-width: 100%; }
+.admin-content img, .admin-content video, .admin-content iframe { max-width: 100%; height: auto; }
+.admin-content input, .admin-content select, .admin-content textarea, .admin-content button { max-width: 100%; min-width: 0; }
+.admin-content .grid > *, .admin-content .flex > * { min-width: 0; }
+.admin-content .flex-wrap { row-gap: .6rem; }
+.admin-form-actions { display:flex; flex-wrap:wrap; align-items:center; gap:.6rem; }
+.admin-toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.75rem; min-width:0; }
+.admin-toolbar > * { min-width:0; }
+.admin-table-wrap { width:100%; max-width:100%; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
+.admin-table { width:100%; min-width:760px; table-layout:auto; }
+.admin-table th, .admin-table td { max-width:320px; overflow-wrap:anywhere; }
+.admin-table td > form, .admin-table td > div { max-width:100%; min-width:0; }
+.admin-table .admin-input, .admin-table .admin-select { min-width:0; max-width:100%; }
+.admin-content [contenteditable="true"], .admin-content .ProseMirror, .admin-content .tiptap { max-width:100%; overflow-wrap:anywhere; }
+.admin-content pre, .admin-content code { max-width:100%; overflow-x:auto; }
+@media (max-width:1023px) {
+  .admin-content { width:100%; padding-inline:clamp(.85rem,3vw,1.5rem); }
+  .admin-topbar { padding-inline:clamp(.85rem,3vw,1.25rem); }
+}
+@media (max-width:767px) {
+  .admin-content { padding-top:1rem; padding-bottom:2rem; }
+  .admin-topbar { min-height:60px; gap:.5rem; padding-block:.65rem; }
+  .admin-topbar-eyebrow { display:none; }
+  .admin-topbar-title { font-size:.875rem; }
+  .admin-topbar > a:last-child { display:none; }
+  .admin-table-wrap { border-radius:10px; box-shadow:none; }
+  .admin-table { min-width:640px; font-size:.78rem; }
+  .admin-table th { padding:.7rem .75rem; font-size:.62rem; }
+  .admin-table td { padding:.7rem .75rem; }
+  .admin-table .btn, .admin-table .admin-input, .admin-table .admin-select { font-size:.78rem; }
+  .field-input, .field-textarea, .field-select, .admin-input, .admin-select { width:100%; max-width:100%; }
+  .btn { min-height:42px; }
+  .btn-sm { min-height:38px; }
+  .admin-content .card { padding-left:clamp(.85rem,4vw,1.25rem); padding-right:clamp(.85rem,4vw,1.25rem); }
+  .admin-content .grid.grid-cols-2, .admin-content .grid.grid-cols-3, .admin-content .grid.grid-cols-4, .admin-content .grid.grid-cols-5, .admin-content .grid.grid-cols-6 { grid-template-columns:minmax(0,1fr); }
+}
+@media (max-width:479px) {
+  .admin-profile-menu { width:min(18rem,calc(100vw - 1rem)); right:-.25rem; }
+  .admin-content .btn { max-width:100%; }
+}

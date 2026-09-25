@@ -25,30 +25,31 @@ import {
   HelpCircle,
   Share2,
   Handshake,
-  Phone
+  Phone,
+  ChevronDown
 } from 'lucide-react'
 import type { Staff } from '../../types/db'
 import { STAFF_ROLE_LABELS } from '../../types/db'
 import { signOut } from '../../app/admin/actions'
 
 const NAV_ITEMS = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/leads', label: 'Enquiries', icon: Users },
-  { href: '/admin/applications', label: 'Applications', icon: FileText },
-  { href: '/admin/follow-ups', label: 'Follow-ups', icon: CalendarClock },
-  { href: '/admin/insights', label: 'News / Blog / Insights', icon: Newspaper },
-  { href: '/admin/gallery', label: 'Gallery', icon: Images },
-  { href: '/admin/courses', label: 'Courses', icon: BookOpen },
-  { href: '/admin/testimonials', label: 'Testimonials', icon: MessageSquareQuote },
-  { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
-  { href: '/admin/settings/social', label: 'Social media', icon: Share2 },
-  { href: '/admin/settings/partners', label: 'Partners & alliances', icon: Handshake },
-  { href: '/admin/settings/contact', label: 'Contact info', icon: Phone },
-  { href: '/admin/programmes', label: 'Programmes', icon: GraduationCap },
-  { href: '/admin/staff', label: 'Staff', icon: UserCog },
-  { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
-  { href: '/admin/notifications', label: 'Notifications', icon: Bell },
-  { href: '/admin/settings', label: 'Settings', icon: Settings }
+  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, access: 'super_admin' },
+  { href: '/admin/leads', label: 'Enquiries', icon: Users, access: 'admissions' },
+  { href: '/admin/applications', label: 'Applications', icon: FileText, access: 'admissions' },
+  { href: '/admin/follow-ups', label: 'Follow-ups', icon: CalendarClock, access: 'admissions' },
+  { href: '/admin/insights', label: 'News / Blog / Insights', icon: Newspaper, access: 'content' },
+  { href: '/admin/gallery', label: 'Gallery', icon: Images, access: 'super_admin' },
+  { href: '/admin/courses', label: 'Courses', icon: BookOpen, access: 'super_admin' },
+  { href: '/admin/testimonials', label: 'Testimonials', icon: MessageSquareQuote, access: 'super_admin' },
+  { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle, access: 'super_admin' },
+  { href: '/admin/settings/social', label: 'Social media', icon: Share2, access: 'super_admin' },
+  { href: '/admin/settings/partners', label: 'Partners & alliances', icon: Handshake, access: 'super_admin' },
+  { href: '/admin/settings/contact', label: 'Contact info', icon: Phone, access: 'super_admin' },
+  { href: '/admin/programmes', label: 'Programmes', icon: GraduationCap, access: 'super_admin' },
+  { href: '/admin/staff', label: 'Staff', icon: UserCog, access: 'super_admin' },
+  { href: '/admin/reports', label: 'Reports', icon: BarChart3, access: 'super_admin' },
+  { href: '/admin/notifications', label: 'Notifications', icon: Bell, access: 'super_admin' },
+  { href: '/admin/settings', label: 'Settings', icon: Settings, access: 'super_admin' }
 ]
 
 export default function AdminShell({
@@ -62,6 +63,7 @@ export default function AdminShell({
 }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
 
   // '/admin' and '/admin/settings' need exact matching rather than the
   // startsWith below: '/admin/settings/social' is itself a nav item now, so
@@ -71,8 +73,8 @@ export default function AdminShell({
     href === '/admin' || href === '/admin/settings' ? pathname === href : pathname?.startsWith(href)
   const visibleNavItems = NAV_ITEMS.filter((item) => {
     if (staff.role === 'super_admin') return true
-    if (staff.role === 'content_manager') return item.href === '/admin/insights'
-    if (staff.role === 'admissions_officer') return ['/admin/leads', '/admin/applications', '/admin/follow-ups'].includes(item.href)
+    if (item.access === 'content') return staff.role === 'content_manager' && staff.can_manage_insights
+    if (item.access === 'admissions') return staff.role === 'admissions_officer'
     return false
   })
   const currentItem = visibleNavItems.find((item) => isActive(item.href))
@@ -129,34 +131,7 @@ export default function AdminShell({
           })}
         </nav>
         <div className="admin-sidebar-footer">
-          <span className="admin-avatar" aria-hidden="true">
-            {staff.full_name
-              .split(' ')
-              .filter(Boolean)
-              .slice(0, 2)
-              .map((p) => p[0])
-              .join('')
-              .toUpperCase()}
-          </span>
-          <div className="min-w-0">
-            <p className="text-[0.65rem] font-semibold tracking-wider uppercase text-white/35 mb-1">Official Account</p>
-            <p className="text-sm font-semibold text-white truncate">{staff.full_name}</p>
-            <p className="text-xs text-white/50 mt-0.5">{STAFF_ROLE_LABELS[staff.role]}</p>
-            {staff.role === 'super_admin' && (
-              <Link
-                href="/admin/settings"
-                onClick={() => setOpen(false)}
-                className="admin-nav-link !px-0 hover:!bg-transparent hover:!text-white mt-3 gap-2"
-              >
-                <UserCircle size={15} aria-hidden="true" /> Profile
-              </Link>
-            )}
-            <form action={signOut}>
-              <button type="submit" className="admin-nav-link !px-0 hover:!bg-transparent hover:!text-amber-300 gap-2">
-                <LogOut size={15} aria-hidden="true" /> Logout
-              </button>
-            </form>
-          </div>
+          <p className="text-[0.65rem] text-white/35 leading-relaxed">Use the profile menu in the top bar to manage your account and sign out.</p>
         </div>
       </aside>
 
@@ -184,15 +159,57 @@ export default function AdminShell({
               )}
             </Link>
           )}
-          <span className="admin-avatar hidden sm:flex" style={{ width: 32, height: 32, fontSize: '0.7rem' }} aria-hidden="true">
-            {staff.full_name
-              .split(' ')
-              .filter(Boolean)
-              .slice(0, 2)
-              .map((p) => p[0])
-              .join('')
-              .toUpperCase()}
-          </span>
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setProfileOpen((value) => !value)}
+              className="flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-[var(--color-navy-50)] transition-colors"
+              aria-expanded={profileOpen}
+              aria-haspopup="menu"
+              aria-label="Open account menu"
+            >
+              <span className="admin-avatar" style={{ width: 32, height: 32, fontSize: '0.7rem' }} aria-hidden="true">
+                {staff.full_name
+                  .split(' ')
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((p) => p[0])
+                  .join('')
+                  .toUpperCase()}
+              </span>
+              <span className="hidden md:block text-left max-w-[150px]">
+                <span className="block text-xs font-semibold truncate" style={{ color: 'var(--color-ink)' }}>{staff.full_name}</span>
+                <span className="block text-[0.65rem] truncate" style={{ color: 'var(--color-muted)' }}>{STAFF_ROLE_LABELS[staff.role]}</span>
+              </span>
+              <ChevronDown size={15} className={`hidden sm:block transition-transform ${profileOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+            </button>
+            {profileOpen && (
+              <div className="admin-profile-menu absolute right-0 top-full mt-2 z-50 w-64 rounded-xl border bg-white shadow-xl p-2" role="menu">
+                <div className="px-3 py-2.5 border-b mb-1">
+                  <p className="text-[0.65rem] font-semibold tracking-wider uppercase" style={{ color: 'var(--color-muted)' }}>Official Account</p>
+                  <p className="text-sm font-semibold mt-1 truncate" style={{ color: 'var(--color-ink)' }}>{staff.full_name}</p>
+                  <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--color-muted)' }}>{staff.email}</p>
+                  <p className="text-xs font-medium mt-1" style={{ color: 'var(--color-navy-700)' }}>{STAFF_ROLE_LABELS[staff.role]}</p>
+                </div>
+                {staff.role === 'super_admin' && (
+                  <Link
+                    href="/admin/settings"
+                    onClick={() => setProfileOpen(false)}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-[var(--color-navy-50)]"
+                    style={{ color: 'var(--color-ink)' }}
+                    role="menuitem"
+                  >
+                    <UserCircle size={16} aria-hidden="true" /> Profile
+                  </Link>
+                )}
+                <form action={signOut}>
+                  <button type="submit" className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-[var(--color-navy-50)] text-left" style={{ color: 'var(--color-danger)' }} role="menuitem">
+                    <LogOut size={16} aria-hidden="true" /> Logout
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
           <Link href="/" className="text-xs shrink-0" style={{ color: 'var(--color-muted)' }}>
             ← Back to public website
           </Link>
