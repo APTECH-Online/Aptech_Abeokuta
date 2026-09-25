@@ -87,6 +87,10 @@ async function runScheduledPublishing() {
 
   if (publishedCount > 0 || archivedCount > 0) {
     revalidatePath('/insights')
+    revalidatePath('/insights/news')
+    revalidatePath('/insights/blog')
+    revalidatePath('/insights/announcements')
+    revalidatePath('/insights/events')
     revalidatePath('/')
     revalidatePath('/admin/insights')
     revalidatePath('/admin')

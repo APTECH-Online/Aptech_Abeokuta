@@ -13,7 +13,7 @@ import FAQSection from '../../components/home/FAQSection'
 import CTABand from '../../components/home/CTABand'
 import BuildSection from '../../components/home/BuildSection'
 import PartnerLogos from '../../components/shared/PartnerLogos'
-import { getPublishedInsights } from '../../lib/insights-public'
+import LatestUpdates from '../../components/home/LatestUpdates'
 import { getPublishedTestimonials } from '../../lib/testimonials-public'
 import { getPublishedFaqs } from '../../lib/faqs-public'
 import { getPublishedPartnersHighlight } from '../../lib/partners-public'
@@ -37,7 +37,6 @@ export const metadata = {
 }
 
 export default async function Home() {
-  const insights = await getPublishedInsights({ limit: 3 })
   const courses = await getPublishedCourses()
   const testimonials = await getPublishedTestimonials(3)
   const faqs = await getPublishedFaqs()
@@ -132,38 +131,7 @@ export default async function Home() {
         </Container>
       </section>
 
-      <section className="section">
-        <Container>
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <SectionHeading
-              eyebrow="Insights"
-              title="Career guides & technology explainers"
-              description="Practical guidance on tech careers, learning to code, and choosing the right programme."
-            />
-            <Link href="/insights" className="btn btn-secondary shrink-0">View all insights</Link>
-          </div>
-          <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {insights.slice(0, 3).map((post) => (
-              <article key={post.slug} className="card p-6 flex flex-col">
-                <p className="eyebrow">{post.category}</p>
-                <h3 className="mt-3 font-display font-semibold text-[1rem] text-[var(--color-ink)] leading-snug">
-                  {post.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed flex-1" style={{ color: 'var(--color-body)' }}>
-                  {post.short_description}
-                </p>
-                <Link
-                  href={`/insights/${post.slug}`}
-                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold"
-                  style={{ color: 'var(--color-teal-700)' }}
-                >
-                  Read article
-                </Link>
-              </article>
-            ))}
-          </div>
-        </Container>
-      </section>
+      <LatestUpdates />
 
       <section className="section-tight" style={{ background: 'var(--color-paper-alt)', borderTop: '1px solid var(--color-line)' }}>
         <Container className="max-w-3xl">

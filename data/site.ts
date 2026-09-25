@@ -19,15 +19,31 @@ export const siteConfig = {
   // and is fetched through lib/social-links-public.ts (getPublishedSocialLinks()).
 }
 
-// Top-level links shown directly in the nav bar.
+// Top-level links shown directly in the nav bar, in display order. Two of
+// these ('News & Insights') render as a dropdown instead of a plain link —
+// see Header.tsx, which special-cases any entry with an `items` array.
 export const primaryNav = [
   { label: 'Home', href: '/' },
   { label: 'Courses', href: '/courses' },
   { label: 'About', href: '/about' },
   { label: 'Admissions', href: '/admissions' },
-  { label: 'Events', href: '/insights?view=events' },
+  { label: 'Events', href: '/insights/events' },
   { label: 'Contact', href: '/contact' }
 ]
+
+// CRM-backed content, grouped under a "News & Insights" dropdown in the
+// main nav (between Events and Contact — see Header.tsx). Each route is a
+// dedicated public listing filtered by content type; see
+// lib/insights-public.ts and app/(site)/insights/*.
+export const newsInsightsNav = {
+  label: 'News & Insights',
+  items: [
+    { label: 'All Updates', href: '/insights' },
+    { label: 'News', href: '/insights/news' },
+    { label: 'Blog / Insights', href: '/insights/blog' },
+    { label: 'Announcements', href: '/insights/announcements' }
+  ]
+}
 
 // Secondary links grouped under an "Explore" dropdown, so the nav bar stays
 // uncluttered as more pages are added. Header.tsx treats being on any of
@@ -35,8 +51,7 @@ export const primaryNav = [
 export const exploreNav = [
   { label: 'Student Life', href: '/student-life' },
   { label: 'Gallery', href: '/gallery' },
-  { label: 'Testimonials', href: '/testimonials' },
-  { label: 'Insights', href: '/insights' }
+  { label: 'Testimonials', href: '/testimonials' }
 ]
 
 export const footerNav = {
@@ -48,7 +63,8 @@ export const footerNav = {
     { label: 'Student Life', href: '/student-life' },
     { label: 'Gallery', href: '/gallery' },
     { label: 'Testimonials', href: '/testimonials' },
-    { label: 'Insights', href: '/insights' }
+    { label: 'News & Insights', href: '/insights' },
+    { label: 'Events', href: '/insights/events' }
   ],
   support: [
     { label: 'Contact us', href: '/contact' },
