@@ -26,7 +26,8 @@ import {
   Share2,
   Handshake,
   Phone,
-  ChevronDown
+  ChevronDown,
+  ExternalLink
 } from 'lucide-react'
 import type { Staff } from '../../types/db'
 import { STAFF_ROLE_LABELS } from '../../types/db'
@@ -159,60 +160,83 @@ export default function AdminShell({
               )}
             </Link>
           )}
-          <div className="relative shrink-0">
-            <button
-              type="button"
-              onClick={() => setProfileOpen((value) => !value)}
-              className="flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-[var(--color-navy-50)] transition-colors"
-              aria-expanded={profileOpen}
-              aria-haspopup="menu"
-              aria-label="Open account menu"
+          <div className="admin-topbar-actions">
+            <Link
+              href="/"
+              className="admin-public-link"
+              aria-label="Back to public website"
             >
-              <span className="admin-avatar" style={{ width: 32, height: 32, fontSize: '0.7rem' }} aria-hidden="true">
-                {staff.full_name
-                  .split(' ')
-                  .filter(Boolean)
-                  .slice(0, 2)
-                  .map((p) => p[0])
-                  .join('')
-                  .toUpperCase()}
-              </span>
-              <span className="hidden md:block text-left max-w-[150px]">
-                <span className="block text-xs font-semibold truncate" style={{ color: 'var(--color-ink)' }}>{staff.full_name}</span>
-                <span className="block text-[0.65rem] truncate" style={{ color: 'var(--color-muted)' }}>{STAFF_ROLE_LABELS[staff.role]}</span>
-              </span>
-              <ChevronDown size={15} className={`hidden sm:block transition-transform ${profileOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
-            </button>
-            {profileOpen && (
-              <div className="admin-profile-menu absolute right-0 top-full mt-2 z-50 w-64 rounded-xl border bg-white shadow-xl p-2" role="menu">
-                <div className="px-3 py-2.5 border-b mb-1">
-                  <p className="text-[0.65rem] font-semibold tracking-wider uppercase" style={{ color: 'var(--color-muted)' }}>Official Account</p>
-                  <p className="text-sm font-semibold mt-1 truncate" style={{ color: 'var(--color-ink)' }}>{staff.full_name}</p>
-                  <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--color-muted)' }}>{staff.email}</p>
-                  <p className="text-xs font-medium mt-1" style={{ color: 'var(--color-navy-700)' }}>{STAFF_ROLE_LABELS[staff.role]}</p>
+              <ExternalLink size={15} aria-hidden="true" />
+              <span>Back to website</span>
+            </Link>
+            <div className="admin-profile-wrap">
+              <button
+                type="button"
+                onClick={() => setProfileOpen((value) => !value)}
+                className={`admin-profile-trigger ${profileOpen ? 'is-open' : ''}`}
+                aria-expanded={profileOpen}
+                aria-haspopup="menu"
+                aria-label="Open account menu"
+              >
+                <span className="admin-avatar admin-avatar-topbar" aria-hidden="true">
+                  {staff.full_name
+                    .split(' ')
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((p) => p[0])
+                    .join('')
+                    .toUpperCase()}
+                </span>
+                <span className="admin-profile-trigger-copy">
+                  <span className="admin-profile-trigger-name">{staff.full_name}</span>
+                  <span className="admin-profile-trigger-role">{STAFF_ROLE_LABELS[staff.role]}</span>
+                </span>
+                <ChevronDown size={15} className={`admin-profile-chevron ${profileOpen ? 'is-open' : ''}`} aria-hidden="true" />
+              </button>
+              {profileOpen && (
+                <div className="admin-profile-menu" role="menu">
+                  <div className="admin-profile-header">
+                    <div className="admin-profile-header-avatar">
+                      <span className="admin-avatar admin-avatar-menu" aria-hidden="true">
+                        {staff.full_name
+                          .split(' ')
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .map((p) => p[0])
+                          .join('')
+                          .toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="admin-profile-label">Official Account</p>
+                      <p className="admin-profile-name">{staff.full_name}</p>
+                      <p className="admin-profile-email">{staff.email}</p>
+                      <span className="admin-profile-role">{STAFF_ROLE_LABELS[staff.role]}</span>
+                    </div>
+                  </div>
+                  <div className="admin-profile-menu-body">
+                    {staff.role === 'super_admin' && (
+                      <Link
+                        href="/admin/settings"
+                        onClick={() => setProfileOpen(false)}
+                        className="admin-profile-menu-item"
+                        role="menuitem"
+                      >
+                        <UserCircle size={17} aria-hidden="true" />
+                        <span>Profile & settings</span>
+                      </Link>
+                    )}
+                    <form action={signOut}>
+                      <button type="submit" className="admin-profile-menu-item is-danger" role="menuitem">
+                        <LogOut size={17} aria-hidden="true" />
+                        <span>Logout</span>
+                      </button>
+                    </form>
+                  </div>
                 </div>
-                {staff.role === 'super_admin' && (
-                  <Link
-                    href="/admin/settings"
-                    onClick={() => setProfileOpen(false)}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-[var(--color-navy-50)]"
-                    style={{ color: 'var(--color-ink)' }}
-                    role="menuitem"
-                  >
-                    <UserCircle size={16} aria-hidden="true" /> Profile
-                  </Link>
-                )}
-                <form action={signOut}>
-                  <button type="submit" className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-[var(--color-navy-50)] text-left" style={{ color: 'var(--color-danger)' }} role="menuitem">
-                    <LogOut size={16} aria-hidden="true" /> Logout
-                  </button>
-                </form>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-          <Link href="/" className="text-xs shrink-0" style={{ color: 'var(--color-muted)' }}>
-            ← Back to public website
-          </Link>
         </header>
         <main className="admin-content">{children}</main>
       </div>
