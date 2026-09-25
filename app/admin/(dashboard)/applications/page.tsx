@@ -4,6 +4,8 @@ import { APPLICATION_STATUS_LABELS } from '../../../../types/db'
 import StatusBadge from '../../../../components/admin/StatusBadge'
 import ApplicationStatusForm from '../../../../components/admin/ApplicationStatusForm'
 import Pagination from '../../../../components/admin/Pagination'
+import { getCurrentStaff } from '../../../../lib/auth'
+import { DeleteApplicationButton } from '../../../../components/admin/CrmDeleteActions'
 
 export const metadata = { title: 'Applications | Admissions CRM' }
 export const dynamic = 'force-dynamic'
@@ -16,12 +18,15 @@ export default async function ApplicationsPage({
   const sp = await searchParams
   const page = Number(sp.page) || 1
 
-  const { applications, total, pageSize } = await getApplications({
+  const [{ applications, total, pageSize }, currentStaff] = await Promise.all([
+    getApplications({
     status: (sp.status as any) || '',
     programmeId: sp.programmeId,
     page,
     pageSize: 20
-  })
+  }), getCurrentStaff()
+  ])
+  const canDelete = currentStaff?.role === 'super_admin'
 
   return (
     <div className="grid gap-6">
@@ -55,12 +60,13 @@ export default async function ApplicationsPage({
               <th>Submitted</th>
               <th>Assigned</th>
               <th>Update status</th>
+              {canDelete && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
             {applications.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-10" style={{ color: 'var(--color-muted)' }}>
+                <td colSpan={canDelete ? 8 : 7} className="text-center py-10" style={{ color: 'var(--color-muted)' }}>
                   No applications yet.
                 </td>
               </tr>
@@ -80,6 +86,11 @@ export default async function ApplicationsPage({
                   <td>
                     <ApplicationStatusForm applicationId={a.id} leadId={a.leads?.id || ''} currentStatus={a.status} />
                   </td>
+                  {canDelete && (
+                    <td>
+                      <DeleteApplicationButton applicationId={a.id} reference={a.application_reference} />
+                    </td>
+                  )}
                 </tr>
               ))
             )}

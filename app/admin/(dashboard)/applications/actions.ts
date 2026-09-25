@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../../../../lib/supabase/admin'
-import { requireAdmissionsAccess, canEditLead, ForbiddenError, UnauthorizedError } from '../../../../lib/auth'
+import { requireAdmissionsAccess, requireRole, canEditLead, ForbiddenError, UnauthorizedError } from '../../../../lib/auth'
 import { logAudit } from '../../../../lib/audit'
 import { APPLICATION_STATUS_LABELS, type ApplicationStatus } from '../../../../types/db'
 
@@ -65,6 +65,48 @@ export async function updateApplicationStatus(_prev: ActionResult, formData: For
     if (err instanceof UnauthorizedError) return { ok: false, message: 'Please sign in again.' }
     if (err instanceof ForbiddenError) return { ok: false, message: "You don't have permission to do that." }
     console.error('[crm] unexpected error updating application', err)
+    return { ok: false, message: 'Something went wrong. Please try again.' }
+  }
+}
+
+
+export async function deleteApplication(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  try {
+    const staff = await requireRole('super_admin')
+    const applicationId = String(formData.get('applicationId') || '')
+    if (!applicationId) return { ok: false, message: 'Missing application.' }
+
+    const admin = createAdminClient()
+    const { data: existing } = await admin
+      .from('applications')
+      .select('id, application_reference, lead_id')
+      .eq('id', applicationId)
+      .maybeSingle()
+
+    if (!existing) return { ok: false, message: 'Application not found.' }
+
+    const { error } = await admin.from('applications').delete().eq('id', applicationId)
+    if (error) {
+      console.error('[crm] failed to delete application', error)
+      return { ok: false, message: 'Could not delete the application.' }
+    }
+
+    await logAudit(admin, {
+      userId: staff.id,
+      action: 'application.deleted',
+      entity: 'application',
+      entityId: applicationId,
+      metadata: { applicationReference: existing.application_reference, leadId: existing.lead_id }
+    })
+
+    revalidatePath('/admin/applications')
+    revalidatePath(`/admin/leads/${existing.lead_id}`)
+    revalidatePath('/admin')
+    return { ok: true }
+  } catch (err) {
+    if (err instanceof UnauthorizedError) return { ok: false, message: 'Please sign in again.' }
+    if (err instanceof ForbiddenError) return { ok: false, message: "Only Super Admins can delete applications." }
+    console.error('[crm] unexpected error deleting application', err)
     return { ok: false, message: 'Something went wrong. Please try again.' }
   }
 }

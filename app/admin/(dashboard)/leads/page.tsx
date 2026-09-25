@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { Download } from 'lucide-react'
+import { getCurrentStaff } from '../../../../lib/auth'
+import { DeleteLeadButton } from '../../../../components/admin/CrmDeleteActions'
 import { getLeads, getLeadFilterOptions } from '../../../../lib/crm/leads'
 import { LEAD_STATUS_ORDER, LEAD_STATUS_LABELS, LEAD_SOURCE_LABELS } from '../../../../types/db'
 import StatusBadge from '../../../../components/admin/StatusBadge'
@@ -28,10 +30,12 @@ export default async function LeadsPage({
     pageSize: 20
   }
 
-  const [{ leads, total, pageSize }, { staff, programmes }] = await Promise.all([
+  const [{ leads, total, pageSize }, { staff, programmes }, currentStaff] = await Promise.all([
     getLeads(filter),
-    getLeadFilterOptions()
+    getLeadFilterOptions(),
+    getCurrentStaff()
   ])
+  const canDelete = currentStaff?.role === 'super_admin'
 
   const exportParams = new URLSearchParams()
   Object.entries(sp).forEach(([k, v]) => v && exportParams.set(k, v))
@@ -123,12 +127,13 @@ export default async function LeadsPage({
               <th>Assigned</th>
               <th>Created</th>
               <th>Last activity</th>
+              {canDelete && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
             {leads.length === 0 ? (
               <tr>
-                <td colSpan={10} className="text-center py-10" style={{ color: 'var(--color-muted)' }}>
+                <td colSpan={canDelete ? 11 : 10} className="text-center py-10" style={{ color: 'var(--color-muted)' }}>
                   No leads match these filters yet.
                 </td>
               </tr>
@@ -151,6 +156,11 @@ export default async function LeadsPage({
                   <td>{lead.assignedName || 'Unassigned'}</td>
                   <td>{new Date(lead.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                   <td>{new Date(lead.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                  {canDelete && (
+                    <td>
+                      <DeleteLeadButton leadId={lead.id} name={`${lead.first_name} ${lead.last_name}`} />
+                    </td>
+                  )}
                 </tr>
               ))
             )}

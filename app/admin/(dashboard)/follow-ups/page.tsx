@@ -4,6 +4,8 @@ import { FOLLOW_UP_STATUS_LABELS, INTERACTION_TYPE_LABELS } from '../../../../ty
 import StatusBadge from '../../../../components/admin/StatusBadge'
 import FollowUpStatusForm from '../../../../components/admin/FollowUpStatusForm'
 import Pagination from '../../../../components/admin/Pagination'
+import { getCurrentStaff } from '../../../../lib/auth'
+import { DeleteFollowUpButton } from '../../../../components/admin/CrmDeleteActions'
 
 export const metadata = { title: 'Follow-ups | Admissions CRM' }
 export const dynamic = 'force-dynamic'
@@ -20,11 +22,14 @@ export default async function FollowUpsPage({
   const sp = await searchParams
   const page = Number(sp.page) || 1
 
-  const { followUps, total, pageSize } = await getFollowUps({
+  const [{ followUps, total, pageSize }, currentStaff] = await Promise.all([
+    getFollowUps({
     status: (sp.status as any) || '',
     page,
     pageSize: 25
-  })
+  }), getCurrentStaff()
+  ])
+  const canDelete = currentStaff?.role === 'super_admin'
 
   return (
     <div className="grid gap-6">
@@ -58,12 +63,13 @@ export default async function FollowUpsPage({
               <th>Status</th>
               <th>Notes</th>
               <th>Action</th>
+              {canDelete && <th>Admin</th>}
             </tr>
           </thead>
           <tbody>
             {followUps.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-10" style={{ color: 'var(--color-muted)' }}>
+                <td colSpan={canDelete ? 8 : 7} className="text-center py-10" style={{ color: 'var(--color-muted)' }}>
                   No follow-ups match this filter.
                 </td>
               </tr>
@@ -84,6 +90,11 @@ export default async function FollowUpsPage({
                   <td>
                     {f.status === 'pending' && <FollowUpStatusForm followUpId={f.id} leadId={f.lead_id} />}
                   </td>
+                  {canDelete && (
+                    <td>
+                      <DeleteFollowUpButton followUpId={f.id} />
+                    </td>
+                  )}
                 </tr>
               ))
             )}

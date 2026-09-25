@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../../../../../lib/supabase/admin'
-import { requireAdmissionsAccess, canEditLead, canAssignLeads, ForbiddenError, UnauthorizedError } from '../../../../../lib/auth'
+import { requireAdmissionsAccess, requireRole, canEditLead, canAssignLeads, ForbiddenError, UnauthorizedError } from '../../../../../lib/auth'
 import { logAudit } from '../../../../../lib/audit'
 import { generateApplicationReference } from '../../../../../lib/reference'
 import {
@@ -263,6 +263,93 @@ export async function editLeadInfo(_prev: ActionResult, formData: FormData): Pro
     return { ok: true }
   } catch (err) {
     return friendlyAuthError(err)
+  }
+}
+
+
+export async function deleteLead(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  try {
+    const staff = await requireRole('super_admin')
+    const leadId = String(formData.get('leadId') || '')
+    if (!leadId) return { ok: false, message: 'Missing enquiry.' }
+
+    const admin = createAdminClient()
+    const { data: existing } = await admin
+      .from('leads')
+      .select('id, lead_reference, first_name, last_name')
+      .eq('id', leadId)
+      .maybeSingle()
+
+    if (!existing) return { ok: false, message: 'Enquiry not found.' }
+
+    // The database intentionally cascades this delete to the enquiry's
+    // applications, follow-ups, interactions, education and interests.
+    const { error } = await admin.from('leads').delete().eq('id', leadId)
+    if (error) {
+      console.error('[crm] failed to delete enquiry', error)
+      return { ok: false, message: 'Could not delete the enquiry.' }
+    }
+
+    await logAudit(admin, {
+      userId: staff.id,
+      action: 'lead.deleted',
+      entity: 'lead',
+      entityId: leadId,
+      metadata: { leadReference: existing.lead_reference, name: `${existing.first_name} ${existing.last_name}` }
+    })
+
+    revalidatePath('/admin/leads')
+    revalidatePath('/admin/applications')
+    revalidatePath('/admin/follow-ups')
+    revalidatePath('/admin')
+    return { ok: true }
+  } catch (err) {
+    if (err instanceof UnauthorizedError) return { ok: false, message: 'Please sign in again.' }
+    if (err instanceof ForbiddenError) return { ok: false, message: "Only Super Admins can delete enquiries." }
+    console.error('[crm] unexpected error deleting enquiry', err)
+    return { ok: false, message: 'Something went wrong. Please try again.' }
+  }
+}
+
+
+export async function deleteFollowUp(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  try {
+    const staff = await requireRole('super_admin')
+    const followUpId = String(formData.get('followUpId') || '')
+    if (!followUpId) return { ok: false, message: 'Missing follow-up.' }
+
+    const admin = createAdminClient()
+    const { data: existing } = await admin
+      .from('follow_ups')
+      .select('id, lead_id')
+      .eq('id', followUpId)
+      .maybeSingle()
+
+    if (!existing) return { ok: false, message: 'Follow-up not found.' }
+
+    const { error } = await admin.from('follow_ups').delete().eq('id', followUpId)
+    if (error) {
+      console.error('[crm] failed to delete follow-up', error)
+      return { ok: false, message: 'Could not delete the follow-up.' }
+    }
+
+    await logAudit(admin, {
+      userId: staff.id,
+      action: 'follow_up.deleted',
+      entity: 'follow_up',
+      entityId: followUpId,
+      metadata: { leadId: existing.lead_id }
+    })
+
+    revalidatePath('/admin/follow-ups')
+    revalidatePath(`/admin/leads/${existing.lead_id}`)
+    revalidatePath('/admin')
+    return { ok: true }
+  } catch (err) {
+    if (err instanceof UnauthorizedError) return { ok: false, message: 'Please sign in again.' }
+    if (err instanceof ForbiddenError) return { ok: false, message: "Only Super Admins can delete follow-ups." }
+    console.error('[crm] unexpected error deleting follow-up', err)
+    return { ok: false, message: 'Something went wrong. Please try again.' }
   }
 }
 
