@@ -453,7 +453,7 @@ export const STAFF_ROLE_LABELS: Record<StaffRole, string> = {
   super_admin: 'Super Admin',
   content_manager: 'Content Manager',
   admissions_manager: 'Admissions Manager',
-  admissions_officer: 'Account Officer',
+  admissions_officer: 'Admissions Officer',
   counsellor: 'Counsellor',
   viewer: 'Viewer'
 }

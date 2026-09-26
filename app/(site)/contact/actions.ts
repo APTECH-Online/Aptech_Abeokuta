@@ -56,9 +56,14 @@ export async function submitContactMessage(
     }
   }
 
+  if (parsed.data.companyWebsite) {
+    // Honeypot tripped — silently pretend success so bots don't learn.
+    return { status: 'success' }
+  }
+
   const values = parsed.data
   const { firstName, lastName } = splitName(values.name)
-  const phone = values.phone?.trim() || ''
+  const phone = values.phone.trim()
 
   let admin: ReturnType<typeof createAdminClient>
 
@@ -80,7 +85,7 @@ export async function submitContactMessage(
     const { data: submission, error: submissionError } = await admin.rpc('submit_contact_form', {
       p_name: values.name,
       p_email: values.email,
-      p_phone: phone || null,
+      p_phone: phone,
       p_subject: values.subject || null,
       p_message: values.message,
       p_landing_page: '/contact'

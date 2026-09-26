@@ -178,32 +178,45 @@ export async function submitEnquiry(
     }
 
     // --- Education + interest records ------------------------------------------
+    // These are supplementary to the core lead record: if one of these writes
+    // fails we still want the applicant to see a success response (their
+    // primary lead record was saved), but the failure must never be silently
+    // dropped — log it loudly so staff/ops can recover the missing detail.
     if (values.highestQualification || values.institution || values.graduationYear || values.previousItExperience) {
-      await admin.from('lead_education').insert({
+      const { error: educationError } = await admin.from('lead_education').insert({
         lead_id: leadId,
         highest_qualification: values.highestQualification || null,
         institution: values.institution || null,
         graduation_year: values.graduationYear ? Number(values.graduationYear) : null,
         previous_it_experience: values.previousItExperience || null
       })
+      if (educationError) {
+        console.error('[admissions] failed to save education details', educationError, { leadId })
+      }
     }
 
-    await admin.from('lead_interests').insert({
+    const { error: interestError } = await admin.from('lead_interests').insert({
       lead_id: leadId,
       programme_id: programme.id,
       study_mode: values.studyMode || null,
       preferred_intake: values.preferredIntake || null,
       expected_start_date: values.expectedStartDate || null
     })
+    if (interestError) {
+      console.error('[admissions] failed to save programme interest', interestError, { leadId })
+    }
 
     // --- Interaction history -------------------------------------------------
-    await admin.from('interactions').insert({
+    const { error: interactionError } = await admin.from('interactions').insert({
       lead_id: leadId,
       user_id: null,
       type: 'website',
       subject: isDuplicate ? 'Repeat enquiry submitted' : 'Enquiry submitted',
       description: `Submitted the admissions enquiry form for ${programme.name}.`
     })
+    if (interactionError) {
+      console.error('[admissions] failed to log enquiry interaction', interactionError, { leadId })
+    }
 
     await logAudit(admin, {
       action: isDuplicate ? 'lead.resubmitted' : 'lead.created',

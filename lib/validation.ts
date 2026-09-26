@@ -29,7 +29,15 @@ export const admissionsFormSchema = z.object({
   // Academic information
   highestQualification: z.string().trim().max(150).optional().or(z.literal('')),
   institution: z.string().trim().max(200).optional().or(z.literal('')),
-  graduationYear: z.string().trim().optional().or(z.literal('')),
+  graduationYear: z
+    .string()
+    .trim()
+    .optional()
+    .or(z.literal(''))
+    .refine(
+      (v) => !v || (/^\d{4}$/.test(v) && Number(v) >= 1970 && Number(v) <= 2035),
+      'Enter a valid graduation year (1970–2035)'
+    ),
   previousItExperience: z.string().trim().max(1000).optional().or(z.literal('')),
 
   // Programme information
@@ -63,9 +71,8 @@ export const contactFormSchema = z.object({
   phone: z
     .string()
     .trim()
-    .regex(phoneRegex, 'Enter a valid phone number')
-    .optional()
-    .or(z.literal('')),
+    .min(1, 'Phone number is required')
+    .regex(phoneRegex, 'Enter a valid phone number'),
   subject: z.string().trim().max(200).optional().or(z.literal('')),
   message: z.string().trim().min(1, 'Please add a message').max(4000),
 

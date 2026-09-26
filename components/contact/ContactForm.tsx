@@ -39,6 +39,12 @@ export default function ContactForm({ whatsapp }: { whatsapp: string }) {
 
   return (
     <form ref={formRef} action={formAction} className="mt-6 grid gap-5" noValidate>
+      {/* Honeypot — hidden from real visitors via CSS, not display:none, so simple bots that skip hidden fields still get caught less reliably; kept minimal and off-screen */}
+      <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden' }}>
+        <label htmlFor="contact-companyWebsite">Leave this field empty</label>
+        <input id="contact-companyWebsite" name="companyWebsite" type="text" tabIndex={-1} autoComplete="off" />
+      </div>
+
       {state.status === 'success' ? (
         <div id="contact-form-result">
           <FormAlert variant="success" title="Message sent">
@@ -83,8 +89,8 @@ export default function ContactForm({ whatsapp }: { whatsapp: string }) {
             </div>
           </div>
           <div>
-            <label htmlFor="contact-phone" className="field-label">Phone (optional)</label>
-            <input id="contact-phone" name="phone" type="tel" className={`field-input ${errorClass('phone')}`} placeholder="e.g. 080X XXX XXXX" />
+            <label htmlFor="contact-phone" className="field-label">Phone number *</label>
+            <input id="contact-phone" name="phone" type="tel" required className={`field-input ${errorClass('phone')}`} placeholder="e.g. 080X XXX XXXX" />
             {fieldErrors.phone && <p className="field-error-text">{fieldErrors.phone}</p>}
           </div>
           <div>

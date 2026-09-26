@@ -218,7 +218,8 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label htmlFor="graduationYear" className="field-label">Graduation year</label>
-                <input id="graduationYear" name="graduationYear" type="number" min="1970" max="2035" className="field-input" placeholder="e.g. 2024" />
+                <input id="graduationYear" name="graduationYear" type="number" min="1970" max="2035" className={`field-input ${errorClass('graduationYear')}`} placeholder="e.g. 2024" />
+                {fieldErrors.graduationYear && <p className="field-error-text">{fieldErrors.graduationYear}</p>}
               </div>
               <div>
                 <label htmlFor="previousItExperience" className="field-label">Previous IT/computer experience</label>

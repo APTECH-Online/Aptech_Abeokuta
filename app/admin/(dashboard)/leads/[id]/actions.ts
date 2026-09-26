@@ -363,6 +363,28 @@ export async function startApplication(_prev: ActionResult, formData: FormData):
     if (!leadId || !programmeId) return { ok: false, message: 'Select a programme first.' }
 
     const admin = createAdminClient()
+
+    // --- Duplicate prevention ---------------------------------------------
+    // A lead moving from enquiry to application should get one active
+    // application per programme, not a new row every time someone clicks
+    // "Start application" (double submissions, page refreshes, etc). An
+    // application that was withdrawn or rejected doesn't block a fresh one —
+    // the applicant may legitimately re-apply.
+    const { data: existingApplication } = await admin
+      .from('applications')
+      .select('id, application_reference, status')
+      .eq('lead_id', leadId)
+      .eq('programme_id', programmeId)
+      .not('status', 'in', '(withdrawn,rejected)')
+      .maybeSingle()
+
+    if (existingApplication) {
+      return {
+        ok: false,
+        message: `This applicant already has an active application (${existingApplication.application_reference}) for that programme.`
+      }
+    }
+
     const reference = await generateApplicationReference(admin)
 
     const { error } = await admin.from('applications').insert({
@@ -373,7 +395,15 @@ export async function startApplication(_prev: ActionResult, formData: FormData):
       assigned_to: staff.id
     })
 
-    if (error) return { ok: false, message: 'Could not create the application.' }
+    if (error) {
+      // A unique-violation here (Postgres code 23505) means a concurrent
+      // request created the same lead+programme application a moment ago —
+      // treat it the same as the pre-check above rather than a hard failure.
+      if ((error as { code?: string }).code === '23505') {
+        return { ok: false, message: 'This applicant already has an active application for that programme.' }
+      }
+      return { ok: false, message: 'Could not create the application.' }
+    }
 
     await admin.from('leads').update({ status: 'application_submitted' }).eq('id', leadId)
 
