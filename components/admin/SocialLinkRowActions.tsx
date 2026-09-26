@@ -32,8 +32,9 @@ function DeleteForm({ item }: { item: SocialLink }) {
       action={formAction}
       onSubmit={async (e) => {
         e.preventDefault()
+        const form = e.currentTarget
         const accepted = await confirm({ title: 'Delete social link?', message: 'This action is permanent and cannot be undone.', confirmLabel: 'Delete', danger: true })
-        if (accepted) e.currentTarget.requestSubmit()
+        if (accepted) form.requestSubmit()
       }}
     >
       <input type="hidden" name="itemId" value={item.id} />

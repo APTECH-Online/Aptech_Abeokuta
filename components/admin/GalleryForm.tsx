@@ -40,7 +40,7 @@ export default function GalleryForm({ mode, item }: { mode: 'create' | 'edit'; i
   const [customCategory, setCustomCategory] = useState(!GALLERY_CATEGORIES.includes(category as any))
 
   return (
-    <form action={formAction} className="grid gap-6 max-w-2xl">
+    <form action={formAction} className="grid gap-6 w-full max-w-2xl">
       {mode === 'edit' && item && <input type="hidden" name="itemId" value={item.id} />}
 
       {!state.ok && state.message && <FormAlert variant="error" title={state.message} />}
@@ -54,7 +54,7 @@ export default function GalleryForm({ mode, item }: { mode: 'create' | 'edit'; i
           required
           maxLength={200}
           defaultValue={item?.title ?? ''}
-          className="admin-input"
+          className="admin-input w-full"
           placeholder="e.g. Career Quest, 16th edition"
         />
         {fieldErrors?.title && <p className="field-error">{fieldErrors.title}</p>}
@@ -92,7 +92,7 @@ export default function GalleryForm({ mode, item }: { mode: 'create' | 'edit'; i
               autoFocus
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="admin-input"
+              className="admin-input w-full"
               placeholder="Type a new category"
             />
           )}
@@ -124,7 +124,7 @@ export default function GalleryForm({ mode, item }: { mode: 'create' | 'edit'; i
           required
           maxLength={300}
           defaultValue={item?.alt_text ?? ''}
-          className="admin-input"
+          className="admin-input w-full"
           placeholder="Describe the photo for screen readers and SEO"
         />
         {fieldErrors?.altText && <p className="field-error">{fieldErrors.altText}</p>}
@@ -143,7 +143,7 @@ export default function GalleryForm({ mode, item }: { mode: 'create' | 'edit'; i
             const file = e.target.files?.[0]
             if (file) setImagePreview(URL.createObjectURL(file))
           }}
-          className="admin-input"
+          className="admin-input w-full"
         />
         {fieldErrors?.image && <p className="field-error">{fieldErrors.image}</p>}
         {imagePreview && (

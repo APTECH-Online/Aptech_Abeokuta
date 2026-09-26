@@ -35,13 +35,14 @@ export function DeleteLeadButton({ leadId, name }: { leadId: string; name: strin
     <form action={formAction} onSubmit={async (event) => {
       if (confirmed.current) { confirmed.current = false; return }
       event.preventDefault()
+      const form = event.currentTarget
       const accepted = await confirm({
         title: 'Delete this enquiry?',
         message: `Permanently delete the enquiry for ${name}? This will also remove its related applications, follow-ups and activity history. This action cannot be undone.`,
         confirmLabel: 'Delete enquiry',
         danger: true
       })
-      if (accepted) { confirmed.current = true; event.currentTarget.requestSubmit() }
+      if (accepted) { confirmed.current = true; form.requestSubmit() }
     }}>
       <input type="hidden" name="leadId" value={leadId} />
       <DeleteButton label="Delete enquiry" />
@@ -59,8 +60,9 @@ export function DeleteApplicationButton({ applicationId, reference }: { applicat
     <form action={formAction} onSubmit={async (event) => {
       if (confirmed.current) { confirmed.current = false; return }
       event.preventDefault()
+      const form = event.currentTarget
       const accepted = await confirm({ title: 'Delete this application?', message: `Permanently delete application ${reference}? This action cannot be undone.`, confirmLabel: 'Delete application', danger: true })
-      if (accepted) { confirmed.current = true; event.currentTarget.requestSubmit() }
+      if (accepted) { confirmed.current = true; form.requestSubmit() }
     }}>
       <input type="hidden" name="applicationId" value={applicationId} />
       <DeleteButton label="Delete" />
@@ -78,8 +80,9 @@ export function DeleteFollowUpButton({ followUpId }: { followUpId: string }) {
     <form action={formAction} onSubmit={async (event) => {
       if (confirmed.current) { confirmed.current = false; return }
       event.preventDefault()
+      const form = event.currentTarget
       const accepted = await confirm({ title: 'Delete this follow-up?', message: 'Permanently delete this follow-up? This action cannot be undone.', confirmLabel: 'Delete follow-up', danger: true })
-      if (accepted) { confirmed.current = true; event.currentTarget.requestSubmit() }
+      if (accepted) { confirmed.current = true; form.requestSubmit() }
     }}>
       <input type="hidden" name="followUpId" value={followUpId} />
       <DeleteButton label="Delete" />

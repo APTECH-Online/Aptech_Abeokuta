@@ -198,7 +198,10 @@ function MobileNavGroup({
 
 export default function Header({ whatsapp }: { whatsapp: string }) {
   const pathname = usePathname()
-  const isDark = pathname === '/'
+  // Keep the global site header visually consistent on every public page.
+  // The homepage hero remains dark; the navigation itself uses the same light
+  // surface as the rest of the site so it never changes colour unexpectedly.
+  const isDark = false
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [openMenu, setOpenMenu] = useState<'campus' | 'news' | null>(null)
@@ -332,7 +335,7 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
           aria-expanded={open}
           aria-controls="mobile-nav"
           onClick={() => setOpen((v) => !v)}
-          className={`2xl:hidden p-2 rounded-md ${isDark ? 'site-header__menu' : ''}`}
+          className="2xl:hidden p-2 rounded-md site-header__menu"
           style={{ color: isDark ? '#fff' : 'var(--color-navy-900)' }}
         >
           {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}

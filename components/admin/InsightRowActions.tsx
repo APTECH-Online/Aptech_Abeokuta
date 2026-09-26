@@ -50,8 +50,9 @@ function DeleteActionForm({ insightId, title }: { insightId: string; title: stri
       className="inline-block"
       onSubmit={async (e) => {
         e.preventDefault()
+        const form = e.currentTarget
         const accepted = await confirm({ title: 'Delete insight?', message: `Permanently delete \"${title}\"? This cannot be undone.`, confirmLabel: 'Delete', danger: true })
-        if (accepted) e.currentTarget.requestSubmit()
+        if (accepted) form.requestSubmit()
       }}
     >
       <input type="hidden" name="insightId" value={insightId} />

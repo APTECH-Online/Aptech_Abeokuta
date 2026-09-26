@@ -32,8 +32,9 @@ function DeleteForm({ item }: { item: GalleryItem }) {
       action={formAction}
       onSubmit={async (e) => {
         e.preventDefault()
+        const form = e.currentTarget
         const accepted = await confirm({ title: 'Delete gallery item?', message: `Permanently delete \"${item.title}\"? This cannot be undone.`, confirmLabel: 'Delete', danger: true })
-        if (accepted) e.currentTarget.requestSubmit()
+        if (accepted) form.requestSubmit()
       }}
     >
       <input type="hidden" name="itemId" value={item.id} />
