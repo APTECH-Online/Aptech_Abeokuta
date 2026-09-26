@@ -1,4 +1,11 @@
 import { ReactNode } from 'react'
+
+function HeroTitle({ title }: { title: string }) {
+  const words = title.trim().split(/\s+/)
+  if (words.length < 2) return <>{title}</>
+  const last = words.pop()
+  return <>{words.join(' ')} <span className="heading-accent heading-accent--inverse">{last}</span></>
+}
 import Breadcrumbs from './Breadcrumbs'
 
 export default function PageHero({
@@ -19,7 +26,7 @@ export default function PageHero({
       <div className="container py-12 sm:py-16">
         <Breadcrumbs items={crumbs} />
         <p className="eyebrow eyebrow-inverse mt-5">{eyebrow}</p>
-        <h1 className="h-display mt-2" style={{ color: '#fff' }}>{title}</h1>
+        <h1 className="h-display mt-2" style={{ color: '#fff' }}><HeroTitle title={title} /></h1>
         {description && (
           <p className="mt-4 max-w-2xl text-[1.05rem] leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>
             {description}

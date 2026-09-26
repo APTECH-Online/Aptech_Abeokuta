@@ -50,15 +50,15 @@ export default async function Home() {
       <Hero />
       <StatsBand courses={courses} />
 
-      <section className="section-tight">
-        <Container className="max-w-3xl">
+      <section className="section program-finder-section">
+        <Container className="max-w-6xl">
           <SectionHeading
             eyebrow="Program finder"
             title="Which programme is right for you?"
             description="Answer two quick questions and we'll point you to the APTECH Abeokuta programme that best fits your goals."
             align="center"
           />
-          <div className="mt-8">
+          <div className="mt-10">
             <ProgramFinder courses={courses} />
           </div>
         </Container>
