@@ -1454,7 +1454,90 @@ a { color: inherit; }
   .site-header__inner { padding-inline: 1rem; }
 }
 
-/* ==========================================================================\n   Responsive hardening\n   Keep every layout inside the viewport and let controls shrink naturally.\n   Tables remain horizontally scrollable inside their own container instead of\n   forcing the whole page to scroll.\n   ========================================================================== */\n*, *::before, *::after { box-sizing: border-box; }\n\nimg, video, iframe, svg { max-width: 100%; }\n\nbutton, input, select, textarea { font: inherit; }\n\n.public-page, main, section, article, form, fieldset { min-width: 0; }\n\n@media (max-width: 767px) {\n  .container { padding-inline: 1rem; }\n\n  .site-header__inner { gap: .6rem; }\n  .site-header__inner > a { min-width: 0; }\n  .site-header__inner > a img { max-width: min(190px, 58vw); height: auto; }\n\n  .hero-premium { overflow: hidden; }\n\n  .admin-content form { width: 100%; }\n  .admin-content .card { min-width: 0; }\n  .admin-form-actions { width: 100%; }\n  .admin-form-actions .btn { flex: 1 1 auto; }\n  .admin-content .grid.grid-cols-2,\n  .admin-content .grid.grid-cols-3,\n  .admin-content .grid.grid-cols-4,\n  .admin-content .grid.grid-cols-5,\n  .admin-content .grid.grid-cols-6 {\n    grid-template-columns: minmax(0, 1fr);\n  }\n\n  .admin-input, .admin-select,\n  .field-input, .field-textarea, .field-select {\n    width: 100%;\n    max-width: 100%;\n    min-width: 0;\n  }\n\n  .admin-content input[type="file"] {\n    width: 100%;\n    max-width: 100%;\n    overflow: hidden;\n  }\n\n  .admin-content .btn {\n    white-space: normal;\n    text-align: center;\n  }\n\n  .admin-table-wrap {\n    max-width: 100%;\n    overflow-x: auto;\n  }\n\n  .admin-toolbar { align-items: stretch; }\n  .admin-toolbar > * { width: 100%; }\n\n  .crm-toast-stack {\n    top: max(.75rem, env(safe-area-inset-top));\n    right: .75rem;\n    width: min(390px, calc(100vw - 1.5rem));\n  }\n}\n\n@media (min-width: 768px) and (max-width: 1023px) {\n  .container { padding-inline: 1.25rem; }\n  .admin-content { padding-inline: 1.25rem; }\n}\n\n@media (max-width: 479px) {\n  .container { padding-inline: .9rem; }\n  .section { padding-block: 2.75rem; }\n  .section-tight { padding-block: 2rem; }\n  .h-display { font-size: clamp(2rem, 11vw, 2.7rem); }\n  .btn { width: 100%; }\n  .site-header__mobile-actions .btn,\n  .site-header__mobile-actions a { width: 100%; }\n}\n\n/* Premium CRM feedback: confirmations and toast notifications. */
+/* ==========================================================================
+   Responsive hardening
+   Keep every layout inside the viewport and let controls shrink naturally.
+   Tables remain horizontally scrollable inside their own container instead of
+   forcing the whole page to scroll.
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+img, video, iframe, svg { max-width: 100%; }
+
+button, input, select, textarea { font: inherit; }
+
+.public-page, main, section, article, form, fieldset { min-width: 0; }
+
+@media (max-width: 767px) {
+  .container { padding-inline: 1rem; }
+
+  .site-header__inner { gap: .6rem; }
+  .site-header__inner > a { min-width: 0; }
+  .site-header__inner > a img { max-width: min(190px, 58vw); height: auto; }
+
+  .hero-premium { overflow: hidden; }
+
+  .admin-content form { width: 100%; }
+  .admin-content .card { min-width: 0; }
+  .admin-form-actions { width: 100%; }
+  .admin-form-actions .btn { flex: 1 1 auto; }
+  .admin-content .grid.grid-cols-2,
+  .admin-content .grid.grid-cols-3,
+  .admin-content .grid.grid-cols-4,
+  .admin-content .grid.grid-cols-5,
+  .admin-content .grid.grid-cols-6 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-input, .admin-select,
+  .field-input, .field-textarea, .field-select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .admin-content input[type="file"] {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .admin-content .btn {
+    white-space: normal;
+    text-align: center;
+  }
+
+  .admin-table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .admin-toolbar { align-items: stretch; }
+  .admin-toolbar > * { width: 100%; }
+
+  .crm-toast-stack {
+    top: max(.75rem, env(safe-area-inset-top));
+    right: .75rem;
+    width: min(390px, calc(100vw - 1.5rem));
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .container { padding-inline: 1.25rem; }
+  .admin-content { padding-inline: 1.25rem; }
+}
+
+@media (max-width: 479px) {
+  .container { padding-inline: .9rem; }
+  .section { padding-block: 2.75rem; }
+  .section-tight { padding-block: 2rem; }
+  .h-display { font-size: clamp(2rem, 11vw, 2.7rem); }
+  .btn { width: 100%; }
+  .site-header__mobile-actions .btn,
+  .site-header__mobile-actions a { width: 100%; }
+}
+
+/* Premium CRM feedback: confirmations and toast notifications. */
 .crm-toast-stack { position: fixed; z-index: 10000; top: 1.15rem; right: 1.15rem; width: min(390px, calc(100vw - 2rem)); display: grid; gap: .7rem; pointer-events: none; }
 .crm-toast { pointer-events: auto; display: flex; align-items: center; gap: .75rem; padding: .82rem .9rem; border: 1px solid rgba(17,16,42,.08); border-radius: 14px; background: rgba(255,255,255,.96); box-shadow: 0 18px 45px rgba(16,15,48,.16), 0 2px 8px rgba(16,15,48,.08); backdrop-filter: blur(16px); animation: crmToastIn .24s ease-out both; }
 .crm-toast__icon { width: 28px; height: 28px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 9px; font-weight: 800; font-size: .85rem; }
