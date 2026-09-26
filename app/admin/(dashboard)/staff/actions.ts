@@ -218,6 +218,54 @@ export async function resetStaffPassword(_prev: ActionResult, formData: FormData
 }
 
 /**
+ * Grants or revokes the four granular Admissions Officer permissions
+ * (update lead status, log interactions, start applications, schedule
+ * follow-ups) for one staff member — see migration
+ * 0016_admissions_granular_permissions.sql. Deliberately separate from
+ * updateStaffRole: this narrows what an Admissions Officer can do within
+ * the Admissions module, it never changes which modules they can reach.
+ * Super Admin access is never affected by these flags, so this action
+ * refuses to touch any staff member who isn't an Admissions Officer.
+ */
+export async function updateAdmissionsPermissions(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  try {
+    const staff = await requireRole('super_admin')
+    const staffId = String(formData.get('staffId') || '')
+    if (!staffId) return { ok: false, message: 'Missing staff member.' }
+
+    const admin = createAdminClient()
+    const { data: target } = await admin.from('staff').select('id, role').eq('id', staffId).maybeSingle()
+    if (!target) return { ok: false, message: 'Staff member not found.' }
+    if (target.role !== 'admissions_officer') {
+      return { ok: false, message: 'These permissions only apply to the Admissions Officer role.' }
+    }
+
+    const updates = {
+      can_update_lead_status: formData.get('can_update_lead_status') === 'on',
+      can_log_interactions: formData.get('can_log_interactions') === 'on',
+      can_start_applications: formData.get('can_start_applications') === 'on',
+      can_schedule_follow_ups: formData.get('can_schedule_follow_ups') === 'on'
+    }
+
+    const { error } = await admin.from('staff').update(updates).eq('id', staffId)
+    if (error) return { ok: false, message: 'Could not update permissions.' }
+
+    await logAudit(admin, {
+      userId: staff.id,
+      action: 'staff.admissions_permissions_updated',
+      entity: 'staff',
+      entityId: staffId,
+      metadata: updates
+    })
+
+    revalidatePath('/admin/staff')
+    return { ok: true, message: 'Permissions saved.' }
+  } catch (err) {
+    return authError(err)
+  }
+}
+
+/**
  * Grants or revokes access to the Insights & Events CMS. Deliberately
  * separate from updateStaffRole above: this is the granular permission
  * described in migration 0004_insights.sql, not a role change, so it can't

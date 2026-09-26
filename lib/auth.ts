@@ -108,6 +108,49 @@ export function canEditLead(role: StaffRole) {
   return role === 'super_admin' || role === 'admissions_officer'
 }
 
+// ----------------------------------------------------------------------------
+// Granular Admissions Officer permissions (migration
+// 0016_admissions_granular_permissions.sql). Super Admins always pass these
+// checks regardless of the underlying flags — the flags exist purely so a
+// Super Admin can selectively grant/revoke specific admissions actions for
+// an individual Admissions Officer without changing their role. Every check
+// still requires `requireAdmissionsAccess()` (module-level access) to have
+// passed first; these only narrow what an Admissions Officer can do within
+// that module.
+// ----------------------------------------------------------------------------
+
+type AdmissionsPermissionFlag =
+  | 'can_update_lead_status'
+  | 'can_log_interactions'
+  | 'can_start_applications'
+  | 'can_schedule_follow_ups'
+
+function hasAdmissionsPermission(staff: Pick<Staff, 'role'> & Partial<Record<AdmissionsPermissionFlag, boolean>>, flag: AdmissionsPermissionFlag): boolean {
+  if (staff.role === 'super_admin') return true
+  if (staff.role !== 'admissions_officer') return false
+  return Boolean(staff[flag])
+}
+
+/** Can update a lead's pipeline status (the "Pipeline status" control on a lead profile). */
+export function canUpdateLeadStatus(staff: Pick<Staff, 'role' | 'can_update_lead_status'>) {
+  return hasAdmissionsPermission(staff, 'can_update_lead_status')
+}
+
+/** Can log an interaction / add an entry to a lead's activity timeline. */
+export function canLogInteractions(staff: Pick<Staff, 'role' | 'can_log_interactions'>) {
+  return hasAdmissionsPermission(staff, 'can_log_interactions')
+}
+
+/** Can start (create) an application for a lead. */
+export function canStartApplications(staff: Pick<Staff, 'role' | 'can_start_applications'>) {
+  return hasAdmissionsPermission(staff, 'can_start_applications')
+}
+
+/** Can schedule a follow-up for a lead. */
+export function canScheduleFollowUps(staff: Pick<Staff, 'role' | 'can_schedule_follow_ups'>) {
+  return hasAdmissionsPermission(staff, 'can_schedule_follow_ups')
+}
+
 export function canManageProgrammes(role: StaffRole) {
   return role === 'super_admin'
 }

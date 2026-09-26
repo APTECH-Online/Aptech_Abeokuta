@@ -4,26 +4,68 @@ import { useActionState, useEffect, useRef, useState } from 'react'
 import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
-import { createStaffMember, updateStaffRole, toggleStaffActive, resetStaffPassword, type ActionResult } from '../../app/admin/(dashboard)/staff/actions'
+import { createStaffMember, updateStaffRole, toggleStaffActive, resetStaffPassword, updateAdmissionsPermissions, type ActionResult } from '../../app/admin/(dashboard)/staff/actions'
 import { STAFF_ROLE_LABELS, type Staff, type StaffRole } from '../../types/db'
 
 const initial: ActionResult = { ok: true }
 const ROLES: StaffRole[] = ['super_admin', 'content_manager', 'admissions_officer']
+
+const ADMISSIONS_PERMISSION_FIELDS: { key: keyof Pick<Staff, 'can_update_lead_status' | 'can_log_interactions' | 'can_start_applications' | 'can_schedule_follow_ups'>; label: string }[] = [
+  { key: 'can_update_lead_status', label: 'Update pipeline status' },
+  { key: 'can_log_interactions', label: 'Add to timeline' },
+  { key: 'can_start_applications', label: 'Start application' },
+  { key: 'can_schedule_follow_ups', label: 'Schedule follow-up' }
+]
 
 function SubmitButton({ children }: { children: string }) {
   const { pending } = useFormStatus()
   return <button type="submit" disabled={pending} className="btn btn-primary btn-sm disabled:opacity-60">{pending ? 'Working…' : children}</button>
 }
 
-function PermissionSummary({ role }: { role: StaffRole }) {
-  const permissions = role === 'super_admin'
-    ? ['All modules', 'All CRUD', 'Staff & settings']
-    : role === 'content_manager'
-      ? ['News', 'Blog', 'Insights']
-      : role === 'admissions_officer'
-        ? ['Enquiries', 'Applications', 'Follow-ups']
-        : []
-  return <div className="flex flex-wrap gap-1.5">{permissions.map((p) => <span key={p} className="text-xs rounded-full px-2 py-1" style={{ background: 'var(--color-navy-50)', color: 'var(--color-ink)' }}>{p}</span>)}</div>
+function Chips({ items }: { items: string[] }) {
+  if (items.length === 0) {
+    return <span className="text-xs" style={{ color: 'var(--color-muted)' }}>No admissions actions granted</span>
+  }
+  return <div className="flex flex-wrap gap-1.5">{items.map((p) => <span key={p} className="text-xs rounded-full px-2 py-1" style={{ background: 'var(--color-navy-50)', color: 'var(--color-ink)' }}>{p}</span>)}</div>
+}
+
+function PermissionSummary({ member }: { member: Staff }) {
+  if (member.role === 'super_admin') return <Chips items={['All modules', 'All CRUD', 'Staff & settings']} />
+  if (member.role === 'content_manager') return <Chips items={['News', 'Blog', 'Insights']} />
+  if (member.role === 'admissions_officer') {
+    return <Chips items={ADMISSIONS_PERMISSION_FIELDS.filter((f) => member[f.key]).map((f) => f.label)} />
+  }
+  return <Chips items={[]} />
+}
+
+/**
+ * The four granular Admissions Officer permissions from migration
+ * 0016_admissions_granular_permissions.sql, checkable/uncheckable per staff
+ * member. Super Admin always has full access regardless of these boxes —
+ * unchecking one here only ever narrows what this specific Admissions
+ * Officer can do; it never affects Super Admins or other staff.
+ */
+function AdmissionsPermissionsForm({ member }: { member: Staff }) {
+  const [state, formAction] = useActionState(updateAdmissionsPermissions, initial)
+  useActionFeedback(state, 'Permissions saved successfully.')
+
+  return (
+    <form action={formAction} className="mt-3 grid gap-2 p-3 rounded-lg max-w-xs" style={{ background: 'var(--color-paper)' }}>
+      <input type="hidden" name="staffId" value={member.id} />
+      <p className="text-xs font-semibold" style={{ color: 'var(--color-ink)' }}>Admissions permissions</p>
+      {ADMISSIONS_PERMISSION_FIELDS.map((f) => (
+        <label key={f.key} className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-body)' }}>
+          <input type="checkbox" name={f.key} defaultChecked={member[f.key]} className="accent-[var(--color-navy-700)]" />
+          {f.label}
+        </label>
+      ))}
+      <div className="flex items-center gap-2 mt-1">
+        <SubmitButton>Save permissions</SubmitButton>
+      </div>
+      {!state.ok && <p className="text-xs" style={{ color: 'var(--color-danger)' }}>{state.message}</p>}
+      {state.ok && state.message && <p className="text-xs" style={{ color: 'var(--color-success)' }}>{state.message}</p>}
+    </form>
+  )
 }
 
 export function AddStaffForm() {
@@ -98,9 +140,19 @@ export function StaffRow({ member, isSelf }: { member: Staff; isSelf: boolean })
         </form>
         {!roleState.ok && <p className="text-xs mt-1" style={{ color: 'var(--color-danger)' }}>{roleState.message}</p>}
       </td>
-      <td><PermissionSummary role={member.role} />
+      <td><PermissionSummary member={member} />
         <button type="button" onClick={() => setPermissionsOpen((v) => !v)} className="btn btn-ghost btn-sm mt-2">Manage Permissions</button>
-        {permissionsOpen && <p className="text-xs mt-2 max-w-xs" style={{ color: 'var(--color-muted)' }}>Permissions are role-derived. Change the role above to change the assigned access. Super Admin is the only role allowed to administer staff and system settings.</p>}
+        {permissionsOpen && (
+          member.role === 'admissions_officer' ? (
+            <AdmissionsPermissionsForm member={member} />
+          ) : (
+            <p className="text-xs mt-2 max-w-xs" style={{ color: 'var(--color-muted)' }}>
+              {member.role === 'super_admin'
+                ? 'Super Admins always have full access to every module and cannot be restricted.'
+                : 'This role has fixed access to its module. Change the role above to Admissions Officer for adjustable, per-action permissions.'}
+            </p>
+          )
+        )}
       </td>
       <td>
         <form action={activeAction}><input type="hidden" name="staffId" value={member.id} /><input type="hidden" name="nextActive" value={(!member.is_active).toString()} /><button type="submit" disabled={isSelf} className="btn btn-ghost btn-sm disabled:opacity-40">{member.is_active ? 'Deactivate' : 'Activate'}</button></form>

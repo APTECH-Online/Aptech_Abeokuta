@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../../../../../lib/supabase/admin'
-import { requireAdmissionsAccess, requireRole, canEditLead, canAssignLeads, ForbiddenError, UnauthorizedError } from '../../../../../lib/auth'
+import { requireAdmissionsAccess, requireRole, canEditLead, canAssignLeads, canUpdateLeadStatus, canLogInteractions, canStartApplications, canScheduleFollowUps, ForbiddenError, UnauthorizedError } from '../../../../../lib/auth'
 import { logAudit } from '../../../../../lib/audit'
 import { generateApplicationReference } from '../../../../../lib/reference'
 import {
@@ -25,7 +25,7 @@ function friendlyAuthError(err: unknown): ActionResult {
 export async function addInteraction(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
     const staff = await requireAdmissionsAccess()
-    if (!canEditLead(staff.role)) return { ok: false, message: "You don't have permission to add interactions." }
+    if (!canLogInteractions(staff)) return { ok: false, message: "You don't have permission to add interactions." }
 
     const parsed = noteFormSchema.safeParse(Object.fromEntries(formData.entries()))
     if (!parsed.success) {
@@ -61,7 +61,7 @@ export async function addInteraction(_prev: ActionResult, formData: FormData): P
 export async function changeLeadStatus(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
     const staff = await requireAdmissionsAccess()
-    if (!canEditLead(staff.role)) return { ok: false, message: "You don't have permission to change lead status." }
+    if (!canUpdateLeadStatus(staff)) return { ok: false, message: "You don't have permission to change lead status." }
 
     const leadId = String(formData.get('leadId') || '')
     const newStatus = String(formData.get('status') || '') as LeadStatus
@@ -145,7 +145,7 @@ export async function assignLead(_prev: ActionResult, formData: FormData): Promi
 export async function scheduleFollowUp(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
     const staff = await requireAdmissionsAccess()
-    if (!canEditLead(staff.role)) return { ok: false, message: "You don't have permission to schedule follow-ups." }
+    if (!canScheduleFollowUps(staff)) return { ok: false, message: "You don't have permission to schedule follow-ups." }
 
     const parsed = followUpFormSchema.safeParse(Object.fromEntries(formData.entries()))
     if (!parsed.success) {
@@ -356,7 +356,7 @@ export async function deleteFollowUp(_prev: ActionResult, formData: FormData): P
 export async function startApplication(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
     const staff = await requireAdmissionsAccess()
-    if (!canEditLead(staff.role)) return { ok: false, message: "You don't have permission to start an application." }
+    if (!canStartApplications(staff)) return { ok: false, message: "You don't have permission to start an application." }
 
     const leadId = String(formData.get('leadId') || '')
     const programmeId = String(formData.get('programmeId') || '')

@@ -62,6 +62,14 @@ export interface Staff {
   // Granular permission, independent of `role` — see migration 0004_insights.sql
   // for why this isn't a new staff_role value.
   can_manage_insights: boolean
+  // Granular Admissions Officer permissions — see migration
+  // 0016_admissions_granular_permissions.sql. Super Admins always have full
+  // access regardless of these flags; they only gate the Admissions Officer
+  // role and are toggled per-staff-member from /admin/staff.
+  can_update_lead_status: boolean
+  can_log_interactions: boolean
+  can_start_applications: boolean
+  can_schedule_follow_ups: boolean
   created_at: string
   updated_at: string
 }
