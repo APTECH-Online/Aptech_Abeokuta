@@ -337,7 +337,7 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
           aria-expanded={open}
           aria-controls="mobile-nav"
           onClick={() => setOpen((v) => !v)}
-          className="xl:hidden p-2.5 rounded-xl site-header__menu"
+          className="inline-flex xl:hidden p-2.5 rounded-xl site-header__menu"
           style={{ color: isDark ? '#fff' : 'var(--color-navy-900)' }}
         >
           {open ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}

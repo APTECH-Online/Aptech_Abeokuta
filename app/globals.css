@@ -1579,24 +1579,6 @@ button, input, select, textarea { font: inherit; }
   line-height: 1.08;
 }
 
-.program-finder-section {
-  position: relative;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 10% 35%, rgba(245,189,53,.08), transparent 22%),
-    radial-gradient(circle at 92% 75%, rgba(73,49,149,.08), transparent 25%);
-}
-.program-finder-section::before,
-.program-finder-section::after {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-  border-radius: 999px;
-  border: 1px solid rgba(73,49,149,.08);
-}
-.program-finder-section::before { width: 360px; height: 360px; left: -220px; top: 28%; }
-.program-finder-section::after { width: 300px; height: 300px; right: -180px; bottom: 8%; }
-
 .program-finder {
   position: relative;
   isolation: isolate;
@@ -1606,17 +1588,6 @@ button, input, select, textarea { font: inherit; }
   border-radius: 24px;
   background: rgba(255,255,255,.94);
   box-shadow: 0 20px 55px rgba(29,18,80,.09), 0 3px 10px rgba(29,18,80,.04);
-}
-.program-finder::before {
-  content: "";
-  position: absolute;
-  width: 110px;
-  height: 110px;
-  right: -46px;
-  top: -50px;
-  border-radius: 50%;
-  background: rgba(245,189,53,.1);
-  z-index: -1;
 }
 .program-finder__topline { display: flex; align-items: center; gap: .85rem; }
 .program-finder__step {
@@ -1744,7 +1715,6 @@ button, input, select, textarea { font: inherit; }
 }
 
 .site-header__menu {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: .45rem;
