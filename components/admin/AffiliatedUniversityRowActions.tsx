@@ -28,6 +28,7 @@ function ToggleForm({ item }: { item: AffiliatedUniversity }) {
 }
 
 function DeleteForm({ item }: { item: AffiliatedUniversity }) {
+  const { confirm } = useAdminFeedback()
   const [state, formAction] = useActionState(deleteAffiliatedUniversity, initial)
   useActionFeedback(state, 'Delete affiliated university completed successfully.')
   return (

@@ -24,6 +24,7 @@ function ToggleForm({ item }: { item: Faq }) {
 }
 
 function DeleteForm({ item }: { item: Faq }) {
+  const { confirm } = useAdminFeedback()
   const [state, formAction] = useActionState(deleteFaq, initial)
   useActionFeedback(state, 'Delete faq completed successfully.')
   return (

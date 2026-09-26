@@ -24,6 +24,7 @@ function ToggleForm({ item }: { item: SocialLink }) {
 }
 
 function DeleteForm({ item }: { item: SocialLink }) {
+  const { confirm } = useAdminFeedback()
   const [state, formAction] = useActionState(deleteSocialLink, initial)
   useActionFeedback(state, 'Delete social link completed successfully.')
   return (

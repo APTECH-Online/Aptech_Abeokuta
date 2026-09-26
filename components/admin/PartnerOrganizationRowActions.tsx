@@ -28,6 +28,7 @@ function ToggleForm({ item }: { item: PartnerOrganization }) {
 }
 
 function DeleteForm({ item }: { item: PartnerOrganization }) {
+  const { confirm } = useAdminFeedback()
   const [state, formAction] = useActionState(deletePartnerOrganization, initial)
   useActionFeedback(state, 'Delete partner organization completed successfully.')
   return (
