@@ -1562,6 +1562,53 @@ button, input, select, textarea { font: inherit; }
 @media (prefers-reduced-motion: reduce) { .crm-toast, .crm-alert-backdrop, .crm-alert { animation: none; } }
 @media (max-width: 640px) { .crm-toast-stack { top: .75rem; right: .75rem; left: .75rem; width: auto; } .crm-alert { padding: 1.25rem; border-radius: 18px; } .crm-alert__actions { display: grid; grid-template-columns: 1fr 1fr; } }
 
+/* General-purpose modal dialog (components/admin/Modal.tsx) — used to move
+   editors like /admin/staff's permissions form out of a table cell and into
+   an overlay so they can't distort the table layout. Shares the crm-alert
+   visual language and sits at the same z-index. */
+.crm-modal-backdrop { position: fixed; z-index: 10001; inset: 0; display: grid; place-items: center; padding: 1.25rem; background: rgba(10,9,30,.54); backdrop-filter: blur(7px); animation: crmFadeIn .16s ease-out both; }
+.crm-modal {
+  width: min(640px, 100%);
+  max-height: min(85vh, 720px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 20px;
+  background: var(--color-paper-alt);
+  box-shadow: 0 30px 90px rgba(0,0,0,.28);
+  animation: crmAlertIn .2s ease-out both;
+  overflow: hidden;
+  min-width: 0;
+}
+.crm-modal--sm { width: min(420px, 100%); }
+.crm-modal--lg { width: min(820px, 100%); }
+.crm-modal__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.15rem 1.35rem; border-bottom: 1px solid var(--color-line); flex: 0 0 auto; background: var(--color-paper); }
+.crm-modal__title { margin: 0; color: var(--color-ink); font-family: var(--font-display); font-size: 1.05rem; font-weight: 750; }
+.crm-modal__description { margin: .3rem 0 0; color: var(--color-muted); font-size: .8rem; line-height: 1.5; }
+.crm-modal__close { width: 32px; height: 32px; flex: 0 0 auto; display: grid; place-items: center; border: 0; border-radius: 9px; background: transparent; color: var(--color-muted); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+.crm-modal__close:hover { background: var(--color-navy-50); color: var(--color-ink); }
+.crm-modal__body { padding: 1.15rem 1.35rem 1.4rem; overflow-y: auto; min-height: 0; min-width: 0; }
+@keyframes crmModalSheetIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .crm-modal-backdrop, .crm-modal { animation: none; } }
+@media (max-width: 640px) {
+  .crm-modal-backdrop { padding: 0; align-items: flex-end; }
+  .crm-modal { width: 100%; max-width: 100%; max-height: 88vh; border-radius: 18px 18px 0 0; animation: crmModalSheetIn .22s ease-out both; }
+  .crm-modal__header { padding: 1rem 1.1rem; }
+  .crm-modal__body { padding: .9rem 1.1rem 1.35rem; }
+}
+
+/* /admin/staff — responsive card layout shown below the md breakpoint
+   instead of the horizontally-scrolling table (see admin-table-wrap /
+   admin-table above, still used at md and up). */
+.staff-cards { display: grid; gap: .75rem; }
+.staff-card { background: var(--color-paper-alt); border: 1px solid var(--color-line); border-radius: 14px; box-shadow: var(--shadow-card); padding: 1rem 1.1rem; display: grid; gap: .85rem; }
+.staff-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
+.staff-card__name { font-family: var(--font-display); font-weight: 700; font-size: .95rem; color: var(--color-ink); overflow-wrap: anywhere; }
+.staff-card__email { font-size: .78rem; color: var(--color-muted); margin-top: .1rem; overflow-wrap: anywhere; }
+.staff-card__row { display: grid; gap: .35rem; padding-top: .85rem; border-top: 1px solid var(--color-line); }
+.staff-card__row:first-of-type { padding-top: 0; border-top: 0; }
+.staff-card__label { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); }
+
 /* ==========================================================================
    Public heading system + Program Finder refresh
    ========================================================================== */

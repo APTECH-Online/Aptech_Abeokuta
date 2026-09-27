@@ -1,7 +1,7 @@
 import { createClient } from '../../../../lib/supabase/server'
 import { requireRole } from '../../../../lib/auth'
 import { type Staff } from '../../../../types/db'
-import { AddStaffForm, StaffRow } from '../../../../components/admin/StaffForms'
+import { AddStaffForm, StaffCard, StaffRow } from '../../../../components/admin/StaffForms'
 
 export const metadata = { title: 'Staff | Admissions CRM' }
 export const dynamic = 'force-dynamic'
@@ -28,16 +28,20 @@ export default async function StaffPage() {
             <p className="eyebrow">Staff &amp; roles</p>
             <AddStaffForm />
           </div>
-          <div className="admin-table-wrap">
+          {/* Table view: md screens and up. Below md, a stacked card layout
+              (right below) takes over so the permissions/role/password
+              controls never get cramped or force horizontal scrolling on
+              small screens. */}
+          <div className="admin-table-wrap hidden md:block">
             <table className="admin-table">
               <thead>
                 <tr>
                   <th>Name</th>
                   <th>Email</th>
                   <th>Role</th>
-                  <th>Status</th>
                   <th>Assigned permissions</th>
-                  <th>Actions</th>
+                  <th>Status</th>
+                  <th>Password</th>
                 </tr>
               </thead>
               <tbody>
@@ -46,6 +50,12 @@ export default async function StaffPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div className="staff-cards md:hidden">
+            {staffList.map((member) => (
+              <StaffCard key={member.id} member={member} isSelf={member.id === currentStaff.id} />
+            ))}
           </div>
         </section>
       ) : (

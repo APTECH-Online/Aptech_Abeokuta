@@ -4,6 +4,8 @@ import { useActionState, useEffect, useRef, useState, type FormEvent } from 'rea
 import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
+import Modal from './Modal'
+import StatusBadge from './StatusBadge'
 import {
   createStaffMember,
   updateStaffRole,
@@ -69,20 +71,19 @@ function AdmissionsPermissionsForm({ member }: { member: Staff }) {
   useActionFeedback(state, 'Permissions saved successfully.')
 
   return (
-    <form action={formAction} className="mt-3 grid gap-2 p-3 rounded-lg max-w-xs" style={{ background: 'var(--color-paper)' }}>
+    <form action={formAction} className="grid gap-2.5">
       <input type="hidden" name="staffId" value={member.id} />
-      <p className="text-xs font-semibold" style={{ color: 'var(--color-ink)' }}>Admissions permissions</p>
       {ADMISSIONS_PERMISSION_FIELDS.map((f) => (
-        <label key={f.key} className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-body)' }}>
+        <label key={f.key} className="flex items-center gap-2 text-sm" style={{ color: 'var(--color-body)' }}>
           <input type="checkbox" name={f.key} defaultChecked={member[f.key]} className="accent-[var(--color-navy-700)]" />
           {f.label}
         </label>
       ))}
-      <div className="flex items-center gap-2 mt-1">
+      <div className="flex items-center gap-2 mt-1 flex-wrap">
         <SubmitButton>Save permissions</SubmitButton>
+        {!state.ok && <p className="text-xs" style={{ color: 'var(--color-danger)' }}>{state.message}</p>}
+        {state.ok && state.message && <p className="text-xs" style={{ color: 'var(--color-success)' }}>{state.message}</p>}
       </div>
-      {!state.ok && <p className="text-xs" style={{ color: 'var(--color-danger)' }}>{state.message}</p>}
-      {state.ok && state.message && <p className="text-xs" style={{ color: 'var(--color-success)' }}>{state.message}</p>}
     </form>
   )
 }
@@ -143,13 +144,10 @@ function ContentManagerPermissionsForm({ member }: { member: Staff }) {
   }
 
   return (
-    <div className="mt-3 p-4 rounded-lg max-w-2xl" style={{ background: 'var(--color-paper)' }}>
-      <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
-        <p className="text-xs font-semibold" style={{ color: 'var(--color-ink)' }}>Content Manager permissions</p>
-        <div className="flex gap-2">
-          <button type="button" onClick={() => setAll(true)} className="btn btn-ghost btn-sm">Select all</button>
-          <button type="button" onClick={() => setAll(false)} className="btn btn-ghost btn-sm">Clear all</button>
-        </div>
+    <div className="grid gap-4">
+      <div className="flex items-center justify-end flex-wrap gap-2">
+        <button type="button" onClick={() => setAll(true)} className="btn btn-ghost btn-sm">Select all</button>
+        <button type="button" onClick={() => setAll(false)} className="btn btn-ghost btn-sm">Clear all</button>
       </div>
 
       <form ref={formRef} action={saveAction} onSubmit={handleSaveSubmit} className="grid gap-4">
@@ -284,15 +282,52 @@ export function AddStaffForm() {
   )
 }
 
-export function StaffRow({ member, isSelf }: { member: Staff; isSelf: boolean }) {
+/** Role select + save, shared by the table row and the mobile card. */
+function RoleForm({ member, isSelf }: { member: Staff; isSelf: boolean }) {
   const [roleState, roleAction] = useActionState(updateStaffRole, initial)
   useActionFeedback(roleState, 'Update staff role completed successfully.')
+
+  return (
+    <div>
+      <form action={roleAction} className="flex items-center gap-2 flex-wrap">
+        <input type="hidden" name="staffId" value={member.id} />
+        <select name="role" defaultValue={member.role} className="admin-select" disabled={isSelf}>
+          {ROLES.map((r) => <option key={r} value={r}>{STAFF_ROLE_LABELS[r]}</option>)}
+        </select>
+        {!isSelf && <SubmitButton>Save</SubmitButton>}
+      </form>
+      {!roleState.ok && <p className="text-xs mt-1" style={{ color: 'var(--color-danger)' }}>{roleState.message}</p>}
+    </div>
+  )
+}
+
+/**
+ * Active/inactive status. `showBadge` is off in the mobile card, which
+ * already surfaces the status pill up in the card header.
+ */
+function AccessControl({ member, isSelf, showBadge = true }: { member: Staff; isSelf: boolean; showBadge?: boolean }) {
   const [activeState, activeAction] = useActionState(toggleStaffActive, initial)
   useActionFeedback(activeState, 'Toggle staff active completed successfully.')
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      {showBadge && <StatusBadge status={member.is_active ? 'active' : 'inactive'} label={member.is_active ? 'Active' : 'Inactive'} />}
+      <form action={activeAction}>
+        <input type="hidden" name="staffId" value={member.id} />
+        <input type="hidden" name="nextActive" value={(!member.is_active).toString()} />
+        <button type="submit" disabled={isSelf} className="btn btn-ghost btn-sm disabled:opacity-40">
+          {member.is_active ? 'Deactivate' : 'Activate'}
+        </button>
+      </form>
+      {!activeState.ok && <p className="text-xs w-full" style={{ color: 'var(--color-danger)' }}>{activeState.message}</p>}
+    </div>
+  )
+}
+
+function ResetPasswordControl({ member }: { member: Staff }) {
   const [passwordState, passwordAction] = useActionState(resetStaffPassword, initial)
   useActionFeedback(passwordState, 'Reset staff password completed successfully.')
   const [resetOpen, setResetOpen] = useState(false)
-  const [permissionsOpen, setPermissionsOpen] = useState(false)
   const resetFormRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
@@ -300,49 +335,106 @@ export function StaffRow({ member, isSelf }: { member: Staff; isSelf: boolean })
   }, [passwordState])
 
   return (
+    <div>
+      <button type="button" onClick={() => setResetOpen((v) => !v)} className="btn btn-ghost btn-sm">Reset Password</button>
+      {resetOpen && (
+        <form ref={resetFormRef} action={passwordAction} className="mt-2 grid gap-2 max-w-xs">
+          <input type="hidden" name="staffId" value={member.id} />
+          <input name="password" type="password" minLength={8} maxLength={128} required placeholder="New password" autoComplete="new-password" className="field-input" />
+          <input name="confirmPassword" type="password" minLength={8} maxLength={128} required placeholder="Confirm new password" autoComplete="new-password" className="field-input" />
+          <SubmitButton>Set password</SubmitButton>
+        </form>
+      )}
+      {passwordState.message && <p className="text-xs mt-1" style={{ color: passwordState.ok ? 'var(--color-success)' : 'var(--color-danger)' }}>{passwordState.message}</p>}
+    </div>
+  )
+}
+
+/**
+ * Permission summary chips + "Manage Permissions" button. Selecting the
+ * button now opens the editor in a Modal overlay rather than expanding
+ * inline, so a long checkbox list can never stretch or distort the table
+ * row it's triggered from.
+ */
+function PermissionsControl({ member }: { member: Staff }) {
+  const [permissionsOpen, setPermissionsOpen] = useState(false)
+  const roleLabel = STAFF_ROLE_LABELS[member.role] ?? member.role
+
+  return (
+    <div>
+      <PermissionSummary member={member} />
+      <button type="button" onClick={() => setPermissionsOpen(true)} className="btn btn-ghost btn-sm mt-2">Manage Permissions</button>
+
+      <Modal
+        open={permissionsOpen}
+        onClose={() => setPermissionsOpen(false)}
+        title={`Manage permissions — ${member.full_name}`}
+        description={`${roleLabel} role`}
+        size={member.role === 'content_manager' ? 'lg' : 'sm'}
+      >
+        {member.role === 'admissions_officer' ? (
+          <AdmissionsPermissionsForm member={member} />
+        ) : member.role === 'content_manager' ? (
+          <ContentManagerPermissionsForm member={member} />
+        ) : (
+          <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
+            Super Admins always have full access to every module and cannot be restricted.
+          </p>
+        )}
+      </Modal>
+    </div>
+  )
+}
+
+export function StaffRow({ member, isSelf }: { member: Staff; isSelf: boolean }) {
+  return (
     <tr>
       <td className="font-medium" style={{ color: 'var(--color-ink)' }}>{member.full_name}{isSelf && ' (you)'}</td>
       <td>{member.email}</td>
-      <td>
-        <form action={roleAction} className="flex items-center gap-2">
-          <input type="hidden" name="staffId" value={member.id} />
-          <select name="role" defaultValue={member.role} className="admin-select" disabled={isSelf}>
-            {ROLES.map((r) => <option key={r} value={r}>{STAFF_ROLE_LABELS[r]}</option>)}
-          </select>
-          {!isSelf && <SubmitButton>Save</SubmitButton>}
-        </form>
-        {!roleState.ok && <p className="text-xs mt-1" style={{ color: 'var(--color-danger)' }}>{roleState.message}</p>}
-      </td>
-      <td><PermissionSummary member={member} />
-        <button type="button" onClick={() => setPermissionsOpen((v) => !v)} className="btn btn-ghost btn-sm mt-2">Manage Permissions</button>
-        {permissionsOpen && (
-          member.role === 'admissions_officer' ? (
-            <AdmissionsPermissionsForm member={member} />
-          ) : member.role === 'content_manager' ? (
-            <ContentManagerPermissionsForm member={member} />
-          ) : (
-            <p className="text-xs mt-2 max-w-xs" style={{ color: 'var(--color-muted)' }}>
-              Super Admins always have full access to every module and cannot be restricted.
-            </p>
-          )
-        )}
-      </td>
-      <td>
-        <form action={activeAction}><input type="hidden" name="staffId" value={member.id} /><input type="hidden" name="nextActive" value={(!member.is_active).toString()} /><button type="submit" disabled={isSelf} className="btn btn-ghost btn-sm disabled:opacity-40">{member.is_active ? 'Deactivate' : 'Activate'}</button></form>
-        {!activeState.ok && <p className="text-xs mt-1" style={{ color: 'var(--color-danger)' }}>{activeState.message}</p>}
-      </td>
-      <td>
-        <button type="button" onClick={() => setResetOpen((v) => !v)} className="btn btn-ghost btn-sm">Reset Password</button>
-        {resetOpen && (
-          <form ref={resetFormRef} action={passwordAction} className="mt-2 grid gap-2">
-            <input type="hidden" name="staffId" value={member.id} />
-            <input name="password" type="password" minLength={8} maxLength={128} required placeholder="New password" autoComplete="new-password" className="field-input" />
-            <input name="confirmPassword" type="password" minLength={8} maxLength={128} required placeholder="Confirm new password" autoComplete="new-password" className="field-input" />
-            <SubmitButton>Set password</SubmitButton>
-          </form>
-        )}
-        {passwordState.message && <p className="text-xs mt-1" style={{ color: passwordState.ok ? 'var(--color-success)' : 'var(--color-danger)' }}>{passwordState.message}</p>}
-      </td>
+      <td><RoleForm member={member} isSelf={isSelf} /></td>
+      <td><PermissionsControl member={member} /></td>
+      <td><AccessControl member={member} isSelf={isSelf} /></td>
+      <td><ResetPasswordControl member={member} /></td>
     </tr>
+  )
+}
+
+/**
+ * Mobile/narrow-viewport counterpart to StaffRow, shown below the md
+ * breakpoint in place of the table (see .staff-cards in app/globals.css).
+ * Same underlying data and server actions, laid out as a stacked card so
+ * nothing gets cramped or clipped on small screens.
+ */
+export function StaffCard({ member, isSelf }: { member: Staff; isSelf: boolean }) {
+  return (
+    <div className="staff-card">
+      <div className="staff-card__head">
+        <div className="min-w-0">
+          <p className="staff-card__name">{member.full_name}{isSelf && ' (you)'}</p>
+          <p className="staff-card__email">{member.email}</p>
+        </div>
+        <StatusBadge status={member.is_active ? 'active' : 'inactive'} label={member.is_active ? 'Active' : 'Inactive'} />
+      </div>
+
+      <div className="staff-card__row">
+        <span className="staff-card__label">Role</span>
+        <RoleForm member={member} isSelf={isSelf} />
+      </div>
+
+      <div className="staff-card__row">
+        <span className="staff-card__label">Assigned permissions</span>
+        <PermissionsControl member={member} />
+      </div>
+
+      <div className="staff-card__row">
+        <span className="staff-card__label">Access</span>
+        <AccessControl member={member} isSelf={isSelf} showBadge={false} />
+      </div>
+
+      <div className="staff-card__row">
+        <span className="staff-card__label">Password</span>
+        <ResetPasswordControl member={member} />
+      </div>
+    </div>
   )
 }
