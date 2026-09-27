@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Plus, BookOpen } from 'lucide-react'
-import { requireStaff, canManageCourses } from '../../../../lib/auth'
+import { guardAdminPage, canManageCourses } from '../../../../lib/auth'
+import { hasAnyModulePermission } from '../../../../lib/permissions'
 import { getCourses } from '../../../../lib/crm/courses'
 import { COURSE_CATEGORY_LABELS, COURSE_CATEGORY_ORDER, COURSE_STATUS_LABELS } from '../../../../types/db'
 import type { CourseCategory, CourseStatus } from '../../../../types/db'
@@ -16,7 +17,7 @@ export default async function CoursesListPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>
 }) {
-  const staff = await requireStaff()
+  const staff = await guardAdminPage((s) => s.role === 'super_admin' || hasAnyModulePermission(s, 'courses'))
   const canManage = canManageCourses(staff)
   const sp = await searchParams
   const page = Number(sp.page) || 1

@@ -1,4 +1,5 @@
-import { requireStaff, canManageContactInfo } from '../../../../../lib/auth'
+import { guardAdminPage, canManageContactInfo } from '../../../../../lib/auth'
+import { hasAnyModulePermission } from '../../../../../lib/permissions'
 import { getContactInfo } from '../../../../../lib/crm/contact-info'
 import ContactInfoForm from '../../../../../components/admin/ContactInfoForm'
 
@@ -6,7 +7,7 @@ export const metadata = { title: 'Contact info | Admissions CRM' }
 export const dynamic = 'force-dynamic'
 
 export default async function ContactInfoSettingsPage() {
-  const staff = await requireStaff()
+  const staff = await guardAdminPage((s) => s.role === 'super_admin' || hasAnyModulePermission(s, 'website_content'))
   const canManage = canManageContactInfo(staff)
   const contactInfo = await getContactInfo()
 

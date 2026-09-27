@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Plus, Building2 } from 'lucide-react'
-import { requireStaff, canManagePartners } from '../../../../../../lib/auth'
+import { guardAdminPage, canManagePartners } from '../../../../../../lib/auth'
+import { hasAnyModulePermission } from '../../../../../../lib/permissions'
 import { getPartnerOrganizations } from '../../../../../../lib/crm/partners'
 import PartnerOrganizationRowActions from '../../../../../../components/admin/PartnerOrganizationRowActions'
 import Pagination from '../../../../../../components/admin/Pagination'
@@ -13,7 +14,7 @@ export default async function PartnerOrganizationsListPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>
 }) {
-  const staff = await requireStaff()
+  const staff = await guardAdminPage((s) => s.role === 'super_admin' || hasAnyModulePermission(s, 'website_content'))
   const canManage = canManagePartners(staff)
   const sp = await searchParams
   const page = Number(sp.page) || 1

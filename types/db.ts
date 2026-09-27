@@ -70,6 +70,13 @@ export interface Staff {
   can_log_interactions: boolean
   can_start_applications: boolean
   can_schedule_follow_ups: boolean
+  // Granular Content Manager permissions — see migration
+  // 0017_content_manager_granular_permissions.sql and lib/permissions.ts for
+  // the full catalog. A flat map of permission key -> granted, e.g.
+  // { "news.view": true, "enquiries.export": false }. Meaningless for roles
+  // other than content_manager (Super Admin is always fully authorized;
+  // Admissions Officer uses the can_* columns above instead).
+  permissions: Record<string, boolean>
   created_at: string
   updated_at: string
 }

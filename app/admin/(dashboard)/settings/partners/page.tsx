@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Building2, GraduationCap, ArrowRight } from 'lucide-react'
-import { requireStaff, canManagePartners } from '../../../../../lib/auth'
+import { guardAdminPage, canManagePartners } from '../../../../../lib/auth'
+import { hasAnyModulePermission } from '../../../../../lib/permissions'
 import { getPartnersHighlight } from '../../../../../lib/crm/partners'
 import PartnersHighlightForm from '../../../../../components/admin/PartnersHighlightForm'
 
@@ -8,7 +9,7 @@ export const metadata = { title: 'Partners & alliances | Admissions CRM' }
 export const dynamic = 'force-dynamic'
 
 export default async function PartnersSettingsPage() {
-  const staff = await requireStaff()
+  const staff = await guardAdminPage((s) => s.role === 'super_admin' || hasAnyModulePermission(s, 'website_content'))
   const canManage = canManagePartners(staff)
   const highlight = await getPartnersHighlight()
 

@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Plus, GraduationCap } from 'lucide-react'
-import { requireStaff, canManagePartners } from '../../../../../../lib/auth'
+import { guardAdminPage, canManagePartners } from '../../../../../../lib/auth'
+import { hasAnyModulePermission } from '../../../../../../lib/permissions'
 import { getAffiliatedUniversities } from '../../../../../../lib/crm/partners'
 import AffiliatedUniversityRowActions from '../../../../../../components/admin/AffiliatedUniversityRowActions'
 import Pagination from '../../../../../../components/admin/Pagination'
@@ -14,7 +15,7 @@ export default async function AffiliatedUniversitiesListPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>
 }) {
-  const staff = await requireStaff()
+  const staff = await guardAdminPage((s) => s.role === 'super_admin' || hasAnyModulePermission(s, 'website_content'))
   const canManage = canManagePartners(staff)
   const sp = await searchParams
   const page = Number(sp.page) || 1

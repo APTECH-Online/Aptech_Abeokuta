@@ -1,7 +1,26 @@
 import 'server-only'
 import { createClient } from '../supabase/server'
-import { requireRole } from '../auth'
-import { LEAD_STATUS_LABELS, LEAD_SOURCE_LABELS, PIPELINE_STAGES, type LeadStatus } from '../../types/db'
+import { requireStaff, ForbiddenError } from '../auth'
+import { hasPermission } from '../permissions'
+import { LEAD_STATUS_LABELS, LEAD_SOURCE_LABELS, PIPELINE_STAGES, type LeadStatus, type Staff } from '../../types/db'
+
+/**
+ * Dashboard/reports access (spec section 4). Super Admin: unrestricted, as
+ * always. Content Manager: only if explicitly granted `dashboard_access`
+ * AND `dashboard_view_crm_stats` — these stats are Enquiries/Applications/
+ * Follow-ups numbers, which a Content Manager doesn't see just by holding
+ * the role. Within that, each individual stat group is further hidden
+ * unless the caller can also view the underlying module (spec: "Do not
+ * expose statistics for modules the Content Manager cannot access").
+ */
+export async function requireDashboardCrmAccess(): Promise<Staff> {
+  const staff = await requireStaff()
+  if (staff.role === 'super_admin') return staff
+  if (staff.role === 'content_manager' && hasPermission(staff, 'dashboard_access') && hasPermission(staff, 'dashboard_view_crm_stats')) {
+    return staff
+  }
+  throw new ForbiddenError()
+}
 
 export interface DashboardData {
   totalLeads: number
@@ -23,8 +42,18 @@ export interface DashboardData {
 }
 
 export async function getDashboardData(): Promise<DashboardData> {
-  await requireRole('super_admin')
+  const staff = await requireDashboardCrmAccess()
+  const isSuperAdmin = staff.role === 'super_admin'
+  // Fine-grained: even with dashboard_view_crm_stats, a Content Manager only
+  // sees numbers for the specific CRM module(s) they can also view.
+  const showEnquiries = isSuperAdmin || hasPermission(staff, 'enquiries.view')
+  const showApplications = isSuperAdmin || hasPermission(staff, 'applications.view')
+  const showFollowUps = isSuperAdmin || hasPermission(staff, 'follow_ups.view')
+
   const supabase = await createClient()
+
+  const zeroCount = Promise.resolve({ count: 0 })
+  const emptyRows = Promise.resolve({ data: [] as any[] })
 
   const [
     { count: totalLeads },
@@ -38,31 +67,37 @@ export async function getDashboardData(): Promise<DashboardData> {
     { data: overdueRaw },
     { data: websiteEnquiriesRaw }
   ] = await Promise.all([
-    supabase.from('leads').select('id', { count: 'exact', head: true }),
-    supabase.from('leads').select('id', { count: 'exact', head: true }).eq('status', 'new'),
-    supabase.from('leads').select('id', { count: 'exact', head: true }).eq('status', 'contacted'),
-    supabase.from('leads').select('id', { count: 'exact', head: true }).eq('status', 'interested'),
-    supabase.from('applications').select('id', { count: 'exact', head: true }),
-    supabase.from('leads').select('id', { count: 'exact', head: true }).eq('status', 'enrolled'),
-    supabase
-      .from('leads')
-      .select('id, status, source, created_at, lead_interests(programme_id, programmes(name))')
-      .order('created_at', { ascending: false })
-      .limit(2000),
-    supabase.from('applications').select('id, programme_id, programmes(name)').limit(2000),
-    supabase
-      .from('follow_ups')
-      .select('id, due_date, lead_id, leads(first_name, last_name)')
-      .eq('status', 'pending')
-      .lt('due_date', new Date().toISOString())
-      .order('due_date', { ascending: true })
-      .limit(20),
-    supabase
-      .from('interactions')
-      .select('id, lead_id, subject, description, created_at, leads(first_name, last_name, email)')
-      .eq('type', 'website')
-      .order('created_at', { ascending: false })
-      .limit(8)
+    showEnquiries ? supabase.from('leads').select('id', { count: 'exact', head: true }) : zeroCount,
+    showEnquiries ? supabase.from('leads').select('id', { count: 'exact', head: true }).eq('status', 'new') : zeroCount,
+    showEnquiries ? supabase.from('leads').select('id', { count: 'exact', head: true }).eq('status', 'contacted') : zeroCount,
+    showEnquiries ? supabase.from('leads').select('id', { count: 'exact', head: true }).eq('status', 'interested') : zeroCount,
+    showApplications ? supabase.from('applications').select('id', { count: 'exact', head: true }) : zeroCount,
+    showEnquiries ? supabase.from('leads').select('id', { count: 'exact', head: true }).eq('status', 'enrolled') : zeroCount,
+    showEnquiries
+      ? supabase
+          .from('leads')
+          .select('id, status, source, created_at, lead_interests(programme_id, programmes(name))')
+          .order('created_at', { ascending: false })
+          .limit(2000)
+      : emptyRows,
+    showApplications ? supabase.from('applications').select('id, programme_id, programmes(name)').limit(2000) : emptyRows,
+    showFollowUps
+      ? supabase
+          .from('follow_ups')
+          .select('id, due_date, lead_id, leads(first_name, last_name)')
+          .eq('status', 'pending')
+          .lt('due_date', new Date().toISOString())
+          .order('due_date', { ascending: true })
+          .limit(20)
+      : emptyRows,
+    showEnquiries
+      ? supabase
+          .from('interactions')
+          .select('id, lead_id, subject, description, created_at, leads(first_name, last_name, email)')
+          .eq('type', 'website')
+          .order('created_at', { ascending: false })
+          .limit(8)
+      : emptyRows
   ])
 
   const leads = leadsRaw ?? []

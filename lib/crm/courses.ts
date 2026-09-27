@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '../supabase/server'
-import { requireRole } from '../auth'
+import { requireCoursesAccess } from '../auth'
 import type { Course, CourseCategory, CourseStatus } from '../../types/db'
 
 export interface CoursesFilter {
@@ -13,11 +13,12 @@ export interface CoursesFilter {
 
 /**
  * Reads use the session-bound server client (RLS: any active staff can
- * select — see migration 0007). Mutations go through the admin client in
+ * select — see migration 0007, extended by 0017 for permitted Content
+ * Managers). Mutations go through the admin client in
  * app/admin/(dashboard)/courses/actions.ts.
  */
 export async function getCourses(filter: CoursesFilter) {
-  await requireRole('super_admin')
+  await requireCoursesAccess('view')
   const supabase = await createClient()
   const page = filter.page ?? 1
   const pageSize = filter.pageSize ?? 20
@@ -50,7 +51,7 @@ export async function getCourses(filter: CoursesFilter) {
 }
 
 export async function getCourseById(id: string): Promise<Course | null> {
-  await requireRole('super_admin')
+  await requireCoursesAccess('view')
   const supabase = await createClient()
   const { data, error } = await supabase.from('courses').select('*').eq('id', id).maybeSingle()
   if (error || !data) return null
@@ -58,7 +59,7 @@ export async function getCourseById(id: string): Promise<Course | null> {
 }
 
 export async function isCourseSlugTaken(slug: string, excludeId?: string): Promise<boolean> {
-  await requireRole('super_admin')
+  await requireCoursesAccess('view')
   const supabase = await createClient()
   let query = supabase.from('courses').select('id').eq('slug', slug).limit(1)
   if (excludeId) query = query.neq('id', excludeId)

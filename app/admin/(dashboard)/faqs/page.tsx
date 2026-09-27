@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Plus, HelpCircle } from 'lucide-react'
-import { requireStaff, canManageFaqs } from '../../../../lib/auth'
+import { guardAdminPage, canManageFaqs } from '../../../../lib/auth'
+import { hasAnyModulePermission } from '../../../../lib/permissions'
 import { getFaqs } from '../../../../lib/crm/faqs'
 import FaqRowActions from '../../../../components/admin/FaqRowActions'
 import Pagination from '../../../../components/admin/Pagination'
@@ -13,7 +14,7 @@ export default async function FaqsListPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>
 }) {
-  const staff = await requireStaff()
+  const staff = await guardAdminPage((s) => s.role === 'super_admin' || hasAnyModulePermission(s, 'faqs'))
   const canManage = canManageFaqs(staff)
   const sp = await searchParams
   const page = Number(sp.page) || 1

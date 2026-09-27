@@ -32,26 +32,48 @@ import {
 import type { Staff } from '../../types/db'
 import { STAFF_ROLE_LABELS } from '../../types/db'
 import { signOut } from '../../app/admin/actions'
+import { hasAnyModulePermission, hasPermission } from '../../lib/permissions'
 
+// `access` drives visibility only — the real enforcement lives server-side in
+// lib/auth.ts (see the implementation summary). A Content Manager sees a nav
+// item only if a Super Admin has granted them at least one permission in that
+// module; holding the role grants nothing here on its own (spec section 8).
 const NAV_ITEMS = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, access: 'super_admin' },
-  { href: '/admin/leads', label: 'Enquiries', icon: Users, access: 'admissions' },
-  { href: '/admin/applications', label: 'Applications', icon: FileText, access: 'admissions' },
-  { href: '/admin/follow-ups', label: 'Follow-ups', icon: CalendarClock, access: 'admissions' },
-  { href: '/admin/insights', label: 'News / Blog / Insights', icon: Newspaper, access: 'content' },
-  { href: '/admin/gallery', label: 'Gallery', icon: Images, access: 'super_admin' },
-  { href: '/admin/courses', label: 'Courses', icon: BookOpen, access: 'super_admin' },
+  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, access: 'dashboard' },
+  { href: '/admin/leads', label: 'Enquiries', icon: Users, access: 'enquiries' },
+  { href: '/admin/applications', label: 'Applications', icon: FileText, access: 'applications' },
+  { href: '/admin/follow-ups', label: 'Follow-ups', icon: CalendarClock, access: 'follow_ups' },
+  { href: '/admin/insights', label: 'News / Blog / Insights', icon: Newspaper, access: 'insights' },
+  { href: '/admin/gallery', label: 'Gallery', icon: Images, access: 'media' },
+  { href: '/admin/courses', label: 'Courses', icon: BookOpen, access: 'courses' },
   { href: '/admin/testimonials', label: 'Testimonials', icon: MessageSquareQuote, access: 'super_admin' },
-  { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle, access: 'super_admin' },
-  { href: '/admin/settings/social', label: 'Social media', icon: Share2, access: 'super_admin' },
-  { href: '/admin/settings/partners', label: 'Partners & alliances', icon: Handshake, access: 'super_admin' },
-  { href: '/admin/settings/contact', label: 'Contact info', icon: Phone, access: 'super_admin' },
+  { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle, access: 'faqs' },
+  { href: '/admin/settings/social', label: 'Social media', icon: Share2, access: 'website_content' },
+  { href: '/admin/settings/partners', label: 'Partners & alliances', icon: Handshake, access: 'website_content' },
+  { href: '/admin/settings/contact', label: 'Contact info', icon: Phone, access: 'website_content' },
   { href: '/admin/programmes', label: 'Programmes', icon: GraduationCap, access: 'super_admin' },
   { href: '/admin/staff', label: 'Staff', icon: UserCog, access: 'super_admin' },
-  { href: '/admin/reports', label: 'Reports', icon: BarChart3, access: 'super_admin' },
+  { href: '/admin/reports', label: 'Reports', icon: BarChart3, access: 'reports' },
   { href: '/admin/notifications', label: 'Notifications', icon: Bell, access: 'super_admin' },
   { href: '/admin/settings', label: 'Settings', icon: Settings, access: 'super_admin' }
 ]
+
+function canSeeNavItem(staff: Staff, access: string): boolean {
+  if (staff.role === 'super_admin') return true
+  if (staff.role !== 'content_manager') return false
+  switch (access) {
+    case 'super_admin':
+      return false
+    case 'dashboard':
+      return hasPermission(staff, 'dashboard_access')
+    case 'reports':
+      return hasPermission(staff, 'dashboard_access') && hasPermission(staff, 'dashboard_view_reports')
+    case 'insights':
+      return hasAnyModulePermission(staff, 'news') || hasAnyModulePermission(staff, 'events')
+    default:
+      return hasAnyModulePermission(staff, access)
+  }
+}
 
 export default function AdminShell({
   staff,
@@ -72,12 +94,7 @@ export default function AdminShell({
   // "Settings" at once.
   const isActive = (href: string) =>
     href === '/admin' || href === '/admin/settings' ? pathname === href : pathname?.startsWith(href)
-  const visibleNavItems = NAV_ITEMS.filter((item) => {
-    if (staff.role === 'super_admin') return true
-    if (item.access === 'content') return staff.role === 'content_manager' && staff.can_manage_insights
-    if (item.access === 'admissions') return staff.role === 'admissions_officer'
-    return false
-  })
+  const visibleNavItems = NAV_ITEMS.filter((item) => canSeeNavItem(staff, item.access))
   const currentItem = visibleNavItems.find((item) => isActive(item.href))
 
   return (

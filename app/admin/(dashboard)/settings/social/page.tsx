@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Plus, Share2 } from 'lucide-react'
-import { requireStaff, canManageSocialLinks } from '../../../../../lib/auth'
+import { guardAdminPage, canManageSocialLinks } from '../../../../../lib/auth'
+import { hasAnyModulePermission } from '../../../../../lib/permissions'
 import { getSocialLinks, SOCIAL_PLATFORMS } from '../../../../../lib/crm/social-links'
 import SocialLinkRowActions from '../../../../../components/admin/SocialLinkRowActions'
 import Pagination from '../../../../../components/admin/Pagination'
@@ -15,7 +16,7 @@ export default async function SocialLinksListPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>
 }) {
-  const staff = await requireStaff()
+  const staff = await guardAdminPage((s) => s.role === 'super_admin' || hasAnyModulePermission(s, 'website_content'))
   const canManage = canManageSocialLinks(staff)
   const sp = await searchParams
   const page = Number(sp.page) || 1

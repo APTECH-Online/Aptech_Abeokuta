@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Plus, ImageOff } from 'lucide-react'
-import { requireStaff, canManageGallery } from '../../../../lib/auth'
+import { guardAdminPage, canManageGallery } from '../../../../lib/auth'
+import { hasAnyModulePermission } from '../../../../lib/permissions'
 import { getGalleryItems } from '../../../../lib/crm/gallery'
 import { GALLERY_CATEGORIES } from '../../../../types/db'
 import Pagination from '../../../../components/admin/Pagination'
@@ -15,7 +16,7 @@ export default async function GalleryListPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>
 }) {
-  const staff = await requireStaff()
+  const staff = await guardAdminPage((s) => s.role === 'super_admin' || hasAnyModulePermission(s, 'media'))
   const canManage = canManageGallery(staff)
   const sp = await searchParams
   const page = Number(sp.page) || 1

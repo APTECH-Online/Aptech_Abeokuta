@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../../../../lib/supabase/admin'
-import { requireAdmissionsAccess, requireRole, canEditLead, ForbiddenError, UnauthorizedError } from '../../../../lib/auth'
+import { requireCrmAction, requireCrmDeleteAction, ForbiddenError, UnauthorizedError } from '../../../../lib/auth'
 import { logAudit } from '../../../../lib/audit'
 import { APPLICATION_STATUS_LABELS, type ApplicationStatus } from '../../../../types/db'
 
@@ -10,8 +10,7 @@ export type ActionResult = { ok: true } | { ok: false; message: string }
 
 export async function updateApplicationStatus(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireAdmissionsAccess()
-    if (!canEditLead(staff.role)) return { ok: false, message: "You don't have permission to update applications." }
+    const staff = await requireCrmAction('applications', 'update_status')
 
     const applicationId = String(formData.get('applicationId') || '')
     const status = String(formData.get('status') || '') as ApplicationStatus
@@ -72,7 +71,7 @@ export async function updateApplicationStatus(_prev: ActionResult, formData: For
 
 export async function deleteApplication(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireRole('super_admin')
+    const staff = await requireCrmDeleteAction('applications')
     const applicationId = String(formData.get('applicationId') || '')
     if (!applicationId) return { ok: false, message: 'Missing application.' }
 
@@ -105,7 +104,7 @@ export async function deleteApplication(_prev: ActionResult, formData: FormData)
     return { ok: true }
   } catch (err) {
     if (err instanceof UnauthorizedError) return { ok: false, message: 'Please sign in again.' }
-    if (err instanceof ForbiddenError) return { ok: false, message: "Only Super Admins can delete applications." }
+    if (err instanceof ForbiddenError) return { ok: false, message: "You don't have permission to delete applications." }
     console.error('[crm] unexpected error deleting application', err)
     return { ok: false, message: 'Something went wrong. Please try again.' }
   }

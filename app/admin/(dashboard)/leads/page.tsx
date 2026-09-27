@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Download } from 'lucide-react'
-import { getCurrentStaff } from '../../../../lib/auth'
+import { guardAdminPage } from '../../../../lib/auth'
+import { hasAnyModulePermission, hasPermission } from '../../../../lib/permissions'
 import { DeleteLeadButton } from '../../../../components/admin/CrmDeleteActions'
 import { getLeads, getLeadFilterOptions } from '../../../../lib/crm/leads'
 import { LEAD_STATUS_ORDER, LEAD_STATUS_LABELS, LEAD_SOURCE_LABELS } from '../../../../types/db'
@@ -15,6 +16,7 @@ export default async function LeadsPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>
 }) {
+  const currentStaff = await guardAdminPage((s) => s.role === 'super_admin' || s.role === 'admissions_officer' || hasAnyModulePermission(s, 'enquiries'))
   const sp = await searchParams
   const page = Number(sp.page) || 1
 
@@ -30,12 +32,12 @@ export default async function LeadsPage({
     pageSize: 20
   }
 
-  const [{ leads, total, pageSize }, { staff, programmes }, currentStaff] = await Promise.all([
+  const [{ leads, total, pageSize }, { staff, programmes }] = await Promise.all([
     getLeads(filter),
-    getLeadFilterOptions(),
-    getCurrentStaff()
+    getLeadFilterOptions()
   ])
-  const canDelete = currentStaff?.role === 'super_admin'
+  const canDelete = currentStaff.role === 'super_admin' || hasAnyModulePermission(currentStaff, 'enquiries') && hasPermission(currentStaff, 'enquiries.delete')
+  const canExport = currentStaff.role === 'super_admin' || currentStaff.role === 'admissions_officer' || hasPermission(currentStaff, 'enquiries.export')
 
   const exportParams = new URLSearchParams()
   Object.entries(sp).forEach(([k, v]) => v && exportParams.set(k, v))
@@ -47,9 +49,11 @@ export default async function LeadsPage({
           <p className="eyebrow">Lead management</p>
           <h1 className="h-section mt-1">Leads</h1>
         </div>
-        <a href={`/api/leads/export?${exportParams.toString()}`} className="btn btn-secondary btn-sm">
-          <Download size={15} className="mr-1.5" aria-hidden="true" /> Export CSV
-        </a>
+        {canExport && (
+          <a href={`/api/leads/export?${exportParams.toString()}`} className="btn btn-secondary btn-sm">
+            <Download size={15} className="mr-1.5" aria-hidden="true" /> Export CSV
+          </a>
+        )}
       </div>
 
       <form className="card p-4 sm:p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 items-end">

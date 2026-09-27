@@ -1,11 +1,27 @@
 'use client'
 
-import { useActionState, useEffect, useRef, useState } from 'react'
+import { useActionState, useEffect, useRef, useState, type FormEvent } from 'react'
 import { useActionFeedback } from './AdminFeedbackProvider'
 import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
-import { createStaffMember, updateStaffRole, toggleStaffActive, resetStaffPassword, updateAdmissionsPermissions, type ActionResult } from '../../app/admin/(dashboard)/staff/actions'
+import {
+  createStaffMember,
+  updateStaffRole,
+  toggleStaffActive,
+  resetStaffPassword,
+  updateAdmissionsPermissions,
+  updateContentManagerPermissions,
+  resetContentManagerPermissionsToDefault,
+  type ActionResult
+} from '../../app/admin/(dashboard)/staff/actions'
 import { STAFF_ROLE_LABELS, type Staff, type StaffRole } from '../../types/db'
+import {
+  CONTENT_PERMISSION_CATALOG,
+  CRM_PERMISSION_CATALOG,
+  DASHBOARD_PERMISSION_CATALOG,
+  hasAnyModulePermission,
+  type PermissionModuleDef
+} from '../../lib/permissions'
 
 const initial: ActionResult = { ok: true }
 const ROLES: StaffRole[] = ['super_admin', 'content_manager', 'admissions_officer']
@@ -31,7 +47,10 @@ function Chips({ items }: { items: string[] }) {
 
 function PermissionSummary({ member }: { member: Staff }) {
   if (member.role === 'super_admin') return <Chips items={['All modules', 'All CRUD', 'Staff & settings']} />
-  if (member.role === 'content_manager') return <Chips items={['News', 'Blog', 'Insights']} />
+  if (member.role === 'content_manager') {
+    const granted = ALL_MODULE_DEFS.filter((def) => hasAnyModulePermission(member, def.module)).map((def) => def.label)
+    return <Chips items={granted} />
+  }
   if (member.role === 'admissions_officer') {
     return <Chips items={ADMISSIONS_PERMISSION_FIELDS.filter((f) => member[f.key]).map((f) => f.label)} />
   }
@@ -65,6 +84,160 @@ function AdmissionsPermissionsForm({ member }: { member: Staff }) {
       {!state.ok && <p className="text-xs" style={{ color: 'var(--color-danger)' }}>{state.message}</p>}
       {state.ok && state.message && <p className="text-xs" style={{ color: 'var(--color-success)' }}>{state.message}</p>}
     </form>
+  )
+}
+
+const ALL_MODULE_DEFS: PermissionModuleDef[] = [...CONTENT_PERMISSION_CATALOG, ...CRM_PERMISSION_CATALOG]
+
+/**
+ * Full granular Content Manager permission editor (spec section 6):
+ *   Admin -> Staff -> Content Manager -> Permissions
+ * Renders itself entirely from the shared catalog in lib/permissions.ts so
+ * this UI can never list a permission the server doesn't also know about.
+ * Bulk actions (Select All / Clear All / per-module Select/Clear) operate
+ * directly on the checkboxes in the DOM rather than duplicating checkbox
+ * state in React — the checkboxes themselves are the source of truth that
+ * gets submitted as FormData when the form is saved.
+ */
+function ContentManagerPermissionsForm({ member }: { member: Staff }) {
+  const [saveState, saveAction] = useActionState(updateContentManagerPermissions, initial)
+  useActionFeedback(saveState, 'Permissions saved successfully.')
+  const [resetState, resetAction] = useActionState(resetContentManagerPermissionsToDefault, initial)
+  useActionFeedback(resetState, 'Permissions reset to default.')
+  const formRef = useRef<HTMLFormElement>(null)
+
+  function setAll(value: boolean) {
+    const form = formRef.current
+    if (!form) return
+    form.querySelectorAll<HTMLInputElement>('input[type="checkbox"][data-permission-key]').forEach((el) => {
+      el.checked = value
+    })
+  }
+
+  function setModule(def: PermissionModuleDef, value: boolean) {
+    const form = formRef.current
+    if (!form) return
+    for (const action of def.actions) {
+      const el = form.querySelector<HTMLInputElement>(`input[name="${def.module}.${action.key}"]`)
+      if (el) el.checked = value
+    }
+  }
+
+  function handleSaveSubmit(e: FormEvent<HTMLFormElement>) {
+    const form = e.currentTarget
+    const checkedCount = form.querySelectorAll<HTMLInputElement>('input[type="checkbox"][data-permission-key]:checked').length
+    const totalCount = form.querySelectorAll<HTMLInputElement>('input[type="checkbox"][data-permission-key]').length
+    const message =
+      checkedCount === 0
+        ? `Save with every permission removed? ${member.full_name} will lose all Content Manager access.`
+        : checkedCount === totalCount
+          ? `Grant ${member.full_name} every available permission?`
+          : `Save these permission changes for ${member.full_name}?`
+    if (!window.confirm(message)) e.preventDefault()
+  }
+
+  function handleResetSubmit(e: FormEvent<HTMLFormElement>) {
+    if (!window.confirm(`Reset ${member.full_name} to the default Content Manager permissions? This discards any custom grants.`)) {
+      e.preventDefault()
+    }
+  }
+
+  return (
+    <div className="mt-3 p-4 rounded-lg max-w-2xl" style={{ background: 'var(--color-paper)' }}>
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+        <p className="text-xs font-semibold" style={{ color: 'var(--color-ink)' }}>Content Manager permissions</p>
+        <div className="flex gap-2">
+          <button type="button" onClick={() => setAll(true)} className="btn btn-ghost btn-sm">Select all</button>
+          <button type="button" onClick={() => setAll(false)} className="btn btn-ghost btn-sm">Clear all</button>
+        </div>
+      </div>
+
+      <form ref={formRef} action={saveAction} onSubmit={handleSaveSubmit} className="grid gap-4">
+        <input type="hidden" name="staffId" value={member.id} />
+
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-muted)' }}>CMS</p>
+          <div className="grid sm:grid-cols-2 gap-2">
+            {CONTENT_PERMISSION_CATALOG.map((def) => (
+              <fieldset key={def.module} className="rounded-md border p-2.5" style={{ borderColor: 'var(--color-border, #e5e7eb)' }}>
+                <div className="flex items-center justify-between gap-2">
+                  <legend className="text-xs font-semibold" style={{ color: 'var(--color-ink)' }}>{def.label}</legend>
+                  <div className="flex gap-1">
+                    <button type="button" onClick={() => setModule(def, true)} className="text-[0.65rem] underline" style={{ color: 'var(--color-muted)' }}>all</button>
+                    <button type="button" onClick={() => setModule(def, false)} className="text-[0.65rem] underline" style={{ color: 'var(--color-muted)' }}>none</button>
+                  </div>
+                </div>
+                <div className="grid gap-1 mt-1.5">
+                  {def.actions.map((a) => {
+                    const key = `${def.module}.${a.key}`
+                    return (
+                      <label key={key} className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-body)' }}>
+                        <input type="checkbox" name={key} data-permission-key defaultChecked={member.permissions?.[key] === true} className="accent-[var(--color-navy-700)]" />
+                        {a.label}
+                      </label>
+                    )
+                  })}
+                </div>
+              </fieldset>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-muted)' }}>
+            CRM <span className="normal-case font-normal">— not granted by the Content Manager role by default</span>
+          </p>
+          <div className="grid sm:grid-cols-2 gap-2">
+            {CRM_PERMISSION_CATALOG.map((def) => (
+              <fieldset key={def.module} className="rounded-md border p-2.5" style={{ borderColor: 'var(--color-border, #e5e7eb)' }}>
+                <div className="flex items-center justify-between gap-2">
+                  <legend className="text-xs font-semibold" style={{ color: 'var(--color-ink)' }}>{def.label}</legend>
+                  <div className="flex gap-1">
+                    <button type="button" onClick={() => setModule(def, true)} className="text-[0.65rem] underline" style={{ color: 'var(--color-muted)' }}>all</button>
+                    <button type="button" onClick={() => setModule(def, false)} className="text-[0.65rem] underline" style={{ color: 'var(--color-muted)' }}>none</button>
+                  </div>
+                </div>
+                <div className="grid gap-1 mt-1.5">
+                  {def.actions.map((a) => {
+                    const key = `${def.module}.${a.key}`
+                    return (
+                      <label key={key} className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-body)' }}>
+                        <input type="checkbox" name={key} data-permission-key defaultChecked={member.permissions?.[key] === true} className="accent-[var(--color-navy-700)]" />
+                        {a.label}
+                      </label>
+                    )
+                  })}
+                </div>
+              </fieldset>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-muted)' }}>Dashboard &amp; reports</p>
+          <div className="grid sm:grid-cols-2 gap-1.5 rounded-md border p-2.5" style={{ borderColor: 'var(--color-border, #e5e7eb)' }}>
+            {DASHBOARD_PERMISSION_CATALOG.map((d) => (
+              <label key={d.key} className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-body)' }}>
+                <input type="checkbox" name={d.key} data-permission-key defaultChecked={member.permissions?.[d.key] === true} className="accent-[var(--color-navy-700)]" />
+                {d.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <SubmitButton>Save permissions</SubmitButton>
+          {!saveState.ok && <p className="text-xs" style={{ color: 'var(--color-danger)' }}>{saveState.message}</p>}
+          {saveState.ok && saveState.message && <p className="text-xs" style={{ color: 'var(--color-success)' }}>{saveState.message}</p>}
+        </div>
+      </form>
+
+      <form action={resetAction} onSubmit={handleResetSubmit} className="mt-2">
+        <input type="hidden" name="staffId" value={member.id} />
+        <button type="submit" className="btn btn-ghost btn-sm">Reset to default</button>
+        {!resetState.ok && <p className="text-xs mt-1" style={{ color: 'var(--color-danger)' }}>{resetState.message}</p>}
+      </form>
+    </div>
   )
 }
 
@@ -145,11 +318,11 @@ export function StaffRow({ member, isSelf }: { member: Staff; isSelf: boolean })
         {permissionsOpen && (
           member.role === 'admissions_officer' ? (
             <AdmissionsPermissionsForm member={member} />
+          ) : member.role === 'content_manager' ? (
+            <ContentManagerPermissionsForm member={member} />
           ) : (
             <p className="text-xs mt-2 max-w-xs" style={{ color: 'var(--color-muted)' }}>
-              {member.role === 'super_admin'
-                ? 'Super Admins always have full access to every module and cannot be restricted.'
-                : 'This role has fixed access to its module. Change the role above to Admissions Officer for adjustable, per-action permissions.'}
+              Super Admins always have full access to every module and cannot be restricted.
             </p>
           )
         )}

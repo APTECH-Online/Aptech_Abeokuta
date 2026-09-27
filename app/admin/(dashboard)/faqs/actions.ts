@@ -36,7 +36,7 @@ function validateFields(raw: { question: string; answer: string }) {
 
 export async function createFaq(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireFaqsAccess()
+    const staff = await requireFaqsAccess('create')
 
     const question = String(formData.get('question') || '').trim()
     const answer = String(formData.get('answer') || '').trim()
@@ -82,7 +82,7 @@ export async function createFaq(_prev: ActionResult, formData: FormData): Promis
 
 export async function updateFaq(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireFaqsAccess()
+    const staff = await requireFaqsAccess('edit')
     const itemId = String(formData.get('itemId') || '')
     if (!itemId) return { ok: false, message: 'Missing FAQ.' }
 
@@ -129,7 +129,7 @@ export async function updateFaq(_prev: ActionResult, formData: FormData): Promis
 
 export async function toggleFaqPublished(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireFaqsAccess()
+    const staff = await requireFaqsAccess('edit')
     const itemId = String(formData.get('itemId') || '')
     const nextValue = formData.get('nextValue') === 'true'
     if (!itemId) return { ok: false, message: 'Missing FAQ.' }
@@ -154,7 +154,7 @@ export async function toggleFaqPublished(_prev: ActionResult, formData: FormData
 
 export async function deleteFaq(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireFaqsAccess()
+    const staff = await requireFaqsAccess('delete')
     const itemId = String(formData.get('itemId') || '')
     if (!itemId) return { ok: false, message: 'Missing FAQ.' }
 

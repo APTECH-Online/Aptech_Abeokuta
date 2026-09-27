@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../../../../lib/supabase/admin'
 import { requireRole, ForbiddenError, UnauthorizedError } from '../../../../lib/auth'
 import { logAudit } from '../../../../lib/audit'
+import { sanitizePermissionsInput, diffPermissions, getDefaultContentManagerPermissions, type PermissionMap } from '../../../../lib/permissions'
 import { z } from 'zod'
 import type { StaffRole } from '../../../../types/db'
 
@@ -81,7 +82,11 @@ export async function createStaffMember(_prev: ActionResult, formData: FormData)
       full_name: parsed.data.fullName,
       email,
       role: parsed.data.role,
-      is_active: true
+      is_active: true,
+      // A brand-new Content Manager starts with the suggested defaults
+      // (spec section 11) — full News/Events/Media, everything else denied.
+      // Super Admin can adjust immediately from the Staff page.
+      ...(parsed.data.role === 'content_manager' ? { permissions: getDefaultContentManagerPermissions() } : {})
     })
 
     if (staffError) {
@@ -119,7 +124,15 @@ export async function updateStaffRole(_prev: ActionResult, formData: FormData): 
     }
 
     const admin = createAdminClient()
-    const { error } = await admin.from('staff').update({ role }).eq('id', staffId)
+    const update: Record<string, unknown> = { role }
+    if (role === 'content_manager') {
+      // Newly-promoted Content Managers start from the suggested defaults if
+      // they don't already have a permission set (e.g. a returning CM).
+      const { data: existing } = await admin.from('staff').select('permissions').eq('id', staffId).maybeSingle()
+      const current = (existing?.permissions ?? {}) as PermissionMap
+      if (Object.keys(current).length === 0) update.permissions = getDefaultContentManagerPermissions()
+    }
+    const { error } = await admin.from('staff').update(update).eq('id', staffId)
     if (error) return { ok: false, message: 'Could not update role.' }
 
     await logAudit(admin, { userId: staff.id, action: 'staff.role_changed', entity: 'staff', entityId: staffId, metadata: { role } })
@@ -260,6 +273,94 @@ export async function updateAdmissionsPermissions(_prev: ActionResult, formData:
 
     revalidatePath('/admin/staff')
     return { ok: true, message: 'Permissions saved.' }
+  } catch (err) {
+    return authError(err)
+  }
+}
+
+/**
+ * Saves the full granular permission set for one Content Manager (spec
+ * sections 2, 3, 4, 6). Only ever touches `staff.permissions` — it never
+ * changes role, so it can't be used to widen a Content Manager into
+ * Enquiries/Applications/Follow-ups by accident: every key here still comes
+ * from the fixed, centrally-defined catalog in lib/permissions.ts, and
+ * sanitizePermissionsInput() drops anything that isn't a known key before it
+ * ever reaches the database (spec section 14 — no permission escalation via
+ * a crafted form submission).
+ */
+export async function updateContentManagerPermissions(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  try {
+    const actingStaff = await requireRole('super_admin')
+    const staffId = String(formData.get('staffId') || '')
+    if (!staffId) return { ok: false, message: 'Missing staff member.' }
+
+    const admin = createAdminClient()
+    const { data: target } = await admin.from('staff').select('id, role, permissions').eq('id', staffId).maybeSingle()
+    if (!target) return { ok: false, message: 'Staff member not found.' }
+    if (target.role !== 'content_manager') {
+      return { ok: false, message: 'Granular permissions only apply to the Content Manager role.' }
+    }
+
+    const raw: Record<string, unknown> = {}
+    for (const [key, value] of formData.entries()) raw[key] = value
+    const nextPermissions = sanitizePermissionsInput(raw)
+    const previousPermissions = (target.permissions ?? {}) as PermissionMap
+
+    const { error } = await admin.from('staff').update({ permissions: nextPermissions }).eq('id', staffId)
+    if (error) return { ok: false, message: 'Could not update permissions.' }
+
+    const changed = diffPermissions(previousPermissions, nextPermissions)
+    await logAudit(admin, {
+      userId: actingStaff.id,
+      action: 'staff.content_manager_permissions_updated',
+      entity: 'staff',
+      entityId: staffId,
+      metadata: {
+        changedKeys: Object.keys(changed),
+        changes: changed,
+        previousPermissions,
+        newPermissions: nextPermissions
+      }
+    })
+
+    revalidatePath('/admin/staff')
+    return { ok: true, message: 'Permissions saved.' }
+  } catch (err) {
+    return authError(err)
+  }
+}
+
+/** Resets a Content Manager back to the suggested defaults (spec section 11). */
+export async function resetContentManagerPermissionsToDefault(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  try {
+    const actingStaff = await requireRole('super_admin')
+    const staffId = String(formData.get('staffId') || '')
+    if (!staffId) return { ok: false, message: 'Missing staff member.' }
+
+    const admin = createAdminClient()
+    const { data: target } = await admin.from('staff').select('id, role, permissions').eq('id', staffId).maybeSingle()
+    if (!target) return { ok: false, message: 'Staff member not found.' }
+    if (target.role !== 'content_manager') {
+      return { ok: false, message: 'Granular permissions only apply to the Content Manager role.' }
+    }
+
+    const previousPermissions = (target.permissions ?? {}) as PermissionMap
+    const defaults = getDefaultContentManagerPermissions()
+
+    const { error } = await admin.from('staff').update({ permissions: defaults }).eq('id', staffId)
+    if (error) return { ok: false, message: 'Could not reset permissions.' }
+
+    const changed = diffPermissions(previousPermissions, defaults)
+    await logAudit(admin, {
+      userId: actingStaff.id,
+      action: 'staff.content_manager_permissions_reset_to_default',
+      entity: 'staff',
+      entityId: staffId,
+      metadata: { changedKeys: Object.keys(changed), changes: changed, previousPermissions, newPermissions: defaults }
+    })
+
+    revalidatePath('/admin/staff')
+    return { ok: true, message: 'Permissions reset to default.' }
   } catch (err) {
     return authError(err)
   }

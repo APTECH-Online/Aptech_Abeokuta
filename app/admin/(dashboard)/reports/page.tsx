@@ -1,3 +1,5 @@
+import { guardAdminPage, guardPage } from '../../../../lib/auth'
+import { hasPermission } from '../../../../lib/permissions'
 import { getDashboardData } from '../../../../lib/crm/dashboard'
 import { BarChart, LineChart, DonutChart } from '../../../../components/admin/charts'
 import KpiCard from '../../../../components/admin/KpiCard'
@@ -6,7 +8,12 @@ export const metadata = { title: 'Reports | Admissions CRM' }
 export const dynamic = 'force-dynamic'
 
 export default async function ReportsPage() {
-  const data = await getDashboardData()
+  await guardAdminPage((s) =>
+    s.role === 'super_admin' ||
+    (s.role === 'admissions_officer') ||
+    (hasPermission(s, 'dashboard_access') && hasPermission(s, 'dashboard_view_reports') && hasPermission(s, 'dashboard_view_crm_stats'))
+  )
+  const data = await guardPage(getDashboardData())
 
   return (
     <div className="grid gap-8">

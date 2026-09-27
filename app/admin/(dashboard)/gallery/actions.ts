@@ -41,7 +41,7 @@ function validateFields(raw: { title: string; category: string; altText: string;
 
 export async function createGalleryItem(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireGalleryAccess()
+    const staff = await requireGalleryAccess('upload')
 
     const title = String(formData.get('title') || '').trim()
     const category = String(formData.get('category') || '').trim()
@@ -101,7 +101,7 @@ export async function createGalleryItem(_prev: ActionResult, formData: FormData)
 
 export async function updateGalleryItem(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireGalleryAccess()
+    const staff = await requireGalleryAccess('replace')
     const itemId = String(formData.get('itemId') || '')
     if (!itemId) return { ok: false, message: 'Missing gallery item.' }
 
@@ -171,7 +171,7 @@ export async function updateGalleryItem(_prev: ActionResult, formData: FormData)
 
 export async function togglePublished(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireGalleryAccess()
+    const staff = await requireGalleryAccess('replace')
     const itemId = String(formData.get('itemId') || '')
     const nextValue = formData.get('nextValue') === 'true'
     if (!itemId) return { ok: false, message: 'Missing gallery item.' }
@@ -199,7 +199,7 @@ export async function togglePublished(_prev: ActionResult, formData: FormData): 
  * own to break (it's just a tile in a grid), so delete is safe outright. */
 export async function deleteGalleryItem(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireGalleryAccess()
+    const staff = await requireGalleryAccess('delete')
     const itemId = String(formData.get('itemId') || '')
     if (!itemId) return { ok: false, message: 'Missing gallery item.' }
 

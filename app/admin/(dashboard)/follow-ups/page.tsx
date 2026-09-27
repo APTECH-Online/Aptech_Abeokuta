@@ -1,10 +1,11 @@
 import Link from 'next/link'
+import { guardAdminPage } from '../../../../lib/auth'
+import { hasAnyModulePermission, hasPermission } from '../../../../lib/permissions'
 import { getFollowUps } from '../../../../lib/crm/follow-ups'
 import { FOLLOW_UP_STATUS_LABELS, INTERACTION_TYPE_LABELS } from '../../../../types/db'
 import StatusBadge from '../../../../components/admin/StatusBadge'
 import FollowUpStatusForm from '../../../../components/admin/FollowUpStatusForm'
 import Pagination from '../../../../components/admin/Pagination'
-import { getCurrentStaff } from '../../../../lib/auth'
 import { DeleteFollowUpButton } from '../../../../components/admin/CrmDeleteActions'
 
 export const metadata = { title: 'Follow-ups | Admissions CRM' }
@@ -19,17 +20,18 @@ export default async function FollowUpsPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>
 }) {
+  const currentStaff = await guardAdminPage((s) => s.role === 'super_admin' || s.role === 'admissions_officer' || hasAnyModulePermission(s, 'follow_ups'))
   const sp = await searchParams
   const page = Number(sp.page) || 1
 
-  const [{ followUps, total, pageSize }, currentStaff] = await Promise.all([
+  const [{ followUps, total, pageSize }] = await Promise.all([
     getFollowUps({
     status: (sp.status as any) || '',
     page,
     pageSize: 25
-  }), getCurrentStaff()
+  })
   ])
-  const canDelete = currentStaff?.role === 'super_admin'
+  const canDelete = currentStaff.role === 'super_admin' || hasPermission(currentStaff, 'follow_ups.delete')
 
   return (
     <div className="grid gap-6">

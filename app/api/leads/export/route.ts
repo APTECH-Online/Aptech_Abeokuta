@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentStaff, canExportData } from '../../../../lib/auth'
+import { getCurrentStaff } from '../../../../lib/auth'
+import { hasPermission } from '../../../../lib/permissions'
 import { getLeads } from '../../../../lib/crm/leads'
 import { logAudit } from '../../../../lib/audit'
 import { createAdminClient } from '../../../../lib/supabase/admin'
@@ -19,7 +20,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  if (!canExportData(staff.role)) {
+  const canExportLeads = staff.role === 'super_admin' || staff.role === 'admissions_officer' || hasPermission(staff, 'enquiries.export')
+  if (!canExportLeads) {
     return NextResponse.json({ error: 'You do not have permission to export lead data.' }, { status: 403 })
   }
 

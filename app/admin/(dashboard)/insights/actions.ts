@@ -3,13 +3,14 @@
 import { randomUUID } from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../../../../lib/supabase/admin'
-import { requireInsightsAccess, ForbiddenError, UnauthorizedError } from '../../../../lib/auth'
+import { requireInsightsAccess, insightPermissionModule, ForbiddenError, UnauthorizedError } from '../../../../lib/auth'
+import { hasPermission } from '../../../../lib/permissions'
 import { logAudit } from '../../../../lib/audit'
 import { insightFormSchema, formatZodErrors, slugify } from '../../../../lib/validation'
 import { sanitizeInsightHtml } from '../../../../lib/sanitize-html'
 import { uploadInsightImage, deleteInsightImageByUrl } from '../../../../lib/supabase/insights-storage'
 import { isSlugTaken } from '../../../../lib/crm/insights'
-import type { InsightContentType } from '../../../../types/db'
+import type { InsightContentType, Staff } from '../../../../types/db'
 
 export type ActionResult =
   | { ok: true; id?: string }
@@ -20,6 +21,17 @@ function authError(err: unknown): ActionResult {
   if (err instanceof ForbiddenError) return { ok: false, message: err.message }
   console.error('[crm] unexpected insights error', err)
   return { ok: false, message: 'Something went wrong. Please try again.' }
+}
+
+/**
+ * Every mutation below must check the permission for the SPECIFIC content
+ * type being written (news vs events), not just "some insight access" —
+ * otherwise a Content Manager granted only News could create/publish/delete
+ * an Event by submitting contentType=event on the form. Throws
+ * ForbiddenError (caught by authError above) when the check fails.
+ */
+async function requireInsightPermission(contentType: InsightContentType | string, action: 'create' | 'edit' | 'publish' | 'unpublish' | 'delete'): Promise<Staff> {
+  return requireInsightsAccess(contentType, action)
 }
 
 function revalidateInsightPaths(slug?: string, oldSlug?: string) {
@@ -70,8 +82,6 @@ function resolveStatusAndDates(intent: string, values: { publishAt?: string; exp
 
 export async function createInsight(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireInsightsAccess()
-
     const raw = Object.fromEntries(
       Array.from(formData.entries()).filter(([, v]) => typeof v === 'string')
     ) as Record<string, string>
@@ -83,6 +93,14 @@ export async function createInsight(_prev: ActionResult, formData: FormData): Pr
     const intent = String(formData.get('intent') || 'draft')
     if (intent === 'schedule' && !parsed.data.publishAt) {
       return { ok: false, message: 'Choose a publish date to schedule this.', fieldErrors: { publishAt: 'Required to schedule' } }
+    }
+
+    // Gate on the module the submitted content type belongs to (News vs
+    // Events), not just "can create insights in general" — a Content
+    // Manager granted only one of the two must not create the other.
+    const staff = await requireInsightPermission(parsed.data.contentType, 'create')
+    if ((intent === 'publish' || intent === 'schedule') && !(staff.role === 'super_admin' || hasPermission(staff, `${insightPermissionModule(parsed.data.contentType)}.publish`))) {
+      return { ok: false, message: "You don't have permission to publish this." }
     }
 
     const slug = slugify(parsed.data.slug || parsed.data.title)
@@ -150,7 +168,6 @@ export async function createInsight(_prev: ActionResult, formData: FormData): Pr
 
 export async function updateInsight(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireInsightsAccess()
     const insightId = String(formData.get('insightId') || '')
     if (!insightId) return { ok: false, message: 'Missing insight.' }
 
@@ -170,10 +187,23 @@ export async function updateInsight(_prev: ActionResult, formData: FormData): Pr
     const admin = createAdminClient()
     const { data: existing } = await admin
       .from('insights')
-      .select('id, slug, featured_image')
+      .select('id, slug, featured_image, content_type')
       .eq('id', insightId)
       .maybeSingle()
     if (!existing) return { ok: false, message: 'This insight no longer exists.' }
+
+    // Must be able to edit both the record's current module AND, if the
+    // content type is being changed, the module it's moving into — otherwise
+    // a Content Manager could use an edit to relabel an Event they can't
+    // touch into a News item, or move a News item into Events they lack.
+    const staff = await requireInsightPermission(existing.content_type, 'edit')
+    if (existing.content_type !== parsed.data.contentType) {
+      const canEditTarget = staff.role === 'super_admin' || hasPermission(staff, `${insightPermissionModule(parsed.data.contentType)}.edit`)
+      if (!canEditTarget) return { ok: false, message: "You don't have permission to move this into that content type." }
+    }
+    if ((intent === 'publish' || intent === 'schedule') && !(staff.role === 'super_admin' || hasPermission(staff, `${insightPermissionModule(parsed.data.contentType)}.publish`))) {
+      return { ok: false, message: "You don't have permission to publish this." }
+    }
 
     const slug = slugify(parsed.data.slug || parsed.data.title)
     if (!slug) return { ok: false, message: 'Could not generate a valid slug from that title.' }
@@ -243,15 +273,17 @@ export async function updateInsight(_prev: ActionResult, formData: FormData): Pr
 async function transitionInsight(
   insightId: string,
   update: Record<string, unknown>,
-  auditAction: string
+  auditAction: string,
+  action: 'publish' | 'unpublish' | 'edit'
 ): Promise<ActionResult> {
   try {
-    const staff = await requireInsightsAccess()
     if (!insightId) return { ok: false, message: 'Missing insight.' }
 
     const admin = createAdminClient()
-    const { data: existing } = await admin.from('insights').select('slug').eq('id', insightId).maybeSingle()
+    const { data: existing } = await admin.from('insights').select('slug, content_type').eq('id', insightId).maybeSingle()
     if (!existing) return { ok: false, message: 'This insight no longer exists.' }
+
+    const staff = await requireInsightPermission(existing.content_type, action)
 
     const { error } = await admin.from('insights').update(update).eq('id', insightId)
     if (error) return { ok: false, message: 'Could not update this insight.' }
@@ -267,17 +299,17 @@ async function transitionInsight(
 
 export async function publishInsightNow(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   const insightId = String(formData.get('insightId') || '')
-  return transitionInsight(insightId, { status: 'published', publish_at: new Date().toISOString() }, 'insight.published')
+  return transitionInsight(insightId, { status: 'published', publish_at: new Date().toISOString() }, 'insight.published', 'publish')
 }
 
 export async function archiveInsight(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   const insightId = String(formData.get('insightId') || '')
-  return transitionInsight(insightId, { status: 'archived' }, 'insight.archived')
+  return transitionInsight(insightId, { status: 'archived' }, 'insight.archived', 'unpublish')
 }
 
 export async function restoreInsightToDraft(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   const insightId = String(formData.get('insightId') || '')
-  return transitionInsight(insightId, { status: 'draft' }, 'insight.restored')
+  return transitionInsight(insightId, { status: 'draft' }, 'insight.restored', 'edit')
 }
 
 export async function toggleInsightFeatured(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
@@ -286,7 +318,8 @@ export async function toggleInsightFeatured(_prev: ActionResult, formData: FormD
   return transitionInsight(
     insightId,
     { is_featured: nextValue },
-    nextValue ? 'insight.featured' : 'insight.unfeatured'
+    nextValue ? 'insight.featured' : 'insight.unfeatured',
+    'edit'
   )
 }
 
@@ -300,17 +333,21 @@ export async function toggleInsightFeatured(_prev: ActionResult, formData: FormD
  */
 export async function deleteInsight(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireInsightsAccess()
     const insightId = String(formData.get('insightId') || '')
     if (!insightId) return { ok: false, message: 'Missing insight.' }
 
     const admin = createAdminClient()
     const { data: existing } = await admin
       .from('insights')
-      .select('id, title, slug, status, featured_image')
+      .select('id, title, slug, status, content_type, featured_image')
       .eq('id', insightId)
       .maybeSingle()
     if (!existing) return { ok: false, message: 'This insight no longer exists.' }
+
+    // Gate on the record's ACTUAL content type and the 'delete' action
+    // specifically — a Content Manager who can only view/edit News must not
+    // be able to delete an Event (or vice versa) by submitting its id.
+    const staff = await requireInsightPermission(existing.content_type, 'delete')
 
     if (existing.status !== 'draft' && existing.status !== 'archived') {
       return { ok: false, message: 'Archive this insight before deleting it.' }

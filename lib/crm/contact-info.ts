@@ -1,11 +1,11 @@
 import 'server-only'
 import { createClient } from '../supabase/server'
-import { requireRole } from '../auth'
+import { requireWebsiteContentAccess } from '../auth'
 import type { ContactInfo } from '../../types/db'
 
 /** There is only ever meant to be one row; this returns the earliest one. */
 export async function getContactInfo(): Promise<ContactInfo | null> {
-  await requireRole('super_admin')
+  await requireWebsiteContentAccess('view')
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('contact_info')

@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { guardAdminPage } from '../../../lib/auth'
+import { hasPermission } from '../../../lib/permissions'
 import { getDashboardData } from '../../../lib/crm/dashboard'
 import { getInsightsDashboardStats } from '../../../lib/crm/insights'
 import KpiCard from '../../../components/admin/KpiCard'
@@ -8,7 +10,17 @@ export const metadata = { title: 'Dashboard | Admissions CRM' }
 export const dynamic = 'force-dynamic'
 
 export default async function AdminDashboardPage() {
-  const [data, insightsStats] = await Promise.all([getDashboardData(), getInsightsDashboardStats()])
+  // Content Manager: dashboard access is opt-in (spec section 4). Admissions
+  // Officer keeps unconditional access, exactly as before this change.
+  const staff = await guardAdminPage((s) => s.role === 'super_admin' || s.role === 'admissions_officer' || hasPermission(s, 'dashboard_access'))
+  const isSuperAdmin = staff.role === 'super_admin'
+  const showCrmStats = isSuperAdmin || staff.role === 'admissions_officer' || hasPermission(staff, 'dashboard_view_crm_stats')
+  const showContentStats = isSuperAdmin || hasPermission(staff, 'dashboard_view_content_stats')
+
+  const [data, insightsStats] = await Promise.all([
+    showCrmStats ? getDashboardData() : null,
+    showContentStats ? getInsightsDashboardStats() : null
+  ])
 
   return (
     <div className="grid gap-8">
@@ -20,6 +32,14 @@ export default async function AdminDashboardPage() {
         </p>
       </div>
 
+      {!data && !insightsStats && (
+        <div className="card p-6 text-sm" style={{ color: 'var(--color-muted)' }}>
+          Ask a Super Admin to grant you a dashboard statistics permission to see numbers here.
+        </div>
+      )}
+
+      {data && (
+      <>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Total leads" value={data.totalLeads} />
         <KpiCard label="New leads" value={data.newLeads} />
@@ -100,7 +120,10 @@ export default async function AdminDashboardPage() {
           </div>
         )}
       </section>
+      </>
+      )}
 
+      {insightsStats && (
       <section className="card p-5 sm:p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -157,7 +180,9 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
       </section>
+      )}
 
+      {data && (
       <section className="card p-5 sm:p-6">
         <div className="flex items-center justify-between">
           <p className="eyebrow">Overdue follow-ups</p>
@@ -186,6 +211,7 @@ export default async function AdminDashboardPage() {
           </ul>
         )}
       </section>
+      )}
     </div>
   )
 }

@@ -64,40 +64,43 @@ function DeleteActionForm({ insightId, title }: { insightId: string; title: stri
   )
 }
 
-export default function InsightRowActions({ insight, canManage }: { insight: InsightRow; canManage: boolean }) {
+export interface InsightRowActionPermissions {
+  edit: boolean
+  publish: boolean
+  unpublish: boolean
+  delete: boolean
+}
+
+export default function InsightRowActions({ insight, actions }: { insight: InsightRow; actions: InsightRowActionPermissions }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Link href={`/admin/insights/${insight.id}/preview`} className="btn btn-ghost btn-sm">Preview</Link>
 
-      {canManage && (
-        <>
-          <Link href={`/admin/insights/${insight.id}`} className="btn btn-secondary btn-sm">Edit</Link>
+      {actions.edit && <Link href={`/admin/insights/${insight.id}`} className="btn btn-secondary btn-sm">Edit</Link>}
 
-          {(insight.status === 'draft' || insight.status === 'scheduled') && (
-            <QuickActionForm action={publishInsightNow} insightId={insight.id} label="Publish now" className="btn btn-primary btn-sm" />
-          )}
+      {actions.publish && (insight.status === 'draft' || insight.status === 'scheduled') && (
+        <QuickActionForm action={publishInsightNow} insightId={insight.id} label="Publish now" className="btn btn-primary btn-sm" />
+      )}
 
-          {(insight.status === 'published' || insight.status === 'scheduled') && (
-            <QuickActionForm action={archiveInsight} insightId={insight.id} label="Archive" />
-          )}
+      {actions.unpublish && (insight.status === 'published' || insight.status === 'scheduled') && (
+        <QuickActionForm action={archiveInsight} insightId={insight.id} label="Archive" />
+      )}
 
-          {insight.status === 'archived' && (
-            <QuickActionForm action={restoreInsightToDraft} insightId={insight.id} label="Restore to draft" />
-          )}
+      {actions.edit && insight.status === 'archived' && (
+        <QuickActionForm action={restoreInsightToDraft} insightId={insight.id} label="Restore to draft" />
+      )}
 
-          {(insight.status === 'draft' || insight.status === 'archived') && (
-            <DeleteActionForm insightId={insight.id} title={insight.title} />
-          )}
+      {actions.delete && (insight.status === 'draft' || insight.status === 'archived') && (
+        <DeleteActionForm insightId={insight.id} title={insight.title} />
+      )}
 
-          {insight.status === 'published' && (
-            <QuickActionForm
-              action={toggleInsightFeatured}
-              insightId={insight.id}
-              label={insight.is_featured ? 'Unfeature' : 'Feature'}
-              extra={{ nextValue: (!insight.is_featured).toString() }}
-            />
-          )}
-        </>
+      {actions.edit && insight.status === 'published' && (
+        <QuickActionForm
+          action={toggleInsightFeatured}
+          insightId={insight.id}
+          label={insight.is_featured ? 'Unfeature' : 'Feature'}
+          extra={{ nextValue: (!insight.is_featured).toString() }}
+        />
       )}
     </div>
   )

@@ -84,7 +84,7 @@ function readCommon(formData: FormData) {
 
 export async function createCourse(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireCoursesAccess()
+    const staff = await requireCoursesAccess('create')
     const raw = readCommon(formData)
 
     const fieldErrors = validateFields(raw)
@@ -151,7 +151,7 @@ export async function createCourse(_prev: ActionResult, formData: FormData): Pro
 
 export async function updateCourse(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireCoursesAccess()
+    const staff = await requireCoursesAccess('edit')
     const courseId = String(formData.get('courseId') || '')
     if (!courseId) return { ok: false, message: 'Missing course.' }
 
@@ -225,9 +225,9 @@ export async function updateCourse(_prev: ActionResult, formData: FormData): Pro
   }
 }
 
-async function transitionCourse(courseId: string, status: CourseStatus, action: string): Promise<ActionResult> {
+async function transitionCourse(courseId: string, status: CourseStatus, action: string, permissionAction: 'publish' | 'unpublish' | 'edit'): Promise<ActionResult> {
   try {
-    const staff = await requireCoursesAccess()
+    const staff = await requireCoursesAccess(permissionAction)
     if (!courseId) return { ok: false, message: 'Missing course.' }
 
     const admin = createAdminClient()
@@ -246,15 +246,15 @@ async function transitionCourse(courseId: string, status: CourseStatus, action: 
 }
 
 export async function publishCourse(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
-  return transitionCourse(String(formData.get('courseId') || ''), 'published', 'course.published')
+  return transitionCourse(String(formData.get('courseId') || ''), 'published', 'course.published', 'publish')
 }
 
 export async function archiveCourse(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
-  return transitionCourse(String(formData.get('courseId') || ''), 'archived', 'course.archived')
+  return transitionCourse(String(formData.get('courseId') || ''), 'archived', 'course.archived', 'unpublish')
 }
 
 export async function restoreCourseToDraft(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
-  return transitionCourse(String(formData.get('courseId') || ''), 'draft', 'course.restored')
+  return transitionCourse(String(formData.get('courseId') || ''), 'draft', 'course.restored', 'edit')
 }
 
 /**
@@ -265,7 +265,7 @@ export async function restoreCourseToDraft(_prev: ActionResult, formData: FormDa
  */
 export async function deleteCourse(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireCoursesAccess()
+    const staff = await requireCoursesAccess('delete')
     const courseId = String(formData.get('courseId') || '')
     if (!courseId) return { ok: false, message: 'Missing course.' }
 

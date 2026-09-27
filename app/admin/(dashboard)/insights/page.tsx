@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
-import { requireStaff, canManageInsights } from '../../../../lib/auth'
+import { guardAdminPage, canManageInsights, insightPermissionModule } from '../../../../lib/auth'
+import { hasAnyModulePermission, hasPermission } from '../../../../lib/permissions'
 import { getInsights } from '../../../../lib/crm/insights'
 import {
   INSIGHT_STATUS_LABELS,
@@ -30,7 +31,7 @@ export default async function InsightsListPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>
 }) {
-  const staff = await requireStaff()
+  const staff = await guardAdminPage((s) => s.role === 'super_admin' || hasAnyModulePermission(s, 'news') || hasAnyModulePermission(s, 'events'))
   const canManage = canManageInsights(staff)
   const sp = await searchParams
   const page = Number(sp.page) || 1
@@ -163,7 +164,24 @@ export default async function InsightsListPage({
                   <td>{insight.is_featured ? '★' : '—'}</td>
                   <td>{insight.publish_at ? new Date(insight.publish_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
                   <td>{new Date(insight.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</td>
-                  <td><InsightRowActions insight={insight} canManage={canManage} /></td>
+                  <td>
+                    <InsightRowActions
+                      insight={insight}
+                      actions={
+                        staff.role === 'super_admin'
+                          ? { edit: true, publish: true, unpublish: true, delete: true }
+                          : (() => {
+                              const module = insightPermissionModule(insight.content_type)
+                              return {
+                                edit: hasPermission(staff, `${module}.edit`),
+                                publish: hasPermission(staff, `${module}.publish`),
+                                unpublish: hasPermission(staff, `${module}.unpublish`),
+                                delete: hasPermission(staff, `${module}.delete`)
+                              }
+                            })()
+                      }
+                    />
+                  </td>
                 </tr>
               ))
             )}

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../../../../../lib/supabase/admin'
-import { requireAdmissionsAccess, requireRole, canEditLead, canAssignLeads, canUpdateLeadStatus, canLogInteractions, canStartApplications, canScheduleFollowUps, ForbiddenError, UnauthorizedError } from '../../../../../lib/auth'
+import { requireCrmAction, requireCrmDeleteAction, canUpdateLeadStatus, canLogInteractions, canStartApplications, canScheduleFollowUps, ForbiddenError, UnauthorizedError } from '../../../../../lib/auth'
 import { logAudit } from '../../../../../lib/audit'
 import { generateApplicationReference } from '../../../../../lib/reference'
 import {
@@ -24,8 +24,10 @@ function friendlyAuthError(err: unknown): ActionResult {
 
 export async function addInteraction(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireAdmissionsAccess()
-    if (!canLogInteractions(staff)) return { ok: false, message: "You don't have permission to add interactions." }
+    const staff = await requireCrmAction('enquiries', 'edit')
+    if (staff.role === 'admissions_officer' && !canLogInteractions(staff)) {
+      return { ok: false, message: "You don't have permission to add interactions." }
+    }
 
     const parsed = noteFormSchema.safeParse(Object.fromEntries(formData.entries()))
     if (!parsed.success) {
@@ -60,8 +62,10 @@ export async function addInteraction(_prev: ActionResult, formData: FormData): P
 
 export async function changeLeadStatus(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireAdmissionsAccess()
-    if (!canUpdateLeadStatus(staff)) return { ok: false, message: "You don't have permission to change lead status." }
+    const staff = await requireCrmAction('enquiries', 'edit')
+    if (staff.role === 'admissions_officer' && !canUpdateLeadStatus(staff)) {
+      return { ok: false, message: "You don't have permission to change lead status." }
+    }
 
     const leadId = String(formData.get('leadId') || '')
     const newStatus = String(formData.get('status') || '') as LeadStatus
@@ -101,8 +105,7 @@ export async function changeLeadStatus(_prev: ActionResult, formData: FormData):
 
 export async function assignLead(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireAdmissionsAccess()
-    if (!canAssignLeads(staff.role)) return { ok: false, message: 'Only Admissions Officers or Super Admins can reassign leads.' }
+    const staff = await requireCrmAction('enquiries', 'assign')
 
     const leadId = String(formData.get('leadId') || '')
     const assignedTo = String(formData.get('assignedTo') || '') || null
@@ -144,8 +147,10 @@ export async function assignLead(_prev: ActionResult, formData: FormData): Promi
 
 export async function scheduleFollowUp(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireAdmissionsAccess()
-    if (!canScheduleFollowUps(staff)) return { ok: false, message: "You don't have permission to schedule follow-ups." }
+    const staff = await requireCrmAction('follow_ups', 'create')
+    if (staff.role === 'admissions_officer' && !canScheduleFollowUps(staff)) {
+      return { ok: false, message: "You don't have permission to schedule follow-ups." }
+    }
 
     const parsed = followUpFormSchema.safeParse(Object.fromEntries(formData.entries()))
     if (!parsed.success) {
@@ -189,8 +194,7 @@ export async function scheduleFollowUp(_prev: ActionResult, formData: FormData):
 
 export async function updateFollowUpStatus(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireAdmissionsAccess()
-    if (!canEditLead(staff.role)) return { ok: false, message: "You don't have permission to update follow-ups." }
+    const staff = await requireCrmAction('follow_ups', 'complete')
 
     const followUpId = String(formData.get('followUpId') || '')
     const status = String(formData.get('status') || '')
@@ -224,8 +228,7 @@ export async function updateFollowUpStatus(_prev: ActionResult, formData: FormDa
 
 export async function editLeadInfo(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireAdmissionsAccess()
-    if (!canEditLead(staff.role)) return { ok: false, message: "You don't have permission to edit lead information." }
+    const staff = await requireCrmAction('enquiries', 'edit')
 
     const parsed = leadEditSchema.safeParse(Object.fromEntries(formData.entries()))
     if (!parsed.success) {
@@ -269,7 +272,7 @@ export async function editLeadInfo(_prev: ActionResult, formData: FormData): Pro
 
 export async function deleteLead(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireRole('super_admin')
+    const staff = await requireCrmDeleteAction('enquiries')
     const leadId = String(formData.get('leadId') || '')
     if (!leadId) return { ok: false, message: 'Missing enquiry.' }
 
@@ -305,7 +308,7 @@ export async function deleteLead(_prev: ActionResult, formData: FormData): Promi
     return { ok: true }
   } catch (err) {
     if (err instanceof UnauthorizedError) return { ok: false, message: 'Please sign in again.' }
-    if (err instanceof ForbiddenError) return { ok: false, message: "Only Super Admins can delete enquiries." }
+    if (err instanceof ForbiddenError) return { ok: false, message: "You don't have permission to delete enquiries." }
     console.error('[crm] unexpected error deleting enquiry', err)
     return { ok: false, message: 'Something went wrong. Please try again.' }
   }
@@ -314,7 +317,7 @@ export async function deleteLead(_prev: ActionResult, formData: FormData): Promi
 
 export async function deleteFollowUp(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireRole('super_admin')
+    const staff = await requireCrmDeleteAction('follow_ups')
     const followUpId = String(formData.get('followUpId') || '')
     if (!followUpId) return { ok: false, message: 'Missing follow-up.' }
 
@@ -347,7 +350,7 @@ export async function deleteFollowUp(_prev: ActionResult, formData: FormData): P
     return { ok: true }
   } catch (err) {
     if (err instanceof UnauthorizedError) return { ok: false, message: 'Please sign in again.' }
-    if (err instanceof ForbiddenError) return { ok: false, message: "Only Super Admins can delete follow-ups." }
+    if (err instanceof ForbiddenError) return { ok: false, message: "You don't have permission to delete follow-ups." }
     console.error('[crm] unexpected error deleting follow-up', err)
     return { ok: false, message: 'Something went wrong. Please try again.' }
   }
@@ -355,8 +358,10 @@ export async function deleteFollowUp(_prev: ActionResult, formData: FormData): P
 
 export async function startApplication(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireAdmissionsAccess()
-    if (!canStartApplications(staff)) return { ok: false, message: "You don't have permission to start an application." }
+    const staff = await requireCrmAction('applications', 'create')
+    if (staff.role === 'admissions_officer' && !canStartApplications(staff)) {
+      return { ok: false, message: "You don't have permission to start an application." }
+    }
 
     const leadId = String(formData.get('leadId') || '')
     const programmeId = String(formData.get('programmeId') || '')

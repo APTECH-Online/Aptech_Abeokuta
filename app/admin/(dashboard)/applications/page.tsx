@@ -1,10 +1,11 @@
 import Link from 'next/link'
+import { guardAdminPage } from '../../../../lib/auth'
+import { hasAnyModulePermission, hasPermission } from '../../../../lib/permissions'
 import { getApplications } from '../../../../lib/crm/applications'
 import { APPLICATION_STATUS_LABELS } from '../../../../types/db'
 import StatusBadge from '../../../../components/admin/StatusBadge'
 import ApplicationStatusForm from '../../../../components/admin/ApplicationStatusForm'
 import Pagination from '../../../../components/admin/Pagination'
-import { getCurrentStaff } from '../../../../lib/auth'
 import { DeleteApplicationButton } from '../../../../components/admin/CrmDeleteActions'
 
 export const metadata = { title: 'Applications | Admissions CRM' }
@@ -15,18 +16,19 @@ export default async function ApplicationsPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>
 }) {
+  const currentStaff = await guardAdminPage((s) => s.role === 'super_admin' || s.role === 'admissions_officer' || hasAnyModulePermission(s, 'applications'))
   const sp = await searchParams
   const page = Number(sp.page) || 1
 
-  const [{ applications, total, pageSize }, currentStaff] = await Promise.all([
+  const [{ applications, total, pageSize }] = await Promise.all([
     getApplications({
     status: (sp.status as any) || '',
     programmeId: sp.programmeId,
     page,
     pageSize: 20
-  }), getCurrentStaff()
+  })
   ])
-  const canDelete = currentStaff?.role === 'super_admin'
+  const canDelete = currentStaff.role === 'super_admin' || hasPermission(currentStaff, 'applications.delete')
 
   return (
     <div className="grid gap-6">
