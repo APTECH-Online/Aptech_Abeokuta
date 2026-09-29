@@ -38,7 +38,7 @@ what a developer or content manager needs to do to keep it correct.
 | Course/Insight metadata (dynamic) | `app/(site)/courses/[slug]/page.tsx`, `app/(site)/insights/[slug]/page.tsx` |
 | SEO fields in the CRM | `components/admin/CourseForm.tsx`, `components/admin/InsightForm.tsx` |
 | Default social-share image | `public/images/og-default.png` (1200×630) |
-| Redirect / noindex headers | `next.config.js` (`headers()`, `redirects()`) |
+| Redirect / noindex headers | `proxy.ts` (HTTP 301 legacy/CMS redirects), `next.config.js` (`headers()`) |
 
 ## How a public page gets its metadata
 
@@ -112,6 +112,34 @@ If you add another CMS-backed `/[slug]` route in the future, follow the
 same pattern: add an existence check to that domain's public data file,
 extend `proxy.ts`'s matcher and slug regex, and reuse `findSlugRedirect` /
 `recordSlugChange` for renames.
+
+
+## Legacy URL migration
+
+The explicit legacy map lives in `lib/legacy-redirects.ts`. It contains only
+routes evidenced by the previous APTECH Abeokuta site's HTML navigation or by
+the existing application's documented migration:
+
+- `/index.html` → `/`
+- `/about.html` → `/about`
+- `/courses.html` → `/courses`
+- `/gallery.html` → `/gallery`
+- `/contact.html` → `/contact`
+- `/sitemap` → `/sitemap.xml`
+
+These redirects are emitted in `proxy.ts` as HTTP **301** responses before
+Next.js renders a page. Query parameters are preserved. The map is explicit
+rather than a blanket `*.html` rule so unrelated or fabricated URLs cannot be
+redirected to an incorrect destination.
+
+CMS slug-change redirects are also emitted as HTTP 301 responses and remain
+flattened by `recordSlugChange()`, preventing redirect chains.
+
+No legacy individual course/article/event URL was added without evidence of an
+actual old URL. The previous site's crawled navigation linked the course
+catalogue as `/courses.html`; it did not expose evidence of separate legacy
+course/article/event URL patterns in the supplied project or the inspected
+legacy pages.
 
 ## Slug redirects
 

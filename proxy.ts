@@ -5,11 +5,12 @@ import { publishedCourseSlugExists } from './lib/courses-public'
 import { publishedInsightSlugExists } from './lib/insights-public'
 import { findSlugRedirect } from './lib/seo-redirects'
 import { RESERVED_INSIGHT_SLUGS, staticNotFoundHtml } from './lib/seo'
+import { LEGACY_REDIRECTS, LEGACY_REDIRECT_PATHS } from './lib/legacy-redirects'
 
 /**
- * Answers a /courses/:slug or /insights/:slug request with a genuine HTTP
- * status (200 pass-through, 308 redirect, or 404) BEFORE Next starts
- * rendering the page.
+ * Answers legacy HTML URLs and CMS slug requests with genuine HTTP
+ * statuses BEFORE Next starts rendering. Legacy migrations are 301s; CMS
+ * slug changes are also emitted as 301s for the SEO migration requirement.
  *
  * Why this has to happen here and not in the page component: this app's
  * root loading.tsx wraps every route in a Suspense boundary, so every page
@@ -20,7 +21,7 @@ import { RESERVED_INSIGHT_SLUGS, staticNotFoundHtml } from './lib/seo'
  * UI and a noindex meta tag, but the raw status Google/analytics/uptime
  * checks see stays 200. Running the check in proxy answers the request
  * before any rendering — and therefore before any streaming — begins, so a
- * real 404 or 308 goes out on the wire.
+ * real 404 or 301 goes out on the wire.
  *
  * The page components still do this same check themselves (see
  * app/(site)/courses/[slug]/page.tsx and insights/[slug]/page.tsx) — that
@@ -36,13 +37,25 @@ import { RESERVED_INSIGHT_SLUGS, staticNotFoundHtml } from './lib/seo'
  * degrades to "slightly wrong HTTP status on a 404" rather than "the course
  * catalogue stops working".
  */
+function handleLegacyRedirect(request: NextRequest): NextResponse | null {
+  const pathname = request.nextUrl.pathname.replace(/\/$/, '') || '/'
+  const target = LEGACY_REDIRECTS[pathname]
+  if (!target) return null
+
+  const url = new URL(target, request.url)
+  // Preserve query parameters (for example, old campaign links) while making
+  // the path itself canonical.
+  request.nextUrl.searchParams.forEach((value, key) => url.searchParams.append(key, value))
+  return NextResponse.redirect(url, 301)
+}
+
 async function handleSlugRequest(request: NextRequest, base: '/courses' | '/insights', slug: string): Promise<NextResponse | null> {
   try {
     const exists = base === '/courses' ? await publishedCourseSlugExists(slug) : await publishedInsightSlugExists(slug)
     if (exists) return null // let the page render normally
 
     const target = await findSlugRedirect(base, slug)
-    if (target) return NextResponse.redirect(new URL(target, request.url), 308)
+    if (target) return NextResponse.redirect(new URL(target, request.url), 301)
 
     return new NextResponse(staticNotFoundHtml(new URL('/', request.url).toString(), new URL('/courses', request.url).toString()), {
       status: 404,
@@ -56,6 +69,9 @@ async function handleSlugRequest(request: NextRequest, base: '/courses' | '/insi
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  const legacyRedirect = handleLegacyRedirect(request)
+  if (legacyRedirect) return legacyRedirect
 
   // /courses/<slug> and /insights/<slug> — exactly one segment after the
   // base, so this never matches /courses or /insights themselves, or a
@@ -144,5 +160,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/courses/:slug', '/insights/:slug']
+  matcher: ['/admin/:path*', '/courses/:slug', '/insights/:slug', '/sitemap', ...LEGACY_REDIRECT_PATHS]
 }

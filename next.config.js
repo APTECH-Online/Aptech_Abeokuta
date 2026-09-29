@@ -33,15 +33,6 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp']
   },
 
-  async redirects() {
-    return [
-      // The sitemap used to live at /sitemap (no extension). It now lives at
-      // the standard /sitemap.xml; keep the old URL working for anyone —
-      // including Search Console — that already has it on file.
-      { source: '/sitemap', destination: '/sitemap.xml', permanent: true }
-    ]
-  },
-
   async headers() {
     return [
       // Defence in depth on top of robots.txt + <meta robots>: the staff CRM
