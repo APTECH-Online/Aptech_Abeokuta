@@ -27,7 +27,8 @@ import {
   Phone,
   ChevronDown,
   ExternalLink,
-  Gauge
+  Gauge,
+  Bell
 } from 'lucide-react'
 import type { Staff } from '../../types/db'
 import { STAFF_ROLE_LABELS } from '../../types/db'
