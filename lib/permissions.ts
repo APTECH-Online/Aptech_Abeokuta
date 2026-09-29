@@ -127,6 +127,7 @@ export const DASHBOARD_PERMISSION_CATALOG: PermissionActionDef[] = [
   { key: 'dashboard_view_crm_stats', label: 'View CRM statistics' },
   { key: 'dashboard_view_admissions_stats', label: 'View admissions statistics' },
   { key: 'dashboard_view_reports', label: 'View reports' },
+  { key: 'dashboard_view_seo_metrics', label: 'View SEO metrics' },
   { key: 'dashboard_export_reports', label: 'Export reports' }
 ]
 

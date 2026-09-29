@@ -27,7 +27,8 @@ import {
   Handshake,
   Phone,
   ChevronDown,
-  ExternalLink
+  ExternalLink,
+  Gauge
 } from 'lucide-react'
 import type { Staff } from '../../types/db'
 import { STAFF_ROLE_LABELS } from '../../types/db'
@@ -54,6 +55,7 @@ const NAV_ITEMS = [
   { href: '/admin/programmes', label: 'Programmes', icon: GraduationCap, access: 'super_admin' },
   { href: '/admin/staff', label: 'Staff', icon: UserCog, access: 'super_admin' },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3, access: 'reports' },
+  { href: '/admin/reports/seo', label: 'SEO Metrics', icon: Gauge, access: 'seo' },
   { href: '/admin/notifications', label: 'Notifications', icon: Bell, access: 'super_admin' },
   { href: '/admin/settings', label: 'Settings', icon: Settings, access: 'super_admin' }
 ]
@@ -68,6 +70,8 @@ function canSeeNavItem(staff: Staff, access: string): boolean {
       return hasPermission(staff, 'dashboard_access')
     case 'reports':
       return hasPermission(staff, 'dashboard_access') && hasPermission(staff, 'dashboard_view_reports')
+    case 'seo':
+      return hasPermission(staff, 'dashboard_access') && hasPermission(staff, 'dashboard_view_seo_metrics')
     case 'insights':
       return hasAnyModulePermission(staff, 'news') || hasAnyModulePermission(staff, 'events')
     default:

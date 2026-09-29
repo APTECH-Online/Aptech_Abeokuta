@@ -8,28 +8,25 @@ import { siteConfig } from '../data/site'
  * it is safe to import from server components, route handlers and config.
  */
 
-const FALLBACK_SITE_URL = 'https://example.com'
+const CANONICAL_SITE_URL = 'https://www.aptech-abeokuta.com.ng'
 
 /**
- * The canonical origin, e.g. "https://www.example.ng" — no trailing slash.
- * Resolution order: NEXT_PUBLIC_SITE_URL (the documented setting) →
- * Vercel's production URL → the example.com placeholder. Every canonical
- * URL, sitemap entry and JSON-LD URL is built from this, so it must be set
- * to the real production domain (see docs/SEO.md).
+ * The production canonical origin. It is intentionally not derived from a
+ * Vercel preview/project hostname, because those are deployment addresses
+ * rather than the public canonical website.
  */
 export function getSiteUrl(): string {
-  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  const raw = process.env.NEXT_PUBLIC_SITE_URL || (vercel ? `https://${vercel}` : '') || FALLBACK_SITE_URL
-  try {
-    return new URL(raw).origin
-  } catch {
-    return FALLBACK_SITE_URL
-  }
+  // This is the production canonical origin. Do not derive SEO URLs from a
+  // Vercel preview/project hostname: those hosts are deployment addresses,
+  // not the public canonical website. NEXT_PUBLIC_SITE_URL may still be set
+  // in deployments for documentation/backwards compatibility, but canonical
+  // SEO output intentionally remains pinned to the verified production host.
+  return CANONICAL_SITE_URL
 }
 
-/** True when the site URL is still the placeholder — used to warn in logs/docs. */
+/** Kept for backwards compatibility with callers/docs from the earlier SEO setup. */
 export function isPlaceholderSiteUrl(): boolean {
-  return getSiteUrl() === FALLBACK_SITE_URL
+  return false
 }
 
 /** Turns a site-relative path ("/courses") or an absolute URL into an absolute URL. */

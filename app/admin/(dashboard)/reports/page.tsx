@@ -52,6 +52,7 @@ export default async function ReportsPage() {
         </section>
       </div>
 
+
       <section className="card p-5 sm:p-6">
         <p className="eyebrow mb-2">Follow-ups due</p>
         <p className="kpi-value">{data.followUpsDueCount}</p>

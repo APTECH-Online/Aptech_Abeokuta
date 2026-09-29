@@ -200,7 +200,7 @@ export async function eventJsonLd(baseUrl: string, insight: PublicInsight) {
     image: [insight.featured_image ?? absoluteUrl(DEFAULT_OG_IMAGE.url)],
     startDate: insight.event_start_at,
     ...(insight.event_end_at ? { endDate: insight.event_end_at } : {}),
-    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    ...(venue ? { eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode' } : {}),
     eventStatus: 'https://schema.org/EventScheduled',
     ...(venue
       ? {

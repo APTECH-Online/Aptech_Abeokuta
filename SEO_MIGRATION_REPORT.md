@@ -142,8 +142,9 @@ canonical URL. Then verify each `Location` returns `200`.
 
 1. Deploy the changes before using production HTTP tests as the final
    acceptance check.
-2. Confirm `NEXT_PUBLIC_SITE_URL` is exactly
-   `https://www.aptech-abeokuta.com.ng` in the production Vercel environment.
+2. Confirm the production deployment is serving the canonical host
+   `https://www.aptech-abeokuta.com.ng` and that Vercel's domain configuration
+   does not expose a competing public hostname as the preferred URL.
 3. Run a post-deploy crawl of the legacy map and all public sitemap URLs.
 4. Check Google Search Console for any historical legacy URLs not represented
    by the verified old-site navigation. If Search Console exposes additional

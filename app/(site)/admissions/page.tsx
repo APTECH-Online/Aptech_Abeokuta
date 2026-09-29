@@ -8,7 +8,7 @@ import AdmissionsForm from '../../../components/admissions/AdmissionsForm'
 import { admissionsSteps, admissionsRequirements } from '../../../data/site'
 import { getPublishedFaqs } from '../../../lib/faqs-public'
 import { getActiveProgrammesForPublicForm } from './programmes'
-import { breadcrumbJsonLd } from '../../../lib/structured-data'
+import { breadcrumbJsonLd, faqJsonLd } from '../../../lib/structured-data'
 import { getPublicContactInfo } from '../../../lib/contact-info-public'
 import { buildMetadata, getSiteUrl } from '../../../lib/seo'
 import JsonLd from '../../../components/shared/JsonLd'
@@ -29,7 +29,10 @@ export default async function Admissions() {
 
   return (
     <>
-      <JsonLd data={breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Admissions' }])} />
+      <JsonLd data={[
+        breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Admissions' }]),
+        faqJsonLd(faqs.map((f) => ({ question: f.question, answer: f.answer })))
+      ]} />
       <PageHero
         eyebrow="Admissions"
         title="Apply to APTECH Abeokuta"

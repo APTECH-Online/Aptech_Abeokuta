@@ -5,12 +5,10 @@ what a developer or content manager needs to do to keep it correct.
 
 ## Required setup
 
-1. **`NEXT_PUBLIC_SITE_URL`** — set this to the real production origin
-   (`https://www.aptechabeokuta.com` or similar), https, no trailing slash.
-   Every canonical URL, the sitemap, robots.txt and all JSON-LD are built
-   from `lib/seo.ts`'s `getSiteUrl()`, which reads this variable. Left unset,
-   the site falls back to `https://example.com` and search engines will be
-   told the wrong domain.
+1. **Canonical production origin** — SEO URLs are pinned in `lib/seo.ts` to
+   `https://www.aptech-abeokuta.com.ng`. This prevents a Vercel preview or
+   project hostname from becoming the canonical/sitemap/JSON-LD origin.
+   `NEXT_PUBLIC_SITE_URL` is no longer used to select the canonical origin.
 2. **Apply migration `0018_seo_fields.sql`** before deploying the admin
    changes in this release. The public site works either way (see
    "Deploy-order safety" below), but the SEO fields in the CRM forms won't
@@ -19,9 +17,9 @@ what a developer or content manager needs to do to keep it correct.
    Search Console's "HTML tag" verification method. Leave unset to render no
    verification tag, or verify via a DNS TXT record instead (no code needed
    either way).
-4. **www vs non-www, http vs https** — set this at the DNS/hosting level
-   (Vercel domain settings), not in code. Pick one canonical form and make
-   sure `NEXT_PUBLIC_SITE_URL` matches it exactly.
+4. **www vs non-www, http vs https** — keep Vercel's production domain
+   configuration aligned with `https://www.aptech-abeokuta.com.ng`. Canonical
+   SEO output is pinned to that exact origin in code.
 
 ## Where things live
 
