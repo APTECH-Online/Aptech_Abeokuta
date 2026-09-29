@@ -3,6 +3,7 @@ import { hasPermission } from '../../../../../lib/permissions'
 import { getSeoMetrics } from '../../../../../lib/crm/seo'
 import { BarChart, DonutChart } from '../../../../../components/admin/charts'
 import KpiCard from '../../../../../components/admin/KpiCard'
+import { Gauge, Link2, SearchCheck, FileText, Newspaper, RefreshCw, AlertTriangle, ShieldCheck } from 'lucide-react'
 
 export const metadata = { title: 'SEO Metrics | Admissions CRM' }
 export const dynamic = 'force-dynamic'
@@ -26,17 +27,17 @@ export default async function SeoMetricsPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="SEO health" value={`${seo.score}%`} sub="CRM-managed SEO layer" />
-        <KpiCard label="Indexable URLs" value={seo.indexableUrls} sub={`${seo.staticIndexableUrls} static · ${seo.indexableCourses + seo.indexableInsights} CMS`} />
-        <KpiCard label="Metadata coverage" value={`${seo.customMetadataCoverage}%`} sub={`${seo.customMetadataPages} CMS pages complete`} />
-        <KpiCard label="Sitemap eligibility" value={`${seo.sitemapEligibility}%`} sub="Expected sitemap URLs" />
+        <KpiCard label="SEO health" value={`${seo.score}%`} sub="CRM-managed SEO layer" icon={Gauge} tone={seo.score >= 80 ? "success" : seo.score >= 60 ? "warning" : "danger"} progress={seo.score} />
+        <KpiCard label="Indexable URLs" value={seo.indexableUrls} sub={`${seo.staticIndexableUrls} static · ${seo.indexableCourses + seo.indexableInsights} CMS`} icon={SearchCheck} />
+        <KpiCard label="Metadata coverage" value={`${seo.customMetadataCoverage}%`} sub={`${seo.customMetadataPages} CMS pages complete`} icon={FileText} tone={seo.customMetadataCoverage >= 90 ? "success" : "warning"} progress={seo.customMetadataCoverage} />
+        <KpiCard label="Sitemap eligibility" value={`${seo.sitemapEligibility}%`} sub="Expected sitemap URLs" icon={Link2} tone={seo.sitemapEligibility >= 95 ? "success" : "warning"} progress={seo.sitemapEligibility} />
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Published courses" value={seo.publishedCourses} sub={`${seo.indexableCourses} indexable`} />
-        <KpiCard label="Published insights" value={seo.publishedInsights} sub={`${seo.indexableInsights} indexable`} />
-        <KpiCard label="Redirects" value={seo.redirects} sub={`${seo.non301Redirects} non-301`} />
-        <KpiCard label="Review due" value={seo.staleContent} sub="Published content 180+ days old" />
+        <KpiCard label="Published courses" value={seo.publishedCourses} sub={`${seo.indexableCourses} indexable`} icon={FileText} />
+        <KpiCard label="Published insights" value={seo.publishedInsights} sub={`${seo.indexableInsights} indexable`} icon={Newspaper} />
+        <KpiCard label="Redirects" value={seo.redirects} sub={`${seo.non301Redirects} non-301`} icon={RefreshCw} tone={seo.non301Redirects === 0 ? "success" : "warning"} />
+        <KpiCard label="Review due" value={seo.staleContent} sub="Published content 180+ days old" icon={AlertTriangle} tone={seo.staleContent === 0 ? "success" : "warning"} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -62,17 +63,17 @@ export default async function SeoMetricsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="rounded-lg border p-4">
             <p className="text-sm font-semibold">Missing custom metadata</p>
-            <p className="kpi-value mt-1">{seo.missingCustomMetadataPages}</p>
+            <div className="metric-highlight"><FileText size={16} aria-hidden="true" /><p className="kpi-value mt-1">{seo.missingCustomMetadataPages}</p></div>
             <p className="text-xs mt-1" style={{ color: 'var(--color-muted)' }}>Generated fallbacks still work, but these records do not have a custom SEO title and description.</p>
           </div>
           <div className="rounded-lg border p-4">
             <p className="text-sm font-semibold">Intentional noindex</p>
-            <p className="kpi-value mt-1">{seo.noindexContent}</p>
+            <div className="metric-highlight"><ShieldCheck size={16} aria-hidden="true" /><p className="kpi-value mt-1">{seo.noindexContent}</p></div>
             <p className="text-xs mt-1" style={{ color: 'var(--color-muted)' }}>Published CMS records deliberately excluded from indexing.</p>
           </div>
           <div className="rounded-lg border p-4">
             <p className="text-sm font-semibold">Redirect chain risks</p>
-            <p className="kpi-value mt-1">{seo.redirectChainRisks}</p>
+            <div className="metric-highlight"><AlertTriangle size={16} aria-hidden="true" /><p className="kpi-value mt-1">{seo.redirectChainRisks}</p></div>
             <p className="text-xs mt-1" style={{ color: 'var(--color-muted)' }}>Redirect destinations that are themselves registered redirect sources.</p>
           </div>
         </div>

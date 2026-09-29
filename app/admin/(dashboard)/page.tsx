@@ -5,6 +5,7 @@ import { getDashboardData } from '../../../lib/crm/dashboard'
 import { getInsightsDashboardStats } from '../../../lib/crm/insights'
 import KpiCard from '../../../components/admin/KpiCard'
 import { BarChart, LineChart, DonutChart } from '../../../components/admin/charts'
+import { Users, UserPlus, PhoneCall, HeartHandshake, FileText, GraduationCap, Clock3, Globe2, MessageSquare, Newspaper, CalendarDays } from 'lucide-react'
 
 export const metadata = { title: 'Dashboard | Admissions CRM' }
 export const dynamic = 'force-dynamic'
@@ -41,15 +42,15 @@ export default async function AdminDashboardPage() {
       {data && (
       <>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Total leads" value={data.totalLeads} />
-        <KpiCard label="New leads" value={data.newLeads} />
-        <KpiCard label="Contacted" value={data.contacted} />
-        <KpiCard label="Interested" value={data.interested} />
-        <KpiCard label="Applications" value={data.applicationsCount} />
-        <KpiCard label="Enrolled" value={data.enrolledCount} sub={`${data.conversionRate}% conversion`} accent />
-        <KpiCard label="Follow-ups due" value={data.followUpsDueCount} sub="Overdue, pending action" />
-        <KpiCard label="Sources tracked" value={data.leadsBySource.length} />
-        <KpiCard label="Website enquiries" value={data.recentWebsiteEnquiries.length} sub="Latest 8 shown below" />
+        <KpiCard label="Total leads" value={data.totalLeads} icon={Users} />
+        <KpiCard label="New leads" value={data.newLeads} icon={UserPlus} tone="success" />
+        <KpiCard label="Contacted" value={data.contacted} icon={PhoneCall} />
+        <KpiCard label="Interested" value={data.interested} icon={HeartHandshake} tone="success" />
+        <KpiCard label="Applications" value={data.applicationsCount} icon={FileText} />
+        <KpiCard label="Enrolled" value={data.enrolledCount} sub={`${data.conversionRate}% conversion`} icon={GraduationCap} tone="success" accent progress={data.conversionRate} />
+        <KpiCard label="Follow-ups due" value={data.followUpsDueCount} sub="Overdue, pending action" icon={Clock3} tone={data.followUpsDueCount > 0 ? "warning" : "success"} />
+        <KpiCard label="Sources tracked" value={data.leadsBySource.length} icon={Globe2} />
+        <KpiCard label="Website enquiries" value={data.recentWebsiteEnquiries.length} sub="Latest 8 shown below" icon={MessageSquare} />
       </div>
 
       <section className="card p-5 sm:p-6">
@@ -133,11 +134,11 @@ export default async function AdminDashboardPage() {
           <Link href="/admin/insights/new" className="btn btn-primary btn-sm">Create Insight</Link>
         </div>
         <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCard label="Total insights" value={insightsStats.total} />
-          <KpiCard label="Drafts" value={insightsStats.drafts} />
-          <KpiCard label="Scheduled" value={insightsStats.scheduled} />
-          <KpiCard label="Published" value={insightsStats.published} accent />
-          <KpiCard label="Upcoming events" value={insightsStats.upcomingEvents} />
+          <KpiCard label="Total insights" value={insightsStats.total} icon={Newspaper} />
+          <KpiCard label="Drafts" value={insightsStats.drafts} icon={FileText} />
+          <KpiCard label="Scheduled" value={insightsStats.scheduled} icon={Clock3} />
+          <KpiCard label="Published" value={insightsStats.published} icon={Newspaper} tone="success" accent />
+          <KpiCard label="Upcoming events" value={insightsStats.upcomingEvents} icon={CalendarDays} />
         </div>
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>

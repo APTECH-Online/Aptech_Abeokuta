@@ -17,7 +17,6 @@ import {
   LogOut,
   UserCircle,
   UserCog,
-  Bell,
   Newspaper,
   Images,
   BookOpen,
@@ -34,6 +33,7 @@ import type { Staff } from '../../types/db'
 import { STAFF_ROLE_LABELS } from '../../types/db'
 import { signOut } from '../../app/admin/actions'
 import { hasAnyModulePermission, hasPermission } from '../../lib/permissions'
+import NotificationBell from './NotificationBell'
 
 // `access` drives visibility only — the real enforcement lives server-side in
 // lib/auth.ts (see the implementation summary). A Content Manager sees a nav
@@ -171,16 +171,7 @@ export default function AdminShell({
             <p className="admin-topbar-eyebrow">Official Administration Portal</p>
             <p className="admin-topbar-title truncate">{currentItem?.label ?? 'Dashboard'}</p>
           </div>
-          {staff.role === 'super_admin' && (
-            <Link href="/admin/notifications" className="relative shrink-0" style={{ color: 'var(--color-ink)' }} aria-label="Notifications">
-              <Bell size={20} aria-hidden="true" />
-              {unreadNotifications > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 text-[0.6rem] font-semibold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1" style={{ background: 'var(--color-primary)', color: 'white' }}>
-                  {unreadNotifications > 99 ? '99+' : unreadNotifications}
-                </span>
-              )}
-            </Link>
-          )}
+          <NotificationBell initialCount={unreadNotifications} enabled={staff.role === 'super_admin'} />
           <div className="admin-topbar-actions">
             <Link
               href="/"

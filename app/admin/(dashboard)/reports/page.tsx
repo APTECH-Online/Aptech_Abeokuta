@@ -2,6 +2,7 @@ import { guardAdminPage, guardPage } from '../../../../lib/auth'
 import { hasPermission } from '../../../../lib/permissions'
 import { getDashboardData } from '../../../../lib/crm/dashboard'
 import { BarChart, LineChart, DonutChart } from '../../../../components/admin/charts'
+import { Users, FileText, GraduationCap, Percent, Clock3 } from 'lucide-react'
 import KpiCard from '../../../../components/admin/KpiCard'
 
 export const metadata = { title: 'Reports | Admissions CRM' }
@@ -23,10 +24,10 @@ export default async function ReportsPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Total leads" value={data.totalLeads} />
-        <KpiCard label="Applications" value={data.applicationsCount} />
-        <KpiCard label="Enrolled" value={data.enrolledCount} />
-        <KpiCard label="Conversion rate" value={`${data.conversionRate}%`} sub="Enrolled ÷ total leads" />
+        <KpiCard label="Total leads" value={data.totalLeads} icon={Users} />
+        <KpiCard label="Applications" value={data.applicationsCount} icon={FileText} />
+        <KpiCard label="Enrolled" value={data.enrolledCount} icon={GraduationCap} tone="success" />
+        <KpiCard label="Conversion rate" value={`${data.conversionRate}%`} sub="Enrolled ÷ total leads" icon={Percent} tone={data.conversionRate >= 10 ? "success" : "neutral"} progress={data.conversionRate} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -55,7 +56,7 @@ export default async function ReportsPage() {
 
       <section className="card p-5 sm:p-6">
         <p className="eyebrow mb-2">Follow-ups due</p>
-        <p className="kpi-value">{data.followUpsDueCount}</p>
+        <div className="metric-highlight"><Clock3 size={17} aria-hidden="true" /><p className="kpi-value">{data.followUpsDueCount}</p></div>
         <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>Pending follow-ups already past their due date.</p>
       </section>
     </div>

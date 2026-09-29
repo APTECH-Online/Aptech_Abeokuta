@@ -1782,3 +1782,20 @@ button, input, select, textarea { font: inherit; }
   .site-header__menu { min-width: 40px; padding-inline: .65rem; }
   .site-header__menu-label { display: none; }
 }
+
+/* CRM metric system — shared visual language for KPI cards, badges and compact metric highlights. */
+.kpi-head { display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
+.kpi-icon { display:inline-flex; align-items:center; justify-content:center; width:2rem; height:2rem; border-radius:.7rem; background:var(--color-navy-50); color:var(--color-navy-700); flex-shrink:0; }
+.kpi-card-success .kpi-icon { background:var(--color-teal-50); color:var(--color-teal-700); }
+.kpi-card-warning .kpi-icon { background:var(--color-amber-50); color:var(--color-amber-700); }
+.kpi-card-danger .kpi-icon { background:var(--color-danger-bg); color:var(--color-danger); }
+.kpi-progress { height:4px; margin-top:.75rem; overflow:hidden; border-radius:999px; background:var(--color-line); }
+.kpi-progress span { display:block; height:100%; border-radius:inherit; background:var(--color-teal-600); transition:width .25s ease; }
+.kpi-card-warning .kpi-progress span { background:var(--color-amber-500); }
+.kpi-card-danger .kpi-progress span { background:var(--color-danger); }
+.metric-highlight { display:flex; align-items:center; gap:.5rem; color:var(--color-muted); }
+.metric-highlight .kpi-value { color:var(--color-ink); }
+.admin-notification-bell { position:relative; display:inline-flex; align-items:center; justify-content:center; width:2.25rem; height:2.25rem; border-radius:.7rem; color:var(--color-ink); transition:background .15s ease, transform .15s ease; flex-shrink:0; }
+.admin-notification-bell:hover { background:var(--color-navy-50); transform:translateY(-1px); }
+.admin-notification-badge { position:absolute; top:-.15rem; right:-.15rem; min-width:1.05rem; height:1.05rem; padding:0 .22rem; display:flex; align-items:center; justify-content:center; border-radius:999px; border:2px solid var(--color-paper); background:var(--color-primary); color:#fff; font-size:.58rem; line-height:1; font-weight:800; }
+@media (prefers-reduced-motion: reduce) { .admin-notification-bell, .kpi-progress span { transition:none; } }
