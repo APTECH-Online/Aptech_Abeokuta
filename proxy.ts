@@ -5,7 +5,7 @@ import { publishedCourseSlugExists } from './lib/courses-public'
 import { publishedInsightSlugExists } from './lib/insights-public'
 import { findSlugRedirect } from './lib/seo-redirects'
 import { RESERVED_INSIGHT_SLUGS, staticNotFoundHtml } from './lib/seo'
-import { LEGACY_REDIRECTS, LEGACY_REDIRECT_PATHS } from './lib/legacy-redirects'
+import { LEGACY_REDIRECTS } from './lib/legacy-redirects'
 
 /**
  * Answers legacy HTML URLs and CMS slug requests with genuine HTTP
@@ -160,5 +160,17 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/courses/:slug', '/insights/:slug', '/sitemap', ...LEGACY_REDIRECT_PATHS]
+  // Next.js requires matcher values to be statically analyzable at build time.
+  // Keep this explicit rather than spreading Object.keys(LEGACY_REDIRECTS).
+  matcher: [
+    '/admin/:path*',
+    '/courses/:slug',
+    '/insights/:slug',
+    '/sitemap',
+    '/index.html',
+    '/about.html',
+    '/courses.html',
+    '/gallery.html',
+    '/contact.html'
+  ]
 }
