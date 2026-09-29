@@ -18,23 +18,15 @@ import { getPublishedTestimonials } from '../../lib/testimonials-public'
 import { getPublishedFaqs } from '../../lib/faqs-public'
 import { getPublishedPartnersHighlight } from '../../lib/partners-public'
 import { faqJsonLd } from '../../lib/structured-data'
+import { buildMetadata } from '../../lib/seo'
+import JsonLd from '../../components/shared/JsonLd'
 
-export const metadata = {
-  title: 'Build Your Future with Technology',
+export const metadata = buildMetadata({
+  title: 'APTECH Abeokuta | Computer & IT Training in Abeokuta, Ogun State',
   description:
-    'Gain practical IT skills, industry-focused training, and career-ready knowledge at APTECH Abeokuta.',
-  alternates: { canonical: '/' },
-  openGraph: {
-    title: 'APTECH Abeokuta — Build Your Future with Technology',
-    description: 'Gain practical IT skills, industry-focused training, and career-ready knowledge at APTECH Abeokuta.',
-    url: '/'
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'APTECH Abeokuta — Build Your Future with Technology',
-    description: 'Gain practical IT skills, industry-focused training, and career-ready knowledge at APTECH Abeokuta.'
-  }
-}
+    'Learn software development, data science, networking and practical IT skills at APTECH Abeokuta. Advanced Diploma, Smart Pro and short courses. Apply today.',
+  path: '/'
+})
 
 export default async function Home() {
   const courses = await getPublishedCourses()
@@ -43,10 +35,8 @@ export default async function Home() {
   const partnersHighlight = await getPublishedPartnersHighlight()
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faqs)) }}
-      />
+      {/* FAQPage schema mirrors the visible FAQ accordion below; null (nothing rendered) when there are no published FAQs. */}
+      <JsonLd data={faqJsonLd(faqs)} />
       <Hero />
       <StatsBand courses={courses} />
 

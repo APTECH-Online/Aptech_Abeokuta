@@ -196,6 +196,33 @@ export default function CourseForm({ mode, course }: { mode: 'create' | 'edit'; 
         )}
       </div>
 
+      <section className="card p-5 sm:p-6 grid gap-4">
+        <p className="eyebrow">SEO</p>
+        <div>
+          <label htmlFor="seoTitle" className="field-label">SEO title (optional)</label>
+          <input id="seoTitle" name="seoTitle" maxLength={70} defaultValue={course?.seo_title ?? ''} className="admin-input" />
+          <p className="field-hint">Falls back to a generated title from the course name if left blank. Max 70 characters.</p>
+          {fieldErrors?.seoTitle && <p className="field-error">{fieldErrors.seoTitle}</p>}
+        </div>
+        <div>
+          <label htmlFor="seoDescription" className="field-label">Meta description (optional)</label>
+          <textarea
+            id="seoDescription"
+            name="seoDescription"
+            rows={2}
+            maxLength={160}
+            defaultValue={course?.seo_description ?? ''}
+            className="admin-input"
+          />
+          <p className="field-hint">Falls back to the summary above if left blank. Max 160 characters.</p>
+          {fieldErrors?.seoDescription && <p className="field-error">{fieldErrors.seoDescription}</p>}
+        </div>
+        <label className="flex items-start gap-2 text-sm" style={{ color: 'var(--color-body)' }}>
+          <input type="checkbox" name="seoNoindex" defaultChecked={course?.seo_noindex ?? false} className="mt-1" />
+          Hide this course from search engines (noindex)
+        </label>
+      </section>
+
       <div className="flex gap-3 pt-2">
         <SubmitButton>{mode === 'create' ? 'Create course' : 'Save changes'}</SubmitButton>
       </div>

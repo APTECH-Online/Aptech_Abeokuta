@@ -91,6 +91,7 @@ async function runScheduledPublishing() {
     revalidatePath('/insights/blog')
     revalidatePath('/insights/announcements')
     revalidatePath('/insights/events')
+    revalidatePath('/sitemap.xml')
     revalidatePath('/')
     revalidatePath('/admin/insights')
     revalidatePath('/admin')

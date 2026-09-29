@@ -1,6 +1,8 @@
 'use server'
 
 import { randomUUID } from 'crypto'
+import { RESERVED_INSIGHT_SLUGS } from '../../../../lib/seo'
+import { recordSlugChange } from '../../../../lib/seo-redirects'
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../../../../lib/supabase/admin'
 import { requireInsightsAccess, insightPermissionModule, ForbiddenError, UnauthorizedError } from '../../../../lib/auth'
@@ -42,6 +44,7 @@ function revalidateInsightPaths(slug?: string, oldSlug?: string) {
   revalidatePath('/insights/blog')
   revalidatePath('/insights/announcements')
   revalidatePath('/insights/events')
+  revalidatePath('/sitemap.xml') // new/changed/unpublished content must reach the sitemap immediately
   revalidatePath('/')
   if (slug) revalidatePath(`/insights/${slug}`)
   if (oldSlug && oldSlug !== slug) revalidatePath(`/insights/${oldSlug}`)
@@ -105,6 +108,9 @@ export async function createInsight(_prev: ActionResult, formData: FormData): Pr
 
     const slug = slugify(parsed.data.slug || parsed.data.title)
     if (!slug) return { ok: false, message: 'Could not generate a valid slug from that title.' }
+    if (RESERVED_INSIGHT_SLUGS.includes(slug)) {
+      return { ok: false, message: 'That slug is reserved for a section page.', fieldErrors: { slug: 'Reserved — try another' } }
+    }
     if (await isSlugTaken(slug)) {
       return { ok: false, message: 'That slug is already in use.', fieldErrors: { slug: 'Already in use — try another' } }
     }
@@ -138,6 +144,7 @@ export async function createInsight(_prev: ActionResult, formData: FormData): Pr
       expires_at,
       seo_title: parsed.data.seoTitle || null,
       seo_description: parsed.data.seoDescription || null,
+      seo_noindex: parsed.data.seoNoindex === 'on',
       event_start_at: parsed.data.eventStartAt ? new Date(parsed.data.eventStartAt).toISOString() : null,
       event_end_at: parsed.data.eventEndAt ? new Date(parsed.data.eventEndAt).toISOString() : null,
       event_venue: parsed.data.eventVenue || null,
@@ -207,6 +214,9 @@ export async function updateInsight(_prev: ActionResult, formData: FormData): Pr
 
     const slug = slugify(parsed.data.slug || parsed.data.title)
     if (!slug) return { ok: false, message: 'Could not generate a valid slug from that title.' }
+    if (RESERVED_INSIGHT_SLUGS.includes(slug)) {
+      return { ok: false, message: 'That slug is reserved for a section page.', fieldErrors: { slug: 'Reserved — try another' } }
+    }
     if (slug !== existing.slug && (await isSlugTaken(slug, insightId))) {
       return { ok: false, message: 'That slug is already in use.', fieldErrors: { slug: 'Already in use — try another' } }
     }
@@ -239,6 +249,7 @@ export async function updateInsight(_prev: ActionResult, formData: FormData): Pr
       expires_at,
       seo_title: parsed.data.seoTitle || null,
       seo_description: parsed.data.seoDescription || null,
+      seo_noindex: parsed.data.seoNoindex === 'on',
       event_start_at: parsed.data.eventStartAt ? new Date(parsed.data.eventStartAt).toISOString() : null,
       event_end_at: parsed.data.eventEndAt ? new Date(parsed.data.eventEndAt).toISOString() : null,
       event_venue: parsed.data.eventVenue || null,
@@ -261,6 +272,9 @@ export async function updateInsight(_prev: ActionResult, formData: FormData): Pr
       entityId: insightId,
       metadata: { title: parsed.data.title, status }
     })
+
+    // Renamed slug → keep the old URL alive with a permanent redirect.
+    if (slug !== existing.slug) await recordSlugChange(admin, '/insights', existing.slug, slug)
 
     revalidateInsightPaths(slug, existing.slug)
     return { ok: true, id: insightId }

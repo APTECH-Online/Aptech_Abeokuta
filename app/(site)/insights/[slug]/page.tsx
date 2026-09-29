@@ -1,4 +1,6 @@
-import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import Image from 'next/image'
+import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, CalendarDays, MapPin, Link2, Phone } from 'lucide-react'
 import Container from '../../../../components/ui/Container'
@@ -7,43 +9,48 @@ import CTABand from '../../../../components/home/CTABand'
 import { getInsightBySlug, getRelatedInsights } from '../../../../lib/insights-public'
 import { breadcrumbJsonLd, articleJsonLd, eventJsonLd } from '../../../../lib/structured-data'
 import { INSIGHT_CONTENT_TYPE_LABELS } from '../../../../types/db'
+import { buildMetadata, getSiteUrl, pickTitle, stripHtml, truncate } from '../../../../lib/seo'
+import { findSlugRedirect } from '../../../../lib/seo-redirects'
+import { siteConfig } from '../../../../data/site'
+import JsonLd from '../../../../components/shared/JsonLd'
 
 type Props = { params: Promise<{ slug: string }> }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const post = await getInsightBySlug(slug)
-  if (!post) return { title: 'Not found' }
+  if (!post) return { title: 'Not found', robots: { index: false, follow: false } }
 
-  const title = post.seo_title || post.title
-  const description = post.seo_description || post.short_description || undefined
+  const title = post.seo_title || pickTitle([`${post.title} | ${siteConfig.name}`, post.title])
+  const description =
+    post.seo_description || post.short_description || truncate(stripHtml(post.content), 158)
 
-  return {
+  return buildMetadata({
     title,
     description,
-    alternates: { canonical: `/insights/${post.slug}` },
-    openGraph: {
-      title,
-      description,
-      type: 'article',
-      url: `/insights/${post.slug}`,
-      ...(post.featured_image ? { images: [post.featured_image] } : {})
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description
-    }
-  }
+    path: `/insights/${post.slug}`,
+    image: post.featured_image,
+    imageAlt: post.title,
+    type: 'article',
+    publishedTime: post.publish_at ?? post.created_at,
+    modifiedTime: post.updated_at,
+    section: post.category,
+    noindex: post.seo_noindex
+  })
 }
 
 export default async function InsightArticlePage({ params }: Props) {
   const { slug } = await params
   const post = await getInsightBySlug(slug)
-  if (!post) notFound()
+  if (!post) {
+    // Slug was renamed in the CRM → permanent redirect to the new URL; otherwise a real 404.
+    const target = await findSlugRedirect('/insights', slug)
+    if (target) permanentRedirect(target)
+    notFound()
+  }
 
   const related = await getRelatedInsights(post)
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const baseUrl = getSiteUrl()
   const isEvent = post.content_type === 'event'
   const articleOrEventJsonLd = isEvent ? await eventJsonLd(baseUrl, post) : articleJsonLd(baseUrl, post)
   const crumbs = [
@@ -54,14 +61,8 @@ export default async function InsightArticlePage({ params }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(baseUrl, crumbs)) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleOrEventJsonLd) }}
-      />
+      {/* articleOrEventJsonLd is null for an Event without a start date (schema would be invalid) */}
+      <JsonLd data={[breadcrumbJsonLd(baseUrl, crumbs), articleOrEventJsonLd]} />
 
       <section className="border-b hairline pattern-adire" style={{ background: 'var(--color-navy-900)' }}>
         <div className="container py-12 sm:py-16">
@@ -88,13 +89,16 @@ export default async function InsightArticlePage({ params }: Props) {
           </Link>
 
           {post.featured_image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={post.featured_image}
-              alt={post.title}
-              className="mt-6 w-full rounded-xl object-cover"
-              style={{ aspectRatio: '16 / 9' }}
-            />
+            <div className="relative mt-6 w-full overflow-hidden rounded-xl" style={{ aspectRatio: '16 / 9' }}>
+              <Image
+                src={post.featured_image}
+                alt={post.title}
+                fill
+                priority
+                sizes="(max-width: 672px) 100vw, 672px"
+                className="object-cover"
+              />
+            </div>
           )}
 
           {isEvent && (post.event_start_at || post.event_venue) && (
@@ -149,7 +153,7 @@ export default async function InsightArticlePage({ params }: Props) {
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
               {related.map((r) => (
                 <article key={r.slug} className="card p-5 flex flex-col">
-                  <h3 className="font-display font-semibold text-sm text-[var(--color-ink)] leading-snug">{r.title}</h3>
+                  <h2 className="font-display font-semibold text-sm text-[var(--color-ink)] leading-snug">{r.title}</h2>
                   {r.short_description && (
                     <p className="mt-2 text-xs leading-relaxed flex-1" style={{ color: 'var(--color-muted)' }}>
                       {r.short_description}

@@ -10,43 +10,29 @@ import { getPublishedFaqs } from '../../../lib/faqs-public'
 import { getActiveProgrammesForPublicForm } from './programmes'
 import { breadcrumbJsonLd } from '../../../lib/structured-data'
 import { getPublicContactInfo } from '../../../lib/contact-info-public'
+import { buildMetadata, getSiteUrl } from '../../../lib/seo'
+import JsonLd from '../../../components/shared/JsonLd'
 
-export const metadata = {
-  title: 'Admissions',
-  description: 'How to apply to APTECH Abeokuta — steps, requirements, and what to expect.',
-  alternates: { canonical: '/admissions' },
-  openGraph: {
-    title: 'Admissions — APTECH Abeokuta',
-    description: 'How to apply to APTECH Abeokuta — steps, requirements, and what to expect.',
-    url: '/admissions'
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Admissions — APTECH Abeokuta',
-    description: 'How to apply to APTECH Abeokuta — steps, requirements, and what to expect.'
-  }
-}
+export const metadata = buildMetadata({
+  title: 'Admissions & How to Apply | APTECH Abeokuta',
+  description:
+    'How to apply to APTECH Abeokuta: choose a programme, submit your enquiry, attend orientation and start learning. See requirements and contact admissions.',
+  path: '/admissions'
+})
 
 export default async function Admissions() {
   const faqs = await getPublishedFaqs(3)
   const faqItems = faqs.map((f) => ({ id: f.id, title: f.question, content: f.answer }))
   const programmes = await getActiveProgrammesForPublicForm()
-  const { whatsapp } = await getPublicContactInfo()
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const { whatsapp, email } = await getPublicContactInfo()
+  const baseUrl = getSiteUrl()
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Admissions' }])
-          )
-        }}
-      />
+      <JsonLd data={breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Admissions' }])} />
       <PageHero
         eyebrow="Admissions"
-        title="Start your application"
+        title="Apply to APTECH Abeokuta"
         description="A straightforward, four-step process from choosing a programme to your first day of class."
         crumbs={[{ label: 'Home', href: '/' }, { label: 'Admissions' }]}
       >
@@ -116,7 +102,7 @@ export default async function Admissions() {
           ) : (
             <div className="mt-8 card p-6 sm:p-8 text-sm" style={{ color: 'var(--color-muted)' }}>
               The enquiry form is temporarily unavailable. Please contact admissions directly at{' '}
-              <a href="mailto:aptech.abeokuta@gmail.com" className="underline">aptech.abeokuta@gmail.com</a>.
+              <a href={`mailto:${email}`} className="underline">{email}</a>.
             </div>
           )}
         </Container>

@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { siteConfig, footerNav } from '../../data/site'
 import { getPublishedSocialLinks } from '../../lib/social-links-public'
 import { getPublicContactInfo } from '../../lib/contact-info-public'
+import { telHref } from '../../lib/seo'
 import { SocialIcon, SOCIAL_PLATFORM_DEFAULT_LABEL } from './SocialIcons'
 
 // Same underline mechanic as the header nav (components/navigation/Header.tsx):
@@ -90,8 +91,16 @@ export default async function Footer() {
           <h2 className="eyebrow eyebrow-inverse">Contact</h2>
           <ul className="mt-5 space-y-3 text-sm">
             <li>{contactInfo.address}</li>
-            <li>{contactInfo.phone}</li>
-            <li>{contactInfo.email}</li>
+            <li>
+              {telHref(contactInfo.phone) ? (
+                <a href={telHref(contactInfo.phone) as string} className="hover:text-white transition-colors">{contactInfo.phone}</a>
+              ) : (
+                contactInfo.phone
+              )}
+            </li>
+            <li>
+              <a href={`mailto:${contactInfo.email}`} className="hover:text-white transition-colors break-all">{contactInfo.email}</a>
+            </li>
           </ul>
         </div>
       </div>

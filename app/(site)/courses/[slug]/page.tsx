@@ -1,4 +1,5 @@
-import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
 import { getPublishedCourses, getPublishedCourseBySlug, getRelatedCourses } from '../../../../lib/courses-public'
 import Container from '../../../../components/ui/Container'
@@ -17,39 +18,51 @@ import AcnsTermCard from '../../../../components/courses/AcnsTermCard'
 import { acnsTerms } from '../../../../data/acns'
 import Image from 'next/image'
 import { courseJsonLd, breadcrumbJsonLd } from '../../../../lib/structured-data'
+import { buildMetadata, getSiteUrl, pickTitle, truncate } from '../../../../lib/seo'
+import { findSlugRedirect } from '../../../../lib/seo-redirects'
+import { siteConfig } from '../../../../data/site'
+import JsonLd from '../../../../components/shared/JsonLd'
 
 type Props = { params: Promise<{ slug: string }> }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const course = await getPublishedCourseBySlug(slug)
-  if (!course) return { title: 'Course not found' }
-  return {
-    title: course.title,
-    description: course.summary,
-    alternates: { canonical: `/courses/${course.slug}` },
-    openGraph: {
-      title: course.title,
-      description: course.summary,
-      type: 'article',
-      url: `/courses/${course.slug}`
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: course.title,
-      description: course.summary
-    }
-  }
+  if (!course) return { title: 'Course not found', robots: { index: false, follow: false } }
+
+  // CMS-controlled SEO fields win; otherwise generate a unique, length-safe
+  // title and use the course's own summary (unique per course) as description.
+  const title =
+    course.seoTitle ||
+    pickTitle([
+      `${course.title} Course in Abeokuta | ${siteConfig.name}`,
+      `${course.title} in Abeokuta | ${siteConfig.name}`,
+      `${course.title} | ${siteConfig.name}`,
+      course.title
+    ])
+  return buildMetadata({
+    title,
+    description: course.seoDescription || truncate(course.summary, 158),
+    path: `/courses/${course.slug}`,
+    image: course.coverImage,
+    imageAlt: `${course.title} at ${siteConfig.name}`,
+    noindex: course.noindex
+  })
 }
 
 export default async function CoursePage({ params }: Props) {
   const { slug } = await params
   const course = await getPublishedCourseBySlug(slug)
-  if (!course) notFound()
+  if (!course) {
+    // Slug was renamed in the CRM → permanent redirect to the new URL; otherwise a real 404.
+    const target = await findSlugRedirect('/courses', slug)
+    if (target) permanentRedirect(target)
+    notFound()
+  }
 
   const allCourses = await getPublishedCourses()
   const related = getRelatedCourses(allCourses, course)
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const baseUrl = getSiteUrl()
   const crumbs = [
     { label: 'Home', href: '/' },
     { label: 'Courses', href: '/courses' },
@@ -58,14 +71,7 @@ export default async function CoursePage({ params }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJsonLd(baseUrl, course)) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(baseUrl, crumbs)) }}
-      />
+      <JsonLd data={[courseJsonLd(baseUrl, course), breadcrumbJsonLd(baseUrl, crumbs)]} />
       <section className="border-b hairline pattern-adire" style={{ background: 'var(--color-navy-900)' }}>
         <div className="container py-12 sm:py-16">
           <Breadcrumbs
@@ -89,7 +95,15 @@ export default async function CoursePage({ params }: Props) {
             </p>
             {course.coverImage && (
               <div className="hidden lg:block w-64 rounded-lg overflow-hidden border border-white/10 shrink-0">
-                <Image src={course.coverImage} alt="" width={1366} height={768} className="w-full h-auto block" priority />
+                <Image
+                  src={course.coverImage}
+                  alt={`${course.title} programme overview`}
+                  width={1366}
+                  height={768}
+                  sizes="256px"
+                  className="w-full h-auto block"
+                  priority
+                />
               </div>
             )}
           </div>

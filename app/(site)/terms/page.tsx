@@ -1,10 +1,13 @@
 import PageHero from '../../../components/shared/PageHero'
 import Container from '../../../components/ui/Container'
+import { buildMetadata } from '../../../lib/seo'
 
-export const metadata = {
-  title: 'Terms & Conditions',
-  description: 'Terms and conditions for APTECH Abeokuta.'
-}
+export const metadata = buildMetadata({
+  title: 'Terms & Conditions | APTECH Abeokuta',
+  description:
+    'Terms and conditions for using the APTECH Abeokuta website and enquiring about our programmes.',
+  path: '/terms'
+})
 
 export default function Terms() {
   return (

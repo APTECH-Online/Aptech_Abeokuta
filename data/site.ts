@@ -5,7 +5,7 @@ export const siteConfig = {
   shortName: 'APTECH',
   tagline: 'Career-focused technology education in Abeokuta',
   description:
-    'Advanced software engineering, Smart Pro, and networking education delivered through APTECH Abeokuta.'
+    'Computer and IT training in Abeokuta, Ogun State: Advanced Diploma in Software Engineering, Smart Pro, networking and short courses at APTECH Abeokuta.'
 
   // Contact details (phone, WhatsApp, email, address, office hours) used to
   // be hardcoded here. That content now lives in the contact_info table

@@ -22,6 +22,12 @@ export type Course = {
   tools: string[]
   outcomes: string[]
   coverImage?: string
+  // SEO fields managed in the CRM (see migration 0018_seo_fields.sql). All optional:
+  // pages fall back to generated values when they are blank.
+  seoTitle?: string
+  seoDescription?: string
+  noindex?: boolean
+  updatedAt?: string
 }
 
 export const categories = [

@@ -2,28 +2,21 @@ import PageHero from '../../../../components/shared/PageHero'
 import ContentTypeListing from '../../../../components/insights/ContentTypeListing'
 import { getPublishedInsights, getInsightCategories } from '../../../../lib/insights-public'
 import { breadcrumbJsonLd } from '../../../../lib/structured-data'
+import { buildMetadata, getSiteUrl } from '../../../../lib/seo'
+import JsonLd from '../../../../components/shared/JsonLd'
 
-export const metadata = {
-  title: 'Announcements',
-  description: 'Important announcements from APTECH Abeokuta.',
-  alternates: { canonical: '/insights/announcements' },
-  openGraph: {
-    title: 'Announcements — APTECH Abeokuta',
-    description: 'Important announcements from APTECH Abeokuta.',
-    url: '/insights/announcements'
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Announcements — APTECH Abeokuta',
-    description: 'Important announcements from APTECH Abeokuta.'
-  }
-}
+export const metadata = buildMetadata({
+  title: 'Announcements | APTECH Abeokuta',
+  description:
+    'Important announcements for students and applicants from APTECH Abeokuta.',
+  path: '/insights/announcements'
+})
 
 type Props = { searchParams: Promise<{ category?: string }> }
 
 export default async function AnnouncementsPage({ searchParams }: Props) {
   const { category } = await searchParams
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const baseUrl = getSiteUrl()
 
   const categories = await getInsightCategories(['announcement'])
   const activeCategory = category && categories.includes(category) ? category : undefined
@@ -31,17 +24,10 @@ export default async function AnnouncementsPage({ searchParams }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Insights', href: '/insights' }, { label: 'Announcements' }])
-          )
-        }}
-      />
+      <JsonLd data={breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Insights', href: '/insights' }, { label: 'Announcements' }])} />
       <PageHero
         eyebrow="Announcements"
-        title="Important announcements"
+        title="Announcements from APTECH Abeokuta"
         description="Admissions deadlines, schedule changes, and other important notices from APTECH Abeokuta."
         crumbs={[{ label: 'Home', href: '/' }, { label: 'Insights', href: '/insights' }, { label: 'Announcements' }]}
       />

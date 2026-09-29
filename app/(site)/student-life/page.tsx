@@ -8,22 +8,15 @@ import Testimonials from '../../../components/testimonials/Testimonials'
 import CTABand from '../../../components/home/CTABand'
 import { breadcrumbJsonLd } from '../../../lib/structured-data'
 import { getPublishedTestimonials } from '../../../lib/testimonials-public'
+import { buildMetadata, getSiteUrl } from '../../../lib/seo'
+import JsonLd from '../../../components/shared/JsonLd'
 
-export const metadata = {
-  title: 'Student Life',
-  description: 'Life at APTECH Abeokuta — hands-on learning, campus community, and career-focused training.',
-  alternates: { canonical: '/student-life' },
-  openGraph: {
-    title: 'Student Life — APTECH Abeokuta',
-    description: 'Life at APTECH Abeokuta — hands-on learning, campus community, and career-focused training.',
-    url: '/student-life'
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Student Life — APTECH Abeokuta',
-    description: 'Life at APTECH Abeokuta — hands-on learning, campus community, and career-focused training.'
-  }
-}
+export const metadata = buildMetadata({
+  title: 'Student Life at APTECH Abeokuta | Campus & Community',
+  description:
+    'See what student life at APTECH Abeokuta is like: hands-on learning, events such as Aptech Career Quest, and a career-focused campus community.',
+  path: '/student-life'
+})
 
 // Every claim here maps to something already verified elsewhere in the
 // codebase (data/site.ts's whyChoose pillars, or components/gallery/Gallery.tsx's
@@ -63,15 +56,10 @@ const pillars = [
 
 export default async function StudentLifePage() {
   const testimonials = await getPublishedTestimonials(3)
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const baseUrl = getSiteUrl()
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Student Life' }]))
-        }}
-      />
+      <JsonLd data={breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Student Life' }])} />
       <PageHero
         eyebrow="Student life"
         title="Life at APTECH Abeokuta"

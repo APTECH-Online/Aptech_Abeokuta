@@ -229,6 +229,16 @@ export default function InsightForm({ mode, insight }: { mode: 'create' | 'edit'
               <p className="field-hint">Falls back to the short description above if left blank.</p>
               {fieldErrors?.seoDescription && <p className="field-error-text">{fieldErrors.seoDescription}</p>}
             </div>
+            <label className="flex items-start gap-2 text-sm">
+              <input type="checkbox" name="seoNoindex" defaultChecked={insight?.seo_noindex ?? false} className="mt-1" />
+              <span>
+                Hide from search engines (noindex)
+                <span className="field-hint block">The page stays live for visitors but is left out of Google and the sitemap.</span>
+              </span>
+            </label>
+            <p className="field-hint">
+              The social-share image is the featured image. Changing the URL slug automatically redirects the old link.
+            </p>
           </section>
         </div>
 

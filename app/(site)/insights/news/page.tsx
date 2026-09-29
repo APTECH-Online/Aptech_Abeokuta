@@ -2,28 +2,21 @@ import PageHero from '../../../../components/shared/PageHero'
 import ContentTypeListing from '../../../../components/insights/ContentTypeListing'
 import { getPublishedInsights, getInsightCategories } from '../../../../lib/insights-public'
 import { breadcrumbJsonLd } from '../../../../lib/structured-data'
+import { buildMetadata, getSiteUrl } from '../../../../lib/seo'
+import JsonLd from '../../../../components/shared/JsonLd'
 
-export const metadata = {
-  title: 'News',
-  description: 'The latest published news from APTECH Abeokuta.',
-  alternates: { canonical: '/insights/news' },
-  openGraph: {
-    title: 'News — APTECH Abeokuta',
-    description: 'The latest published news from APTECH Abeokuta.',
-    url: '/insights/news'
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'News — APTECH Abeokuta',
-    description: 'The latest published news from APTECH Abeokuta.'
-  }
-}
+export const metadata = buildMetadata({
+  title: 'Latest News | APTECH Abeokuta',
+  description:
+    'Read the latest published news from APTECH Abeokuta, an IT training centre in Abeokuta, Ogun State.',
+  path: '/insights/news'
+})
 
 type Props = { searchParams: Promise<{ category?: string }> }
 
 export default async function NewsPage({ searchParams }: Props) {
   const { category } = await searchParams
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const baseUrl = getSiteUrl()
 
   const categories = await getInsightCategories(['news'])
   const activeCategory = category && categories.includes(category) ? category : undefined
@@ -31,14 +24,7 @@ export default async function NewsPage({ searchParams }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Insights', href: '/insights' }, { label: 'News' }])
-          )
-        }}
-      />
+      <JsonLd data={breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Insights', href: '/insights' }, { label: 'News' }])} />
       <PageHero
         eyebrow="News"
         title="Latest news from APTECH Abeokuta"

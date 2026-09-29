@@ -242,6 +242,9 @@ export interface Course {
   tools: string[]
   outcomes: string[]
   cover_image: string | null
+  seo_title: string | null
+  seo_description: string | null
+  seo_noindex: boolean
   status: CourseStatus
   display_order: number
   created_by: string | null
@@ -506,6 +509,7 @@ export interface Insight {
   expires_at: string | null
   seo_title: string | null
   seo_description: string | null
+  seo_noindex: boolean
   event_start_at: string | null
   event_end_at: string | null
   event_venue: string | null
@@ -565,3 +569,12 @@ export const INSIGHT_CATEGORIES = [
 ] as const
 
 export type InsightCategory = (typeof INSIGHT_CATEGORIES)[number]
+
+/** Permanent redirect created automatically when a course/insight slug changes (migration 0018). */
+export interface SeoRedirect {
+  id: string
+  from_path: string
+  to_path: string
+  status_code: number
+  created_at: string
+}

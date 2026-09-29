@@ -3,37 +3,25 @@ import Container from '../../../components/ui/Container'
 import TestimonialsPage from '../../../components/testimonials/TestimonialsPage'
 import { breadcrumbJsonLd } from '../../../lib/structured-data'
 import { getPublishedTestimonials } from '../../../lib/testimonials-public'
+import { buildMetadata, getSiteUrl } from '../../../lib/seo'
+import JsonLd from '../../../components/shared/JsonLd'
 
-export const metadata = {
-  title: { absolute: 'Testimonials | APTECH Abeokuta' },
-  description: 'Read student stories about the practical, supported learning experience at APTECH Abeokuta.',
-  alternates: { canonical: '/testimonials' },
-  openGraph: {
-    title: 'Testimonials | APTECH Abeokuta',
-    description: 'Read student stories about the practical, supported learning experience at APTECH Abeokuta.',
-    url: '/testimonials'
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Testimonials | APTECH Abeokuta',
-    description: 'Read student stories about the practical, supported learning experience at APTECH Abeokuta.'
-  }
-}
+export const metadata = buildMetadata({
+  title: 'Student Testimonials | APTECH Abeokuta',
+  description:
+    'Read student stories about the practical, supported learning experience at APTECH Abeokuta.',
+  path: '/testimonials'
+})
 
 export default async function TestimonialsRoute() {
   const testimonials = await getPublishedTestimonials()
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const baseUrl = getSiteUrl()
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Testimonials' }]))
-        }}
-      />
+      <JsonLd data={breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Testimonials' }])} />
       <PageHero
         eyebrow="Student stories"
-        title="Stories from our learning community"
+        title="Student testimonials from APTECH Abeokuta"
         description="Hear directly from students in the Advanced Diploma in Software Engineering programme about their experience at APTECH Abeokuta."
         crumbs={[{ label: 'Home', href: '/' }, { label: 'Testimonials' }]}
       />

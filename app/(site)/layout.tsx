@@ -2,7 +2,10 @@ import { ReactNode } from 'react'
 import Header from '../../components/navigation/Header'
 import Footer from '../../components/footer/Footer'
 import StickyMobileCTA from '../../components/shared/StickyMobileCTA'
+import JsonLd from '../../components/shared/JsonLd'
 import { getPublicContactInfo } from '../../lib/contact-info-public'
+import { siteGraphJsonLd } from '../../lib/structured-data'
+import { getSiteUrl } from '../../lib/seo'
 
 /**
  * Layout for the public marketing website only (everything under the
@@ -18,9 +21,13 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
   // number, so a plain prop is simpler than a Context provider for one
   // string. See lib/contact-info-public.ts.
   const { whatsapp } = await getPublicContactInfo()
+  // EducationalOrganization + LocalBusiness + WebSite, declared once for every
+  // public page (other schemas reference it by @id). See lib/structured-data.ts.
+  const siteGraph = await siteGraphJsonLd(getSiteUrl())
 
   return (
     <>
+      <JsonLd data={siteGraph} />
       <a href="#main-content" className="skip-link">Skip to main content</a>
       <div className="min-h-screen flex flex-col">
         <Header whatsapp={whatsapp} />

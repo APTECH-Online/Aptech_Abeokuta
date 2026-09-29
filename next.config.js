@@ -24,8 +24,37 @@ function supabaseImageRemotePatterns() {
 
 const nextConfig = {
   reactStrictMode: true,
+  // Don't advertise the framework in a response header.
+  poweredByHeader: false,
   images: {
-    remotePatterns: supabaseImageRemotePatterns()
+    remotePatterns: supabaseImageRemotePatterns(),
+    // Serve AVIF/WebP to browsers that support them (falls back to the source
+    // format otherwise) — smaller images, better LCP on mobile networks.
+    formats: ['image/avif', 'image/webp']
+  },
+
+  async redirects() {
+    return [
+      // The sitemap used to live at /sitemap (no extension). It now lives at
+      // the standard /sitemap.xml; keep the old URL working for anyone —
+      // including Search Console — that already has it on file.
+      { source: '/sitemap', destination: '/sitemap.xml', permanent: true }
+    ]
+  },
+
+  async headers() {
+    return [
+      // Defence in depth on top of robots.txt + <meta robots>: the staff CRM
+      // and API responses must never be indexed, even if a URL leaks.
+      { source: '/admin/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] },
+      { source: '/api/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] },
+      // Files in /public are served un-hashed, so give repeat visitors and
+      // social crawlers a sensible cache without making replacements sticky.
+      {
+        source: '/images/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' }]
+      }
+    ]
   }
 }
 

@@ -1,8 +1,9 @@
 import './globals.css'
 import { ReactNode } from 'react'
+import type { Metadata, Viewport } from 'next'
 import { Sora, Manrope, IBM_Plex_Mono } from 'next/font/google'
 import { siteConfig } from '../data/site'
-import { organizationJsonLd } from '../lib/structured-data'
+import { DEFAULT_OG_IMAGE, SITE_LOCALE, getSiteUrl } from '../lib/seo'
 import { AdminFeedbackProvider } from '../components/admin/AdminFeedbackProvider'
 
 const sora = Sora({
@@ -25,19 +26,46 @@ const plexMono = IBM_Plex_Mono({
   display: 'swap'
 })
 
-export const metadata = {
+/**
+ * Site-wide defaults. Every public page sets its own complete title,
+ * description, canonical and social metadata through buildMetadata()
+ * (lib/seo.ts); these values only apply to routes that don't, and supply
+ * metadataBase so relative canonical / Open Graph URLs resolve to absolute ones.
+ *
+ * Search Console: set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION to the token Google
+ * gives you and the verification meta tag is emitted; leave it unset and no
+ * tag is rendered. (DNS verification needs no code at all.)
+ */
+export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: {
-    default: `${siteConfig.name} — Build Your Future with Technology`,
-    template: `%s — ${siteConfig.name}`
+    default: `${siteConfig.name} | Computer & IT Training in Abeokuta, Ogun State`,
+    template: `%s | ${siteConfig.name}`
   },
   description: siteConfig.description,
+  applicationName: siteConfig.name,
   icons: '/favicon.svg',
   openGraph: {
+    type: 'website',
+    siteName: siteConfig.name,
+    locale: SITE_LOCALE,
     title: siteConfig.name,
     description: siteConfig.description,
-    images: ['/images/hero-tech.svg']
+    images: [DEFAULT_OG_IMAGE]
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com')
+  twitter: {
+    card: 'summary_large_image',
+    images: [DEFAULT_OG_IMAGE.url]
+  },
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } }
+    : {})
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#1D1250'
 }
 
 /**
@@ -48,17 +76,12 @@ export const metadata = {
  *   - app/(site)/layout.tsx  → public marketing site
  *   - app/admin/layout.tsx   → CRM / staff portal
  */
-export default async function RootLayout({ children }: { children: ReactNode }) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
-  const orgJsonLd = await organizationJsonLd(baseUrl)
+export default function RootLayout({ children }: { children: ReactNode }) {
+  // Organization/WebSite JSON-LD is rendered by app/(site)/layout.tsx, so it
+  // appears on public pages only — not on the staff CRM or error shells.
   return (
-    <html lang="en" className={`${sora.variable} ${manrope.variable} ${plexMono.variable}`}>
+    <html lang="en-NG" className={`${sora.variable} ${manrope.variable} ${plexMono.variable}`}>
       <body>
-        <script
-          type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
-        />
         <AdminFeedbackProvider>{children}</AdminFeedbackProvider>
       </body>
     </html>

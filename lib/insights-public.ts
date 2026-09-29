@@ -18,9 +18,16 @@ import type { Insight, InsightContentType } from '../types/db'
 
 const PUBLIC_FIELDS =
   'id, title, slug, short_description, content, featured_image, category, content_type, ' +
-  'is_featured, publish_at, seo_title, seo_description, ' +
+  'is_featured, publish_at, seo_title, seo_description, seo_noindex, ' +
   'event_start_at, event_end_at, event_venue, event_registration_url, event_contact, ' +
   'created_at, updated_at'
+// Same list minus the column added by migration 0018_seo_fields.sql — used as a
+// fallback so the public site keeps working if code deploys before the migration.
+const LEGACY_FIELDS = PUBLIC_FIELDS.replace(' seo_noindex,', '')
+
+function isMissingColumn(error: { code?: string; message?: string } | null): boolean {
+  return !!error && (error.code === '42703' || /seo_noindex/.test(error.message ?? ''))
+}
 
 export type PublicInsight = Omit<Insight, 'author_id' | 'status' | 'expires_at' | 'featured_priority'>
 
@@ -38,12 +45,18 @@ export const BLOG_CONTENT_TYPES: InsightContentType[] = [
   'celebration'
 ]
 
-function publicQuery() {
+/** Runs a public query with the SEO column; retries without it if migration 0018 isn't applied yet. */
+async function runPublic(build: (fields: string) => PromiseLike<{ data: unknown; error: { code?: string; message?: string } | null }>) {
+  const first = await build(PUBLIC_FIELDS)
+  return isMissingColumn(first.error) ? build(LEGACY_FIELDS) : first
+}
+
+function publicQuery(fields: string = PUBLIC_FIELDS) {
   const admin = createAdminClient()
   const nowIso = new Date().toISOString()
   return admin
     .from('insights')
-    .select(PUBLIC_FIELDS)
+    .select(fields)
     .eq('status', 'published')
     .or(`expires_at.is.null,expires_at.gt.${nowIso}`)
     .lte('publish_at', nowIso)
@@ -53,11 +66,14 @@ export async function getPublishedInsights(
   opts: { category?: string; contentTypes?: InsightContentType[]; limit?: number } = {}
 ): Promise<PublicInsight[]> {
   try {
-    let query = publicQuery().order('publish_at', { ascending: false })
-    if (opts.category) query = query.eq('category', opts.category)
-    if (opts.contentTypes && opts.contentTypes.length > 0) query = query.in('content_type', opts.contentTypes)
-    if (opts.limit) query = query.limit(opts.limit)
-    const { data, error } = await query
+    const build = (fields: string) => {
+      let query = publicQuery(fields).order('publish_at', { ascending: false })
+      if (opts.category) query = query.eq('category', opts.category)
+      if (opts.contentTypes && opts.contentTypes.length > 0) query = query.in('content_type', opts.contentTypes)
+      if (opts.limit) query = query.limit(opts.limit)
+      return query
+    }
+    const { data, error } = await runPublic(build)
     if (error) {
       console.error('[insights] failed to load published insights', error)
       return []
@@ -71,7 +87,7 @@ export async function getPublishedInsights(
 
 export async function getInsightBySlug(slug: string): Promise<PublicInsight | null> {
   try {
-    const { data, error } = await publicQuery().eq('slug', slug).maybeSingle()
+    const { data, error } = await runPublic((f) => publicQuery(f).eq('slug', slug).maybeSingle())
     if (error || !data) return null
     return data as unknown as PublicInsight
   } catch (err) {
@@ -82,11 +98,13 @@ export async function getInsightBySlug(slug: string): Promise<PublicInsight | nu
 
 export async function getRelatedInsights(post: PublicInsight, limit = 3): Promise<PublicInsight[]> {
   try {
-    const { data, error } = await publicQuery()
-      .eq('category', post.category)
-      .neq('slug', post.slug)
-      .order('publish_at', { ascending: false })
-      .limit(limit)
+    const { data, error } = await runPublic((f) =>
+      publicQuery(f)
+        .eq('category', post.category)
+        .neq('slug', post.slug)
+        .order('publish_at', { ascending: false })
+        .limit(limit)
+    )
     if (error) return []
     return (data ?? []) as unknown as PublicInsight[]
   } catch {
@@ -96,11 +114,13 @@ export async function getRelatedInsights(post: PublicInsight, limit = 3): Promis
 
 export async function getFeaturedInsights(limit = 3): Promise<PublicInsight[]> {
   try {
-    const { data, error } = await publicQuery()
-      .eq('is_featured', true)
-      .order('featured_priority', { ascending: true })
-      .order('publish_at', { ascending: false })
-      .limit(limit)
+    const { data, error } = await runPublic((f) =>
+      publicQuery(f)
+        .eq('is_featured', true)
+        .order('featured_priority', { ascending: true })
+        .order('publish_at', { ascending: false })
+        .limit(limit)
+    )
     if (error) return []
     return (data ?? []) as unknown as PublicInsight[]
   } catch {
@@ -117,11 +137,13 @@ export async function getFeaturedInsights(limit = 3): Promise<PublicInsight[]> {
 export async function getUpcomingEvents(limit = 6): Promise<PublicInsight[]> {
   try {
     const nowIso = new Date().toISOString()
-    const { data, error } = await publicQuery()
-      .eq('content_type', 'event')
-      .or(`event_end_at.gte.${nowIso},and(event_end_at.is.null,event_start_at.gte.${nowIso})`)
-      .order('event_start_at', { ascending: true })
-      .limit(limit)
+    const { data, error } = await runPublic((f) =>
+      publicQuery(f)
+        .eq('content_type', 'event')
+        .or(`event_end_at.gte.${nowIso},and(event_end_at.is.null,event_start_at.gte.${nowIso})`)
+        .order('event_start_at', { ascending: true })
+        .limit(limit)
+    )
     if (error) {
       console.error('[insights] failed to load upcoming events', error)
       return []
@@ -141,11 +163,13 @@ export async function getUpcomingEvents(limit = 6): Promise<PublicInsight[]> {
 export async function getPastEvents(limit = 12): Promise<PublicInsight[]> {
   try {
     const nowIso = new Date().toISOString()
-    const { data, error } = await publicQuery()
-      .eq('content_type', 'event')
-      .or(`event_end_at.lt.${nowIso},and(event_end_at.is.null,event_start_at.lt.${nowIso})`)
-      .order('event_start_at', { ascending: false })
-      .limit(limit)
+    const { data, error } = await runPublic((f) =>
+      publicQuery(f)
+        .eq('content_type', 'event')
+        .or(`event_end_at.lt.${nowIso},and(event_end_at.is.null,event_start_at.lt.${nowIso})`)
+        .order('event_start_at', { ascending: false })
+        .limit(limit)
+    )
     if (error) {
       console.error('[insights] failed to load past events', error)
       return []
@@ -211,4 +235,55 @@ export async function getHomepageUpdates(): Promise<{
     console.error('[insights] homepage updates unavailable', err)
     return { featured: null, supporting: [], upcomingEvents: [] }
   }
+}
+
+/**
+ * Lightweight list for the sitemap: every published, non-expired, non-noindex
+ * insight (including events) with just the fields needed to build its URL and
+ * lastmod — no article bodies.
+ */
+export async function getSitemapInsights(): Promise<{ slug: string; contentType: InsightContentType; updatedAt: string }[]> {
+  try {
+    const admin = createAdminClient()
+    const nowIso = new Date().toISOString()
+    const run = (fields: string) =>
+      admin
+        .from('insights')
+        .select(fields)
+        .eq('status', 'published')
+        .or(`expires_at.is.null,expires_at.gt.${nowIso}`)
+        .lte('publish_at', nowIso)
+        .order('publish_at', { ascending: false })
+    let { data, error } = await run('slug, content_type, updated_at, seo_noindex')
+    if (isMissingColumn(error)) ({ data, error } = await run('slug, content_type, updated_at'))
+    if (error) return []
+    return ((data ?? []) as unknown as { slug: string; content_type: InsightContentType; updated_at: string; seo_noindex?: boolean }[])
+      .filter((r) => !r.seo_noindex)
+      .map((r) => ({ slug: r.slug, contentType: r.content_type, updatedAt: r.updated_at }))
+  } catch (err) {
+    console.error('[insights] sitemap insights unavailable', err)
+    return []
+  }
+}
+
+/**
+ * Existence-only check for a published, in-window insight slug, used by
+ * proxy.ts to decide — before any page rendering/streaming starts — whether
+ * a request for /insights/:slug should be allowed through, redirected, or
+ * answered with a real 404. Mirrors publicQuery()'s publish-window filter
+ * without selecting any article content.
+ */
+export async function publishedInsightSlugExists(slug: string): Promise<boolean> {
+  const admin = createAdminClient()
+  const nowIso = new Date().toISOString()
+  const { data, error } = await admin
+    .from('insights')
+    .select('slug')
+    .eq('status', 'published')
+    .or(`expires_at.is.null,expires_at.gt.${nowIso}`)
+    .lte('publish_at', nowIso)
+    .eq('slug', slug)
+    .limit(1)
+  if (error) throw error
+  return !!data && data.length > 0
 }

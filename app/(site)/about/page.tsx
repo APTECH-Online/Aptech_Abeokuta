@@ -9,23 +9,16 @@ import StatsBand from '../../../components/home/StatsBand'
 import PartnerLogos from '../../../components/shared/PartnerLogos'
 import { getPublishedCourses } from '../../../lib/courses-public'
 import { getPublishedPartnerOrganizations } from '../../../lib/partners-public'
-import { breadcrumbJsonLd } from '../../../lib/structured-data'
+import { breadcrumbJsonLd, webPageJsonLd } from '../../../lib/structured-data'
+import { buildMetadata, getSiteUrl } from '../../../lib/seo'
+import JsonLd from '../../../components/shared/JsonLd'
 
-export const metadata = {
-  title: 'About',
-  description: 'About APTECH Abeokuta — mission, vision, and approach to technology education.',
-  alternates: { canonical: '/about' },
-  openGraph: {
-    title: 'About APTECH Abeokuta',
-    description: 'About APTECH Abeokuta — mission, vision, and approach to technology education.',
-    url: '/about'
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'About APTECH Abeokuta',
-    description: 'About APTECH Abeokuta — mission, vision, and approach to technology education.'
-  }
-}
+export const metadata = buildMetadata({
+  title: 'About APTECH Abeokuta | IT Training Centre in Ogun State',
+  description:
+    'Learn about APTECH Abeokuta: our mission, vision and hands-on approach to technology education for students in Abeokuta, Ogun State and the wider region.',
+  path: '/about'
+})
 
 const values = [
   { title: 'Practical first', body: 'We teach by building. Every module pairs concepts with a hands-on task or project.' },
@@ -36,16 +29,14 @@ const values = [
 export default async function About() {
   const courses = await getPublishedCourses()
   const partners = await getPublishedPartnerOrganizations()
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const baseUrl = getSiteUrl()
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'About' }])
-          )
-        }}
+      <JsonLd
+        data={[
+          breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'About' }]),
+          webPageJsonLd(baseUrl, { type: 'AboutPage', path: '/about', name: 'About APTECH Abeokuta', description: 'Career-focused technology education and practical IT training, delivered locally in Abeokuta.' })
+        ]}
       />
       <PageHero
         eyebrow="About us"

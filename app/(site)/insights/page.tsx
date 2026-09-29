@@ -5,28 +5,21 @@ import Container from '../../../components/ui/Container'
 import ContentTypeListing from '../../../components/insights/ContentTypeListing'
 import { getPublishedInsights, getUpcomingEvents, getInsightCategories } from '../../../lib/insights-public'
 import { breadcrumbJsonLd } from '../../../lib/structured-data'
+import { buildMetadata, getSiteUrl } from '../../../lib/seo'
+import JsonLd from '../../../components/shared/JsonLd'
 
-export const metadata = {
-  title: 'Insights',
-  description: 'News, announcements, events and career guidance from APTECH Abeokuta.',
-  alternates: { canonical: '/insights' },
-  openGraph: {
-    title: 'Insights — APTECH Abeokuta',
-    description: 'News, announcements, events and career guidance from APTECH Abeokuta.',
-    url: '/insights'
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Insights — APTECH Abeokuta',
-    description: 'News, announcements, events and career guidance from APTECH Abeokuta.'
-  }
-}
+export const metadata = buildMetadata({
+  title: 'News, Events & Career Guidance | APTECH Abeokuta',
+  description:
+    'Latest news, announcements, events and career guidance from APTECH Abeokuta, an IT training centre in Abeokuta, Ogun State.',
+  path: '/insights'
+})
 
 type Props = { searchParams: Promise<{ category?: string }> }
 
 export default async function InsightsPage({ searchParams }: Props) {
   const { category } = await searchParams
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const baseUrl = getSiteUrl()
 
   const [categories, upcomingEvents] = await Promise.all([getInsightCategories(), getUpcomingEvents(3)])
 
@@ -35,12 +28,7 @@ export default async function InsightsPage({ searchParams }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Insights' }]))
-        }}
-      />
+      <JsonLd data={breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Insights' }])} />
       <PageHero
         eyebrow="Insights"
         title="News, events & career guidance"

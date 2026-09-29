@@ -180,6 +180,7 @@ export const insightFormSchema = z
     expiresAt: optionalDateTime,
     seoTitle: z.string().trim().max(70, 'Keep the SEO title under 70 characters').optional().or(z.literal('')),
     seoDescription: z.string().trim().max(160, 'Keep the meta description under 160 characters').optional().or(z.literal('')),
+    seoNoindex: z.enum(['on']).optional().or(z.literal('')),
     // Event fields — only required/validated when contentType === 'event'.
     eventStartAt: optionalDateTime,
     eventEndAt: optionalDateTime,

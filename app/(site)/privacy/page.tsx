@@ -1,12 +1,17 @@
 import PageHero from '../../../components/shared/PageHero'
 import Container from '../../../components/ui/Container'
+import { buildMetadata } from '../../../lib/seo'
+import { getPublicContactInfo } from '../../../lib/contact-info-public'
 
-export const metadata = {
-  title: 'Privacy Policy',
-  description: 'Privacy policy for APTECH Abeokuta.'
-}
+export const metadata = buildMetadata({
+  title: 'Privacy Policy | APTECH Abeokuta',
+  description:
+    'How APTECH Abeokuta collects, uses and protects personal information submitted through this website.',
+  path: '/privacy'
+})
 
-export default function Privacy() {
+export default async function Privacy() {
+  const { email } = await getPublicContactInfo()
   return (
     <>
       <PageHero
@@ -49,7 +54,7 @@ export default function Privacy() {
                 <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>
                   You can ask us what information we hold about you, request a correction, or
                   request that it be removed, by contacting us at{' '}
-                  <a href="mailto:aptech.abeokuta@gmail.com" className="font-semibold" style={{ color: 'var(--color-navy-900)' }}>aptech.abeokuta@gmail.com</a>.
+                  <a href={`mailto:${email}`} className="font-semibold" style={{ color: 'var(--color-navy-900)' }}>{email}</a>.
                 </p>
               </div>
               <p className="text-xs leading-relaxed pt-4" style={{ color: 'var(--color-muted)', borderTop: '1px solid var(--color-line)' }}>

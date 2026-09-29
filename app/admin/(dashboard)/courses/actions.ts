@@ -8,6 +8,7 @@ import { logAudit } from '../../../../lib/audit'
 import { uploadCourseImage, deleteCourseImageByUrl } from '../../../../lib/supabase/course-storage'
 import { isCourseSlugTaken } from '../../../../lib/crm/courses'
 import { slugify } from '../../../../lib/validation'
+import { recordSlugChange } from '../../../../lib/seo-redirects'
 import type { CourseCategory, CourseStatus } from '../../../../types/db'
 
 export type ActionResult =
@@ -25,6 +26,7 @@ function revalidateCoursePaths(slug?: string, oldSlug?: string) {
   revalidatePath('/admin/courses')
   revalidatePath('/admin')
   revalidatePath('/courses')
+  revalidatePath('/sitemap.xml') // keep the sitemap in step with publish/unpublish/rename
   revalidatePath('/')
   if (slug) revalidatePath(`/courses/${slug}`)
   if (oldSlug && oldSlug !== slug) revalidatePath(`/courses/${oldSlug}`)
@@ -50,8 +52,12 @@ function validateFields(raw: {
   summary: string
   description: string
   status: string
+  seoTitle: string
+  seoDescription: string
 }) {
   const fieldErrors: Record<string, string> = {}
+  if (raw.seoTitle.length > 70) fieldErrors.seoTitle = 'Keep the SEO title under 70 characters.'
+  if (raw.seoDescription.length > 160) fieldErrors.seoDescription = 'Keep the meta description under 160 characters.'
   if (!raw.title.trim()) fieldErrors.title = 'Title is required.'
   else if (raw.title.length > 200) fieldErrors.title = 'Keep the title under 200 characters.'
   if (!CATEGORIES.includes(raw.category as CourseCategory)) fieldErrors.category = 'Choose a category.'
@@ -78,6 +84,9 @@ function readCommon(formData: FormData) {
     tools: linesToArray(String(formData.get('tools') || '')),
     outcomes: linesToArray(String(formData.get('outcomes') || '')),
     status: String(formData.get('status') || 'draft'),
+    seoTitle: String(formData.get('seoTitle') || '').trim(),
+    seoDescription: String(formData.get('seoDescription') || '').trim(),
+    seoNoindex: formData.get('seoNoindex') === 'on',
     displayOrder: Number.isFinite(Number(formData.get('displayOrder'))) ? Math.trunc(Number(formData.get('displayOrder'))) : 0
   }
 }
@@ -125,6 +134,9 @@ export async function createCourse(_prev: ActionResult, formData: FormData): Pro
       cover_image: coverImageUrl,
       status: raw.status as CourseStatus,
       display_order: raw.displayOrder,
+      seo_title: raw.seoTitle || null,
+      seo_description: raw.seoDescription || null,
+      seo_noindex: raw.seoNoindex,
       created_by: staff.id
     })
 
@@ -200,6 +212,9 @@ export async function updateCourse(_prev: ActionResult, formData: FormData): Pro
         outcomes: raw.outcomes,
         status: raw.status as CourseStatus,
         display_order: raw.displayOrder,
+        seo_title: raw.seoTitle || null,
+        seo_description: raw.seoDescription || null,
+        seo_noindex: raw.seoNoindex,
         ...(coverImageUrl !== undefined ? { cover_image: coverImageUrl } : {})
       })
       .eq('id', courseId)
@@ -217,6 +232,9 @@ export async function updateCourse(_prev: ActionResult, formData: FormData): Pro
       entityId: courseId,
       metadata: { title: raw.title, status: raw.status }
     })
+
+    // Renamed slug → keep the old URL alive with a permanent redirect.
+    if (slug !== existing.slug) await recordSlugChange(admin, '/courses', existing.slug, slug)
 
     revalidateCoursePaths(slug, existing.slug)
     return { ok: true, id: courseId }

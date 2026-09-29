@@ -3,37 +3,25 @@ import Container from '../../../components/ui/Container'
 import Gallery from '../../../components/gallery/Gallery'
 import { breadcrumbJsonLd } from '../../../lib/structured-data'
 import { getPublishedGalleryItems } from '../../../lib/gallery-public'
+import { buildMetadata, getSiteUrl } from '../../../lib/seo'
+import JsonLd from '../../../components/shared/JsonLd'
 
-export const metadata = {
-  title: { absolute: 'Gallery | APTECH Abeokuta' },
-  description: 'Explore the learning environment, technology, classes and community experience represented across the APTECH Abeokuta website.',
-  alternates: { canonical: '/gallery' },
-  openGraph: {
-    title: 'Gallery | APTECH Abeokuta',
-    description: 'Explore the learning environment, technology, classes and community experience represented across the APTECH Abeokuta website.',
-    url: '/gallery'
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Gallery | APTECH Abeokuta',
-    description: 'Explore the learning environment, technology, classes and community experience represented across the APTECH Abeokuta website.'
-  }
-}
+export const metadata = buildMetadata({
+  title: 'Photo Gallery | Campus & Events at APTECH Abeokuta',
+  description:
+    'Browse photos of the APTECH Abeokuta learning environment, technology, classes and student community.',
+  path: '/gallery'
+})
 
 export default async function GalleryPage() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const baseUrl = getSiteUrl()
   const items = await getPublishedGalleryItems()
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Gallery' }]))
-        }}
-      />
+      <JsonLd data={breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Gallery' }])} />
       <PageHero
         eyebrow="Campus life"
-        title="Life at APTECH Abeokuta"
+        title="Photo gallery: campus life at APTECH Abeokuta"
         description="A visual look at technology-focused learning, practical work and the environment behind the APTECH Abeokuta experience."
         crumbs={[{ label: 'Home', href: '/' }, { label: 'Gallery' }]}
       />

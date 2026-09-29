@@ -15,10 +15,10 @@ export interface PublicSocialLink {
  * the server via the service-role client, filtered to is_published = true,
  * ordered the same way staff arrange them in the CRM.
  *
- * Wrapped in React's cache() — both the Footer and the root layout's
- * organizationJsonLd need this on every page, so this dedupes them to one
- * query per request rather than two. See lib/contact-info-public.ts for
- * the same pattern with more call sites.
+ * Wrapped in React's cache() — both the Footer and the site layout's
+ * siteGraphJsonLd (lib/structured-data.ts) need this on every page, so this
+ * dedupes them to one query per request rather than two. See
+ * lib/contact-info-public.ts for the same pattern with more call sites.
  */
 export const getPublishedSocialLinks = cache(async (): Promise<PublicSocialLink[]> => {
   try {

@@ -5,37 +5,23 @@ import ContentCard from '../../../../components/insights/ContentCard'
 import EventRow from '../../../../components/insights/EventRow'
 import { getUpcomingEvents, getPastEvents } from '../../../../lib/insights-public'
 import { breadcrumbJsonLd } from '../../../../lib/structured-data'
+import { buildMetadata, getSiteUrl } from '../../../../lib/seo'
+import JsonLd from '../../../../components/shared/JsonLd'
 
-export const metadata = {
-  title: 'Events',
-  description: 'Upcoming and past events at APTECH Abeokuta.',
-  alternates: { canonical: '/insights/events' },
-  openGraph: {
-    title: 'Events — APTECH Abeokuta',
-    description: 'Upcoming and past events at APTECH Abeokuta.',
-    url: '/insights/events'
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Events — APTECH Abeokuta',
-    description: 'Upcoming and past events at APTECH Abeokuta.'
-  }
-}
+export const metadata = buildMetadata({
+  title: 'Events | APTECH Abeokuta',
+  description:
+    'Upcoming and past events at APTECH Abeokuta, with registration and contact details where available.',
+  path: '/insights/events'
+})
 
 export default async function EventsPage() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const baseUrl = getSiteUrl()
   const [upcoming, past] = await Promise.all([getUpcomingEvents(50), getPastEvents(20)])
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Insights', href: '/insights' }, { label: 'Events' }])
-          )
-        }}
-      />
+      <JsonLd data={breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Insights', href: '/insights' }, { label: 'Events' }])} />
       <PageHero
         eyebrow="Events"
         title="Events at APTECH Abeokuta"

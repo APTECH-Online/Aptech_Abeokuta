@@ -2,28 +2,21 @@ import PageHero from '../../../../components/shared/PageHero'
 import ContentTypeListing from '../../../../components/insights/ContentTypeListing'
 import { getPublishedInsights, getInsightCategories, BLOG_CONTENT_TYPES } from '../../../../lib/insights-public'
 import { breadcrumbJsonLd } from '../../../../lib/structured-data'
+import { buildMetadata, getSiteUrl } from '../../../../lib/seo'
+import JsonLd from '../../../../components/shared/JsonLd'
 
-export const metadata = {
-  title: 'Blog / Insights',
-  description: 'Career guides, student spotlights, and technology explainers from APTECH Abeokuta.',
-  alternates: { canonical: '/insights/blog' },
-  openGraph: {
-    title: 'Blog / Insights — APTECH Abeokuta',
-    description: 'Career guides, student spotlights, and technology explainers from APTECH Abeokuta.',
-    url: '/insights/blog'
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Blog / Insights — APTECH Abeokuta',
-    description: 'Career guides, student spotlights, and technology explainers from APTECH Abeokuta.'
-  }
-}
+export const metadata = buildMetadata({
+  title: 'Career Guides & Tech Insights | APTECH Abeokuta Blog',
+  description:
+    'Career guides, student and alumni spotlights, academic updates and technology explainers from APTECH Abeokuta.',
+  path: '/insights/blog'
+})
 
 type Props = { searchParams: Promise<{ category?: string }> }
 
 export default async function BlogPage({ searchParams }: Props) {
   const { category } = await searchParams
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const baseUrl = getSiteUrl()
 
   const categories = await getInsightCategories(BLOG_CONTENT_TYPES)
   const activeCategory = category && categories.includes(category) ? category : undefined
@@ -31,14 +24,7 @@ export default async function BlogPage({ searchParams }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
-            breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Insights', href: '/insights' }, { label: 'Blog / Insights' }])
-          )
-        }}
-      />
+      <JsonLd data={breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Insights', href: '/insights' }, { label: 'Blog / Insights' }])} />
       <PageHero
         eyebrow="Blog / Insights"
         title="Career guides & campus stories"

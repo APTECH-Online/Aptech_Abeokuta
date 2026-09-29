@@ -102,7 +102,7 @@ export default function Hero() {
             </div>
 
             <h1 className="hero-title mt-6">
-              Build your future with <span>practical technology</span> skills.
+              Build your future with <span>practical technology</span> skills in Abeokuta.
             </h1>
 
             <p className="hero-description mt-6 max-w-xl">

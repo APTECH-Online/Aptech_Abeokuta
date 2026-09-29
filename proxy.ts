@@ -1,8 +1,82 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { getSupabaseConfig } from './lib/supabase/config'
+import { publishedCourseSlugExists } from './lib/courses-public'
+import { publishedInsightSlugExists } from './lib/insights-public'
+import { findSlugRedirect } from './lib/seo-redirects'
+import { RESERVED_INSIGHT_SLUGS, staticNotFoundHtml } from './lib/seo'
+
+/**
+ * Answers a /courses/:slug or /insights/:slug request with a genuine HTTP
+ * status (200 pass-through, 308 redirect, or 404) BEFORE Next starts
+ * rendering the page.
+ *
+ * Why this has to happen here and not in the page component: this app's
+ * root loading.tsx wraps every route in a Suspense boundary, so every page
+ * response streams — and once a response starts streaming, its HTTP status
+ * is locked at 200 (this is documented Next.js behavior, not a bug: see
+ * node_modules/next/dist/docs/.../file-conventions/loading.md#status-codes).
+ * A page calling notFound() or permanentRedirect() still renders the right
+ * UI and a noindex meta tag, but the raw status Google/analytics/uptime
+ * checks see stays 200. Running the check in proxy answers the request
+ * before any rendering — and therefore before any streaming — begins, so a
+ * real 404 or 308 goes out on the wire.
+ *
+ * The page components still do this same check themselves (see
+ * app/(site)/courses/[slug]/page.tsx and insights/[slug]/page.tsx) — that
+ * is a deliberate, harmless duplication, not dead code: it keeps the right
+ * UI and noindex meta rendering as a fallback if this check is ever
+ * bypassed (a cached response, a config change, etc.), it's just no longer
+ * the only thing determining the HTTP status.
+ *
+ * Kept deliberately cheap (a single indexed column, `limit(1)`) because it
+ * runs on every matching request. Any failure (Supabase not configured, a
+ * network blip) fails OPEN — the request passes through to the page, which
+ * behaves exactly as it did before this check existed — so an infra hiccup
+ * degrades to "slightly wrong HTTP status on a 404" rather than "the course
+ * catalogue stops working".
+ */
+async function handleSlugRequest(request: NextRequest, base: '/courses' | '/insights', slug: string): Promise<NextResponse | null> {
+  try {
+    const exists = base === '/courses' ? await publishedCourseSlugExists(slug) : await publishedInsightSlugExists(slug)
+    if (exists) return null // let the page render normally
+
+    const target = await findSlugRedirect(base, slug)
+    if (target) return NextResponse.redirect(new URL(target, request.url), 308)
+
+    return new NextResponse(staticNotFoundHtml(new URL('/', request.url).toString(), new URL('/courses', request.url).toString()), {
+      status: 404,
+      headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex, nofollow' }
+    })
+  } catch (err) {
+    console.error('[proxy] slug check failed, passing request through', err)
+    return null
+  }
+}
 
 export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // /courses/<slug> and /insights/<slug> — exactly one segment after the
+  // base, so this never matches /courses or /insights themselves, or a
+  // second-level route like /insights/blog (those are handled below by the
+  // reserved-slug check, since they share the same URL shape as a real slug).
+  const courseMatch = /^\/courses\/([^/]+)\/?$/.exec(pathname)
+  const insightMatch = /^\/insights\/([^/]+)\/?$/.exec(pathname)
+
+  if (courseMatch) {
+    const result = await handleSlugRequest(request, '/courses', decodeURIComponent(courseMatch[1]))
+    // A course/insight path is never an admin route, so once the slug check
+    // has cleared it (or there was nothing to check), there is nothing
+    // further for this function to do — skip the unrelated CRM auth logic
+    // below rather than run an unnecessary session lookup on every page view.
+    return result ?? NextResponse.next()
+  }
+  if (insightMatch && !RESERVED_INSIGHT_SLUGS.includes(insightMatch[1])) {
+    const result = await handleSlugRequest(request, '/insights', decodeURIComponent(insightMatch[1]))
+    return result ?? NextResponse.next()
+  }
+
   let response = NextResponse.next({ request })
   const { url: supabaseUrl, anonKey } = getSupabaseConfig()
 
@@ -29,7 +103,6 @@ export async function proxy(request: NextRequest) {
     data: { user }
   } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
   const isAdminRoute = pathname.startsWith('/admin')
   const isLoginRoute = pathname === '/admin/login'
 
@@ -71,5 +144,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*']
+  matcher: ['/admin/:path*', '/courses/:slug', '/insights/:slug']
 }
