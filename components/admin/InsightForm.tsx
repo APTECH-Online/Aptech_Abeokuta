@@ -213,8 +213,8 @@ export default function InsightForm({ mode, insight }: { mode: 'create' | 'edit'
             <p className="eyebrow">SEO</p>
             <div>
               <label htmlFor="seoTitle" className="field-label">SEO title (optional)</label>
-              <input id="seoTitle" name="seoTitle" defaultValue={insight?.seo_title ?? ''} className="field-input" />
-              <p className="field-hint">Falls back to the title above if left blank.</p>
+              <input id="seoTitle" name="seoTitle" maxLength={70} defaultValue={insight?.seo_title ?? ''} className="field-input" />
+              <p className="field-hint">If left blank, one is generated from the title above when you save. Max 70 characters.</p>
               {fieldErrors?.seoTitle && <p className="field-error-text">{fieldErrors.seoTitle}</p>}
             </div>
             <div>
@@ -223,10 +223,11 @@ export default function InsightForm({ mode, insight }: { mode: 'create' | 'edit'
                 id="seoDescription"
                 name="seoDescription"
                 rows={2}
+                maxLength={160}
                 defaultValue={insight?.seo_description ?? ''}
                 className="field-textarea"
               />
-              <p className="field-hint">Falls back to the short description above if left blank.</p>
+              <p className="field-hint">If left blank, one is generated from the short description (or content) when you save. Max 160 characters.</p>
               {fieldErrors?.seoDescription && <p className="field-error-text">{fieldErrors.seoDescription}</p>}
             </div>
             <label className="flex items-start gap-2 text-sm">

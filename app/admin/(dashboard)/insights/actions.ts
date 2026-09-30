@@ -1,7 +1,7 @@
 'use server'
 
 import { randomUUID } from 'crypto'
-import { RESERVED_INSIGHT_SLUGS } from '../../../../lib/seo'
+import { RESERVED_INSIGHT_SLUGS, resolveSeoFields } from '../../../../lib/seo'
 import { recordSlugChange } from '../../../../lib/seo-redirects'
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../../../../lib/supabase/admin'
@@ -106,6 +106,13 @@ export async function createInsight(_prev: ActionResult, formData: FormData): Pr
       return { ok: false, message: "You don't have permission to publish this." }
     }
 
+    // Never save an insight without a SEO title + meta description: anything the
+    // editor leaves blank is generated from its own title / short description / body.
+    const seo = resolveSeoFields(
+      'insight',
+      { title: parsed.data.title, summary: parsed.data.shortDescription, contentHtml: parsed.data.content },
+      parsed.data
+    )
     const slug = slugify(parsed.data.slug || parsed.data.title)
     if (!slug) return { ok: false, message: 'Could not generate a valid slug from that title.' }
     if (RESERVED_INSIGHT_SLUGS.includes(slug)) {
@@ -142,8 +149,8 @@ export async function createInsight(_prev: ActionResult, formData: FormData): Pr
       is_featured: parsed.data.isFeatured === 'on',
       publish_at,
       expires_at,
-      seo_title: parsed.data.seoTitle || null,
-      seo_description: parsed.data.seoDescription || null,
+      seo_title: seo.seo_title,
+      seo_description: seo.seo_description,
       seo_noindex: parsed.data.seoNoindex === 'on',
       event_start_at: parsed.data.eventStartAt ? new Date(parsed.data.eventStartAt).toISOString() : null,
       event_end_at: parsed.data.eventEndAt ? new Date(parsed.data.eventEndAt).toISOString() : null,
@@ -212,6 +219,13 @@ export async function updateInsight(_prev: ActionResult, formData: FormData): Pr
       return { ok: false, message: "You don't have permission to publish this." }
     }
 
+    // Never save an insight without a SEO title + meta description: anything the
+    // editor leaves blank is generated from its own title / short description / body.
+    const seo = resolveSeoFields(
+      'insight',
+      { title: parsed.data.title, summary: parsed.data.shortDescription, contentHtml: parsed.data.content },
+      parsed.data
+    )
     const slug = slugify(parsed.data.slug || parsed.data.title)
     if (!slug) return { ok: false, message: 'Could not generate a valid slug from that title.' }
     if (RESERVED_INSIGHT_SLUGS.includes(slug)) {
@@ -247,8 +261,8 @@ export async function updateInsight(_prev: ActionResult, formData: FormData): Pr
       is_featured: parsed.data.isFeatured === 'on',
       publish_at,
       expires_at,
-      seo_title: parsed.data.seoTitle || null,
-      seo_description: parsed.data.seoDescription || null,
+      seo_title: seo.seo_title,
+      seo_description: seo.seo_description,
       seo_noindex: parsed.data.seoNoindex === 'on',
       event_start_at: parsed.data.eventStartAt ? new Date(parsed.data.eventStartAt).toISOString() : null,
       event_end_at: parsed.data.eventEndAt ? new Date(parsed.data.eventEndAt).toISOString() : null,

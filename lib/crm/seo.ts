@@ -3,7 +3,13 @@ import 'server-only'
 import { createAdminClient } from '../supabase/admin'
 import { requireStaff, ForbiddenError } from '../auth'
 import { hasPermission } from '../permissions'
-import { STATIC_INDEXABLE_PATHS } from '../seo'
+import {
+  STATIC_INDEXABLE_PATHS,
+  SEO_TITLE_RECOMMENDED,
+  SEO_DESCRIPTION_MAX,
+  computeSeoCoverage,
+  missingSeoFields
+} from '../seo'
 import { INSIGHT_CONTENT_TYPE_LABELS, type InsightContentType } from '../../types/db'
 
 export interface SeoMetricIssue {
@@ -25,6 +31,10 @@ export interface SeoMetrics {
   customMetadataCoverage: number
   customMetadataPages: number
   missingCustomMetadataPages: number
+  missingSeoTitlePages: number
+  missingSeoDescriptionPages: number
+  /** Every record counted in missingCustomMetadataPages, with the field(s) it lacks. */
+  missingCustomMetadataRecords: { type: 'course' | 'insight'; title: string; path: string; missing: ('seo_title' | 'seo_description')[] }[]
   noindexContent: number
   redirects: number
   non301Redirects: number
@@ -69,6 +79,13 @@ export async function getSeoMetrics(): Promise<SeoMetrics> {
         .order('created_at', { ascending: false })
     ])
 
+  // 42703 = undefined column: migration 0018_seo_fields.sql has not been applied.
+  // Say so plainly instead of surfacing an opaque database error.
+  for (const error of [coursesError, insightsError]) {
+    if (error && (error.code === '42703' || /seo_/.test(error.message ?? ''))) {
+      throw new Error('SEO metrics need the SEO columns from migration 0018_seo_fields.sql. Apply it (and 0019_seo_metadata_backfill.sql), then reload.')
+    }
+  }
   if (coursesError) throw coursesError
   if (insightsError) throw insightsError
   if (redirectsError) throw redirectsError
@@ -83,9 +100,15 @@ export async function getSeoMetrics(): Promise<SeoMetrics> {
   const indexableInsights = publishedInsights.filter((row) => !row.seo_noindex)
 
   const cmsContent = [...publishedCourses, ...publishedInsights]
-  const customMetadataPages = cmsContent.filter((row) => Boolean(row.seo_title?.trim()) && Boolean(row.seo_description?.trim())).length
-  const missingCustomMetadataPages = Math.max(0, cmsContent.length - customMetadataPages)
-  const customMetadataCoverage = cmsContent.length ? Math.round((customMetadataPages / cmsContent.length) * 100) : 100
+  // Same completeness rule the CRM save actions use (lib/seo.ts): a record is
+  // complete only when BOTH a SEO title and a meta description are stored.
+  const coverage = computeSeoCoverage([
+    ...publishedCourses.map((row) => ({ ...row, kind: 'course' as const })),
+    ...publishedInsights.map((row) => ({ ...row, kind: 'insight' as const }))
+  ])
+  const customMetadataPages = coverage.complete
+  const missingCustomMetadataPages = coverage.missing
+  const customMetadataCoverage = coverage.total ? Math.round((customMetadataPages / coverage.total) * 100) : 100
   const noindexContent = cmsContent.filter((row) => Boolean(row.seo_noindex)).length
 
   const non301Redirects = redirects.filter((row) => Number(row.status_code) !== 301).length
@@ -106,18 +129,20 @@ export async function getSeoMetrics(): Promise<SeoMetrics> {
   for (const row of cmsContent) {
     const path = row.content_type ? `/insights/${row.slug}` : `/courses/${row.slug}`
     const type = row.content_type ? 'insight' : 'course'
-    if (!row.seo_title?.trim() || !row.seo_description?.trim()) {
+    const missingFields = missingSeoFields(row)
+    if (missingFields.length > 0) {
+      const what = missingFields.length === 2 ? 'SEO title and meta description' : missingFields[0] === 'seo_title' ? 'SEO title' : 'meta description'
       issues.push({
         type,
         title: row.title,
         path,
-        detail: 'Missing a custom SEO title and/or meta description. The public page has a generated fallback, but a custom override is recommended.'
+        detail: `Missing a custom ${what}. The public page has a generated fallback, but saving the record in the CRM will store one.`
       })
     }
-    if (row.seo_title && row.seo_title.length > 65) {
+    if (row.seo_title && row.seo_title.length > SEO_TITLE_RECOMMENDED) {
       issues.push({ type, title: row.title, path, detail: `SEO title is ${row.seo_title.length} characters; review for search-result truncation.` })
     }
-    if (row.seo_description && row.seo_description.length > 160) {
+    if (row.seo_description && row.seo_description.length > SEO_DESCRIPTION_MAX) {
       issues.push({ type, title: row.title, path, detail: `SEO description is ${row.seo_description.length} characters; review for search-result truncation.` })
     }
   }
@@ -157,6 +182,9 @@ export async function getSeoMetrics(): Promise<SeoMetrics> {
     customMetadataCoverage,
     customMetadataPages,
     missingCustomMetadataPages,
+    missingSeoTitlePages: coverage.missingTitle,
+    missingSeoDescriptionPages: coverage.missingDescription,
+    missingCustomMetadataRecords: coverage.records.map((r) => ({ type: r.kind, title: r.title, path: r.path, missing: r.missing })),
     noindexContent,
     redirects: redirects.length,
     non301Redirects,

@@ -201,7 +201,7 @@ export default function CourseForm({ mode, course }: { mode: 'create' | 'edit'; 
         <div>
           <label htmlFor="seoTitle" className="field-label">SEO title (optional)</label>
           <input id="seoTitle" name="seoTitle" maxLength={70} defaultValue={course?.seo_title ?? ''} className="admin-input" />
-          <p className="field-hint">Falls back to a generated title from the course name if left blank. Max 70 characters.</p>
+          <p className="field-hint">If left blank, one is generated from the course name when you save. Max 70 characters.</p>
           {fieldErrors?.seoTitle && <p className="field-error">{fieldErrors.seoTitle}</p>}
         </div>
         <div>
@@ -214,7 +214,7 @@ export default function CourseForm({ mode, course }: { mode: 'create' | 'edit'; 
             defaultValue={course?.seo_description ?? ''}
             className="admin-input"
           />
-          <p className="field-hint">Falls back to the summary above if left blank. Max 160 characters.</p>
+          <p className="field-hint">If left blank, one is generated from the summary above when you save. Max 160 characters.</p>
           {fieldErrors?.seoDescription && <p className="field-error">{fieldErrors.seoDescription}</p>}
         </div>
         <label className="flex items-start gap-2 text-sm" style={{ color: 'var(--color-body)' }}>

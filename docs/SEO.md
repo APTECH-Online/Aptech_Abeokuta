@@ -9,8 +9,10 @@ what a developer or content manager needs to do to keep it correct.
    `https://www.aptech-abeokuta.com.ng`. This prevents a Vercel preview or
    project hostname from becoming the canonical/sitemap/JSON-LD origin.
    `NEXT_PUBLIC_SITE_URL` is no longer used to select the canonical origin.
-2. **Apply migration `0018_seo_fields.sql`** before deploying the admin
-   changes in this release. The public site works either way (see
+2. **Apply migrations `0018_seo_fields.sql` and then
+   `0019_seo_metadata_backfill.sql`** before deploying the admin
+   changes in this release. (0019 fills any blank SEO title/description on
+   existing courses and insights — see "SEO metadata completeness" below.) The public site works either way (see
    "Deploy-order safety" below), but the SEO fields in the CRM forms won't
    save until the columns exist.
 3. **`NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`** (optional) — the token from
@@ -61,6 +63,38 @@ all.
 Courses and Insights use `generateMetadata()` instead (they need to read the
 database first) but call the same `buildMetadata()` helper, and prefer the
 CRM's `seo_title` / `seo_description` fields when staff have filled them in.
+
+## SEO metadata completeness ("Missing custom metadata")
+
+The CRM SEO dashboard (`/admin/reports/seo`) reports how many **published
+courses and insights** lack a stored `seo_title` and/or `seo_description`.
+A record is complete only when both are non-blank (NULL, empty and
+whitespace-only all count as blank).
+
+- **One rule, one place.** `missingSeoFields()` / `computeSeoCoverage()` in
+  `lib/seo.ts` define completeness; both the dashboard (`lib/crm/seo.ts`) and
+  the save actions use them, so they cannot disagree.
+- **New and edited records are never saved incomplete.**
+  `createCourse` / `updateCourse` / `createInsight` / `updateInsight` call
+  `resolveSeoFields()`: anything staff type is kept exactly; a blank field is
+  generated from the record's own title/summary (or insight body), using the
+  same candidates the public pages already fall back to (titles ≤ 65
+  characters, descriptions ≤ 160). Staff can overwrite the generated text at
+  any time. These are the only two code paths that create courses/insights;
+  the other writers (cron publish/archive, status toggles) only change
+  `status`.
+- **Existing records:** migration `0019_seo_metadata_backfill.sql` fills blank
+  fields only (never overwrites), for every status, field by field, and
+  preserves `updated_at` so the "Review due" metric and sitemap `<lastmod>`
+  are unaffected.
+- **Because blanks are auto-filled on save, this metric now means "has stored
+  SEO metadata", not "was hand-written".** Generated text is a sensible
+  default; hand-tune high-value pages.
+- **Verify against the database** with `docs/seo-metadata-verify.sql`
+  (read-only) and, offline, with `npx tsx scripts/verify-seo-backfill.ts`
+  (see the header of that file).
+- If the dashboard reports that the SEO columns are missing, migration 0018
+  has not been applied.
 
 ## Structured data
 

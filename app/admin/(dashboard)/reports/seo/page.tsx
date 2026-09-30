@@ -65,6 +65,11 @@ export default async function SeoMetricsPage() {
             <p className="text-sm font-semibold">Missing custom metadata</p>
             <div className="metric-highlight"><FileText size={16} aria-hidden="true" /><p className="kpi-value mt-1">{seo.missingCustomMetadataPages}</p></div>
             <p className="text-xs mt-1" style={{ color: 'var(--color-muted)' }}>Generated fallbacks still work, but these records do not have a custom SEO title and description.</p>
+            {seo.missingCustomMetadataPages > 0 && (
+              <p className="text-xs mt-1" style={{ color: 'var(--color-muted)' }}>
+                {seo.missingSeoTitlePages} without a SEO title · {seo.missingSeoDescriptionPages} without a meta description. Saving the record in the CRM stores a generated value; the affected pages are listed under “Issues to review”.
+              </p>
+            )}
           </div>
           <div className="rounded-lg border p-4">
             <p className="text-sm font-semibold">Intentional noindex</p>

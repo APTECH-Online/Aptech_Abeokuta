@@ -87,6 +87,152 @@ export function pickTitle(candidates: string[], max = 65): string {
   return candidates.find((c) => c.length <= max) ?? candidates[candidates.length - 1]
 }
 
+// ---------------------------------------------------------------------------
+// Stored SEO metadata (courses + insights)
+//
+// One definition of "has custom SEO metadata" and one way to generate it, used
+// by the CRM save actions AND the SEO dashboard so the two can never disagree.
+// Pure functions only (no DB access).
+// ---------------------------------------------------------------------------
+
+/** Hard limits — enforced by validation and by the courses_seo_* DB constraints. */
+export const SEO_TITLE_MAX = 70
+export const SEO_DESCRIPTION_MAX = 160
+/** Search results usually truncate titles beyond this; generated titles stay within it. */
+export const SEO_TITLE_RECOMMENDED = 65
+
+export type SeoFieldName = 'seo_title' | 'seo_description'
+
+export interface SeoFieldsRow {
+  seo_title?: string | null
+  seo_description?: string | null
+}
+
+function hasText(value: string | null | undefined): boolean {
+  return typeof value === 'string' && value.trim().length > 0
+}
+
+/** Which of the two required SEO fields are blank (null, empty or whitespace-only). */
+export function missingSeoFields(row: SeoFieldsRow): SeoFieldName[] {
+  const missing: SeoFieldName[] = []
+  if (!hasText(row.seo_title)) missing.push('seo_title')
+  if (!hasText(row.seo_description)) missing.push('seo_description')
+  return missing
+}
+
+/** True only when BOTH a SEO title and a meta description are stored. */
+export function hasCustomSeoMetadata(row: SeoFieldsRow): boolean {
+  return missingSeoFields(row).length === 0
+}
+
+export interface SeoSource {
+  /** Course title or insight title. */
+  title: string
+  /** Course summary, or insight short description. */
+  summary?: string | null
+  /** Insight body (HTML) — used only when there is no summary. */
+  contentHtml?: string | null
+}
+
+/** Generated SEO title: the same candidates the public pages fall back to, capped at 65. */
+export function generateSeoTitle(kind: 'course' | 'insight', title: string): string {
+  const t = title.replace(/\s+/g, ' ').trim()
+  const candidates =
+    kind === 'course'
+      ? [`${t} Course in Abeokuta | ${siteConfig.name}`, `${t} in Abeokuta | ${siteConfig.name}`, `${t} | ${siteConfig.name}`, t]
+      : [`${t} | ${siteConfig.name}`, t]
+  const picked = pickTitle(candidates, SEO_TITLE_RECOMMENDED)
+  return truncate(picked, SEO_TITLE_RECOMMENDED)
+}
+
+/** Generated meta description from the record's own summary/body, capped at 160. */
+export function generateSeoDescription(source: SeoSource): string {
+  const summary = source.summary?.trim()
+  const body = source.contentHtml ? stripHtml(source.contentHtml) : ''
+  const text = summary || body || `${source.title.trim()} at ${siteConfig.name}.`
+  return truncate(text, SEO_DESCRIPTION_MAX)
+}
+
+export interface ResolvedSeoFields {
+  seo_title: string
+  seo_description: string
+  /** Which fields were generated because the editor left them blank. */
+  autoFilled: SeoFieldName[]
+}
+
+/**
+ * Returns a complete SEO title + description for saving. Values typed by staff
+ * are kept exactly as entered (trimmed); a blank field is generated from the
+ * record's own content so a saved course/insight is never left incomplete.
+ */
+export function resolveSeoFields(
+  kind: 'course' | 'insight',
+  source: SeoSource,
+  input: { seoTitle?: string | null; seoDescription?: string | null }
+): ResolvedSeoFields {
+  const typedTitle = input.seoTitle?.trim() ?? ''
+  const typedDescription = input.seoDescription?.trim() ?? ''
+  const autoFilled: SeoFieldName[] = []
+  if (!typedTitle) autoFilled.push('seo_title')
+  if (!typedDescription) autoFilled.push('seo_description')
+  return {
+    seo_title: typedTitle || generateSeoTitle(kind, source.title),
+    seo_description: typedDescription || generateSeoDescription(source),
+    autoFilled
+  }
+}
+
+export interface SeoCoverageRow extends SeoFieldsRow {
+  kind: 'course' | 'insight'
+  title: string
+  slug: string
+}
+
+export interface SeoCoverageRecord {
+  kind: 'course' | 'insight'
+  title: string
+  path: string
+  missing: SeoFieldName[]
+}
+
+export interface SeoCoverage {
+  total: number
+  complete: number
+  /** Records missing a title and/or a description — the dashboard's "Missing custom metadata". */
+  missing: number
+  missingTitle: number
+  missingDescription: number
+  /** Every incomplete record (not truncated), so the count can always be traced to rows. */
+  records: SeoCoverageRecord[]
+}
+
+/** Coverage over published CMS rows. Single implementation behind the dashboard metric. */
+export function computeSeoCoverage(rows: SeoCoverageRow[]): SeoCoverage {
+  const records: SeoCoverageRecord[] = []
+  let missingTitle = 0
+  let missingDescription = 0
+  for (const row of rows) {
+    const missing = missingSeoFields(row)
+    if (missing.length === 0) continue
+    if (missing.includes('seo_title')) missingTitle++
+    if (missing.includes('seo_description')) missingDescription++
+    records.push({
+      kind: row.kind,
+      title: row.title,
+      path: row.kind === 'insight' ? `/insights/${row.slug}` : `/courses/${row.slug}`,
+      missing
+    })
+  }
+  return {
+    total: rows.length,
+    complete: rows.length - records.length,
+    missing: records.length,
+    missingTitle,
+    missingDescription,
+    records
+  }
+}
+
 export interface SeoInput {
   /** The complete <title> — the root title template is bypassed. */
   title: string

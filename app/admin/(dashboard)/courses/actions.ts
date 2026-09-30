@@ -9,6 +9,7 @@ import { uploadCourseImage, deleteCourseImageByUrl } from '../../../../lib/supab
 import { isCourseSlugTaken } from '../../../../lib/crm/courses'
 import { slugify } from '../../../../lib/validation'
 import { recordSlugChange } from '../../../../lib/seo-redirects'
+import { resolveSeoFields } from '../../../../lib/seo'
 import type { CourseCategory, CourseStatus } from '../../../../types/db'
 
 export type ActionResult =
@@ -101,6 +102,9 @@ export async function createCourse(_prev: ActionResult, formData: FormData): Pro
       return { ok: false, message: 'Please fix the highlighted fields.', fieldErrors }
     }
 
+    // Never save a course without a SEO title + meta description: anything the
+    // editor leaves blank is generated from the course's own title/summary.
+    const seo = resolveSeoFields('course', { title: raw.title, summary: raw.summary }, raw)
     const slug = slugify(raw.slugInput || raw.title)
     if (!slug) return { ok: false, message: 'Could not generate a valid slug from that title.' }
     if (await isCourseSlugTaken(slug)) {
@@ -134,8 +138,8 @@ export async function createCourse(_prev: ActionResult, formData: FormData): Pro
       cover_image: coverImageUrl,
       status: raw.status as CourseStatus,
       display_order: raw.displayOrder,
-      seo_title: raw.seoTitle || null,
-      seo_description: raw.seoDescription || null,
+      seo_title: seo.seo_title,
+      seo_description: seo.seo_description,
       seo_noindex: raw.seoNoindex,
       created_by: staff.id
     })
@@ -177,6 +181,9 @@ export async function updateCourse(_prev: ActionResult, formData: FormData): Pro
     const { data: existing } = await admin.from('courses').select('id, slug, cover_image').eq('id', courseId).maybeSingle()
     if (!existing) return { ok: false, message: 'This course no longer exists.' }
 
+    // Never save a course without a SEO title + meta description: anything the
+    // editor leaves blank is generated from the course's own title/summary.
+    const seo = resolveSeoFields('course', { title: raw.title, summary: raw.summary }, raw)
     const slug = slugify(raw.slugInput || raw.title)
     if (!slug) return { ok: false, message: 'Could not generate a valid slug from that title.' }
     if (slug !== existing.slug && (await isCourseSlugTaken(slug, courseId))) {
@@ -212,8 +219,8 @@ export async function updateCourse(_prev: ActionResult, formData: FormData): Pro
         outcomes: raw.outcomes,
         status: raw.status as CourseStatus,
         display_order: raw.displayOrder,
-        seo_title: raw.seoTitle || null,
-        seo_description: raw.seoDescription || null,
+        seo_title: seo.seo_title,
+        seo_description: seo.seo_description,
         seo_noindex: raw.seoNoindex,
         ...(coverImageUrl !== undefined ? { cover_image: coverImageUrl } : {})
       })
