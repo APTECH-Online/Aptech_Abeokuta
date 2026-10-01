@@ -63,9 +63,9 @@ export async function getDashboardData(): Promise<DashboardData> {
     { count: applicationsCount },
     { count: enrolledCount },
     { data: leadsRaw },
-    { data: applicationsRaw },
     { data: overdueRaw },
-    { data: websiteEnquiriesRaw }
+    { data: websiteEnquiriesRaw },
+    { data: programmesRaw, error: programmesError }
   ] = await Promise.all([
     showEnquiries ? supabase.from('leads').select('id', { count: 'exact', head: true }) : zeroCount,
     showEnquiries ? supabase.from('leads').select('id', { count: 'exact', head: true }).eq('status', 'new') : zeroCount,
@@ -76,11 +76,10 @@ export async function getDashboardData(): Promise<DashboardData> {
     showEnquiries
       ? supabase
           .from('leads')
-          .select('id, status, source, created_at, lead_interests(programme_id, programmes(name))')
+          .select('id, status, source, created_at')
           .order('created_at', { ascending: false })
           .limit(2000)
       : emptyRows,
-    showApplications ? supabase.from('applications').select('id, programme_id, programmes(name)').limit(2000) : emptyRows,
     showFollowUps
       ? supabase
           .from('follow_ups')
@@ -97,11 +96,71 @@ export async function getDashboardData(): Promise<DashboardData> {
           .eq('type', 'website')
           .order('created_at', { ascending: false })
           .limit(8)
+      : emptyRows,
+    showEnquiries
+      ? supabase.from('programmes').select('id, name').order('display_order', { ascending: true })
       : emptyRows
   ])
 
+  if (programmesError) {
+    console.error('[crm] failed to load programmes for dashboard metrics', programmesError)
+  }
+
   const leads = leadsRaw ?? []
-  const applications = applicationsRaw ?? []
+
+  // The programme metrics intentionally do not derive from the 2,000-row lead
+  // dashboard sample. That sample is useful for pipeline/month/source cards but
+  // cannot produce a complete programme breakdown on a large CRM dataset.
+  // Read the relationship table directly, page through every row, and count
+  // each lead/programme pair once. This also prevents a lead with duplicate
+  // interest records from inflating a programme's count.
+  const programmeRows = (programmesRaw ?? []) as { id: string; name: string }[]
+  const leadProgrammePairs = new Set<string>()
+  if (showEnquiries) {
+    const pageSize = 1000
+    for (let from = 0; ; from += pageSize) {
+      const { data, error } = await supabase
+        .from('lead_interests')
+        .select('lead_id, programme_id')
+        .not('programme_id', 'is', null)
+        .range(from, from + pageSize - 1)
+
+      if (error) {
+        console.error('[crm] failed to load lead programme relationships', error)
+        break
+      }
+
+      for (const row of data ?? []) {
+        if (row.lead_id && row.programme_id) {
+          leadProgrammePairs.add(`${row.lead_id}:${row.programme_id}`)
+        }
+      }
+
+      if (!data || data.length < pageSize) break
+    }
+  }
+
+  const applicationProgrammeIds: string[] = []
+  if (showApplications) {
+    const pageSize = 1000
+    for (let from = 0; ; from += pageSize) {
+      const { data, error } = await supabase
+        .from('applications')
+        .select('programme_id')
+        .range(from, from + pageSize - 1)
+
+      if (error) {
+        console.error('[crm] failed to load application programme relationships', error)
+        break
+      }
+
+      for (const row of data ?? []) {
+        if (row.programme_id) applicationProgrammeIds.push(row.programme_id)
+      }
+
+      if (!data || data.length < pageSize) break
+    }
+  }
 
   // Pipeline
   const pipeline = PIPELINE_STAGES.map((status) => ({
@@ -129,29 +188,33 @@ export async function getDashboardData(): Promise<DashboardData> {
     .map(([source, count]) => ({ source: LEAD_SOURCE_LABELS[source as keyof typeof LEAD_SOURCE_LABELS] ?? source, count }))
     .sort((a, b) => b.count - a.count)
 
-  // Leads by programme (via lead_interests join)
-  const programmeCounts = new Map<string, number>()
-  for (const l of leads as any[]) {
-    const interests = l.lead_interests ?? []
-    const names = new Set<string>(interests.map((i: any) => i.programmes?.name).filter(Boolean))
-    for (const name of names) {
-      programmeCounts.set(name, (programmeCounts.get(name) ?? 0) + 1)
-    }
+  // Leads by programme. Start from the programme catalogue so programmes with
+  // no leads are represented explicitly as zero.
+  const leadCountByProgrammeId = new Map<string, number>()
+  for (const pair of leadProgrammePairs) {
+    const programmeId = pair.slice(pair.lastIndexOf(':') + 1)
+    leadCountByProgrammeId.set(programmeId, (leadCountByProgrammeId.get(programmeId) ?? 0) + 1)
   }
-  const leadsByProgramme = Array.from(programmeCounts.entries())
-    .map(([programme, count]) => ({ programme, count }))
-    .sort((a, b) => b.count - a.count)
+  const leadsByProgramme = programmeRows
+    .map((programme) => ({
+      programme: programme.name,
+      count: leadCountByProgrammeId.get(programme.id) ?? 0
+    }))
+    .sort((a, b) => b.count - a.count || a.programme.localeCompare(b.programme))
 
-  // Applications by programme
+  // Applications by programme. Count application records directly by their
+  // foreign key, rather than relying on a joined response that can be capped
+  // or duplicated by relationships. Every catalogue programme is retained.
   const appProgrammeCounts = new Map<string, number>()
-  for (const a of applications as any[]) {
-    const name = a.programmes?.name ?? 'Unassigned'
-    appProgrammeCounts.set(name, (appProgrammeCounts.get(name) ?? 0) + 1)
+  for (const programmeId of applicationProgrammeIds) {
+    appProgrammeCounts.set(programmeId, (appProgrammeCounts.get(programmeId) ?? 0) + 1)
   }
-  const applicationsByProgramme = Array.from(appProgrammeCounts.entries()).map(([programme, count]) => ({
-    programme,
-    count
-  }))
+  const applicationsByProgramme = programmeRows
+    .map((programme) => ({
+      programme: programme.name,
+      count: appProgrammeCounts.get(programme.id) ?? 0
+    }))
+    .sort((a, b) => b.count - a.count || a.programme.localeCompare(b.programme))
 
   // Leads by month (last 6 months)
   const now = new Date()

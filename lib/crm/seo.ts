@@ -71,7 +71,7 @@ export async function getSeoMetrics(): Promise<SeoMetrics> {
         .order('updated_at', { ascending: false }),
       supabase
         .from('insights')
-        .select('title, slug, content_type, status, seo_title, seo_description, seo_noindex, updated_at')
+        .select('title, slug, content_type, status, publish_at, expires_at, seo_title, seo_description, seo_noindex, updated_at')
         .order('updated_at', { ascending: false }),
       supabase
         .from('seo_redirects')
@@ -94,10 +94,22 @@ export async function getSeoMetrics(): Promise<SeoMetrics> {
   const insights = (insightsRaw ?? []) as any[]
   const redirects = (redirectsRaw ?? []) as any[]
 
+  const now = new Date()
+  const nowMs = now.getTime()
+
+  // "Published" follows the CMS status exactly. Indexability additionally
+  // follows the same visibility rules used by the public insights data layer:
+  // the record must be published, its publish_at must have arrived, and an
+  // expiry date (when present) must not have passed.
   const publishedCourses = courses.filter((row) => row.status === 'published')
   const publishedInsights = insights.filter((row) => row.status === 'published')
   const indexableCourses = publishedCourses.filter((row) => !row.seo_noindex)
-  const indexableInsights = publishedInsights.filter((row) => !row.seo_noindex)
+  const indexableInsights = publishedInsights.filter((row) => {
+    if (row.seo_noindex) return false
+    const publishAt = row.publish_at ? Date.parse(row.publish_at) : Number.NEGATIVE_INFINITY
+    const expiresAt = row.expires_at ? Date.parse(row.expires_at) : Number.POSITIVE_INFINITY
+    return publishAt <= nowMs && expiresAt > nowMs
+  })
 
   const cmsContent = [...publishedCourses, ...publishedInsights]
   // Same completeness rule the CRM save actions use (lib/seo.ts): a record is
@@ -115,8 +127,7 @@ export async function getSeoMetrics(): Promise<SeoMetrics> {
   const redirectSources = new Set(redirects.map((row) => row.from_path))
   const redirectChainRisks = redirects.filter((row) => redirectSources.has(row.to_path)).length
 
-  const now = Date.now()
-  const staleCutoff = now - 180 * 24 * 60 * 60 * 1000
+  const staleCutoff = nowMs - 180 * 24 * 60 * 60 * 1000
   const staleContent = cmsContent.filter((row) => {
     const updated = Date.parse(row.updated_at ?? '')
     return Number.isFinite(updated) && updated < staleCutoff

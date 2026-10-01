@@ -815,7 +815,7 @@ a { color: inherit; }
 .kpi-card.kpi-accent::before { background: linear-gradient(90deg, var(--color-amber-500), var(--color-amber-400)); }
 .kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-card-hover); border-color: var(--color-line-strong); }
 .kpi-card .kpi-label { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted); }
-.kpi-card .kpi-value { font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; color: var(--color-ink); margin-top: 0.35rem; }
+.kpi-card .kpi-value { font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; color: var(--color-ink); margin-top: 0.35rem; min-width: 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 .kpi-card .kpi-sub { font-size: 0.75rem; color: var(--color-muted); margin-top: 0.25rem; }
 
 .admin-table-wrap { overflow-x: auto; border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-paper-alt); box-shadow: var(--shadow-card); }
