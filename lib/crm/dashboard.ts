@@ -53,7 +53,7 @@ export async function getDashboardData(): Promise<DashboardData> {
   const supabase = await createClient()
 
   const zeroCount = Promise.resolve({ count: 0 })
-  const emptyRows = Promise.resolve({ data: [] as any[] })
+  const emptyRows = Promise.resolve({ data: [] as any[], error: null })
 
   const [
     { count: totalLeads },
