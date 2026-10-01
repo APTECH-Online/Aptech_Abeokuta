@@ -77,6 +77,6 @@ export async function getNotificationsForStaff(
 
 /** Count of notifications visible to `staff` with no read receipt yet. */
 export async function getUnreadNotificationCount(supabase: SupabaseClient, staff: Staff): Promise<number> {
-  const notifications = await getNotificationsForStaff(supabase, staff, 200)
+  const notifications = await getNotificationsForStaff(supabase, staff, 10000)
   return notifications.filter((n) => !n.read_at).length
 }

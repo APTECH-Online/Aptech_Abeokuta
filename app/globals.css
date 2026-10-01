@@ -978,6 +978,22 @@ a { color: inherit; }
 }
 
 /* ========================================================================
+   Admin metric bar chart
+   ======================================================================== */
+.admin-bar-chart { width:100%; min-width:0; overflow:visible; }
+.admin-bar-chart-plot { height:calc(100% - 1.9rem); min-height:120px; display:grid; align-items:end; gap:clamp(.35rem,1.5vw,.9rem); padding:2.1rem .25rem .15rem; }
+.admin-bar-chart-column { min-width:0; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:.35rem; }
+.admin-bar-chart-value { max-width:100%; min-height:1rem; padding:0 .15rem; color:var(--color-ink); font-size:.72rem; line-height:1; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:visible; }
+.admin-bar-chart-track { width:min(2.6rem,72%); height:100%; min-height:2px; display:flex; align-items:flex-end; justify-content:center; background:color-mix(in srgb, var(--color-navy-100) 55%, transparent); border-radius:.35rem .35rem .15rem .15rem; overflow:hidden; }
+.admin-bar-chart-bar { width:100%; min-height:0; background:var(--color-navy-700); border-radius:.35rem .35rem .15rem .15rem; transition:height .2s ease; }
+.admin-bar-chart-labels { display:grid; gap:clamp(.35rem,1.5vw,.9rem); margin-top:.35rem; padding:0 .25rem; }
+.admin-bar-chart-label { min-width:0; color:var(--color-muted); text-align:center; font-size:.65rem; line-height:1.15; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+@media (max-width:767px) {
+  .admin-bar-chart-value { font-size:.68rem; }
+  .admin-bar-chart-track { width:min(2rem,70%); }
+}
+
+/* ========================================================================
    CRM topbar account + public website navigation
    ======================================================================== */
 .admin-topbar-actions {

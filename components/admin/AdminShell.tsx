@@ -172,7 +172,7 @@ export default function AdminShell({
             <p className="admin-topbar-eyebrow">Official Administration Portal</p>
             <p className="admin-topbar-title truncate">{currentItem?.label ?? 'Dashboard'}</p>
           </div>
-          <NotificationBell initialCount={unreadNotifications} enabled={staff.role === 'super_admin'} />
+          <NotificationBell initialCount={unreadNotifications} enabled />
           <div className="admin-topbar-actions">
             <Link
               href="/"

@@ -21,45 +21,53 @@ export function BarChart({
 }) {
   const chartData = data.map((d) => ({ ...d, value: toMetricNumber(d.value) }))
   const max = Math.max(1, ...chartData.map((d) => d.value))
-  const width = 100
-  const barWidth = data.length > 0 ? width / data.length : width
 
-  if (data.length === 0) {
+  if (chartData.length === 0) {
     return <EmptyState />
   }
 
   return (
-    <div>
-      <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} preserveAspectRatio="none" role="img" aria-label="Bar chart">
-        {chartData.map((d, i) => {
-          const barHeight = (d.value / max) * (height - 28)
-          const x = i * barWidth + barWidth * 0.15
-          const w = barWidth * 0.7
-          const y = height - 20 - barHeight
+    <div
+      className="admin-bar-chart"
+      style={{ height }}
+      role="img"
+      aria-label={`Bar chart: ${chartData.map((d) => `${d.label}: ${formatMetricNumber(d.value)}`).join(', ')}`}
+    >
+      <div
+        className="admin-bar-chart-plot"
+        style={{ gridTemplateColumns: `repeat(${chartData.length}, minmax(0, 1fr))` }}
+      >
+        {chartData.map((d) => {
+          const percentage = d.value > 0 ? Math.max((d.value / max) * 100, 1.5) : 0
           const formattedValue = formatMetricNumber(d.value)
+
           return (
-            <g key={d.label}>
-              <title>{`${d.label}: ${formattedValue}`}</title>
-              <rect x={x} y={y} width={w} height={Math.max(barHeight, d.value > 0 ? 2 : 0)} rx={1.5} fill="var(--color-navy-700)" />
-              <text
-                x={x + w / 2}
-                y={height - 20 - barHeight - 4}
-                fontSize="3.8"
-                textAnchor="middle"
-                fill="var(--color-ink)"
-                fontWeight={700}
-                aria-label={formattedValue}
-              >
+            <div
+              key={d.label}
+              className="admin-bar-chart-column"
+              title={`${d.label}: ${formattedValue}`}
+            >
+              <span className="admin-bar-chart-value" aria-label={formattedValue}>
                 {formattedValue}
-              </text>
-            </g>
+              </span>
+              <div className="admin-bar-chart-track" aria-hidden="true">
+                <div className="admin-bar-chart-bar" style={{ height: `${percentage}%` }} />
+              </div>
+            </div>
           )
         })}
-      </svg>
-      <div className="flex mt-1">
+      </div>
+      <div
+        className="admin-bar-chart-labels"
+        style={{ gridTemplateColumns: `repeat(${chartData.length}, minmax(0, 1fr))` }}
+      >
         {chartData.map((d) => (
-          <div key={d.label} style={{ flex: 1 }} className="text-center text-[0.65rem] truncate px-0.5" title={`${d.label}: ${formatMetricNumber(d.value)}`}>
-            <span style={{ color: 'var(--color-muted)' }}>{d.label}</span>
+          <div
+            key={d.label}
+            className="admin-bar-chart-label"
+            title={`${d.label}: ${formatMetricNumber(d.value)}`}
+          >
+            {d.label}
           </div>
         ))}
       </div>
