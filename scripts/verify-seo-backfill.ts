@@ -13,6 +13,9 @@
  *
  * It needs no Supabase credentials and never touches a real database.
  *
+ * This folder is excluded from tsconfig.json so the app build never compiles it
+ * (it needs dev-only packages that are deliberately not in package.json).
+ *
  * Run (dev-only deps, not added to package.json):
  *   npm i --no-save @electric-sql/pglite tsx
  *   npx tsx scripts/verify-seo-backfill.ts
