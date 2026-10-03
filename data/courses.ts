@@ -22,6 +22,20 @@ export type Course = {
   tools: string[]
   outcomes: string[]
   coverImage?: string
+  // Optional staff-written detail (migration 0022). Sections render only when present.
+  audience?: string
+  prerequisites?: string
+  certification?: string
+  // CRM page controls (migration 0023_course_crm_controls.sql).
+  admissionStatus: 'open' | 'coming_soon' | 'closed'
+  intakeNote?: string
+  pageHeading?: string
+  relatedCourses: string[]
+  relatedInsights: string[]
+  curriculum?: string
+  featuredHome: boolean
+  /** False only when the database has not had migration 0023 applied yet. */
+  controlsLoaded: boolean
   // SEO fields managed in the CRM (see migration 0018_seo_fields.sql). All optional:
   // pages fall back to generated values when they are blank.
   seoTitle?: string

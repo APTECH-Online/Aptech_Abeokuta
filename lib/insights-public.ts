@@ -1,6 +1,7 @@
 import 'server-only'
 import { createAdminClient } from './supabase/admin'
 import type { Insight, InsightContentType } from '../types/db'
+import { INSIGHT_TOPICS, pickRelated } from './topics'
 
 /**
  * The `insights` table is staff-only under RLS (see migration 0004,
@@ -96,17 +97,48 @@ export async function getInsightBySlug(slug: string): Promise<PublicInsight | nu
   }
 }
 
+/**
+ * Published, indexable insights by slug, returned in the order requested.
+ * Used for hand-picked topical links (course -> guides, guide -> guides).
+ * A slug that is unpublished, expired, renamed or flagged noindex is simply
+ * absent from the result, so a topical link can never point at a 404 or at a
+ * page deliberately kept out of search.
+ */
+export async function getInsightsBySlugs(slugs: string[]): Promise<PublicInsight[]> {
+  if (slugs.length === 0) return []
+  try {
+    const { data, error } = await runPublic((f) => publicQuery(f).in('slug', slugs))
+    if (error) return []
+    const rows = ((data ?? []) as unknown as PublicInsight[]).filter((r) => !r.seo_noindex)
+    const bySlug = new Map(rows.map((r) => [r.slug, r]))
+    return slugs.map((s) => bySlug.get(s)).filter((r): r is PublicInsight => Boolean(r))
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Related insights: hand-picked topical matches first (lib/topics.ts), then
+ * the most recent items from the same category. The category-only behaviour
+ * this replaces linked the two "Student Guides" to each other and left the
+ * other four guides with no related insight at all.
+ */
 export async function getRelatedInsights(post: PublicInsight, limit = 3): Promise<PublicInsight[]> {
   try {
-    const { data, error } = await runPublic((f) =>
-      publicQuery(f)
-        .eq('category', post.category)
-        .neq('slug', post.slug)
-        .order('publish_at', { ascending: false })
-        .limit(limit)
-    )
-    if (error) return []
-    return (data ?? []) as unknown as PublicInsight[]
+    const picked = INSIGHT_TOPICS[post.slug]?.relatedInsights ?? []
+    const [topical, sameCategory] = await Promise.all([
+      getInsightsBySlugs(picked),
+      runPublic((f) =>
+        publicQuery(f)
+          .eq('category', post.category)
+          .neq('slug', post.slug)
+          .order('publish_at', { ascending: false })
+          .limit(limit)
+      ).then((r) => (r.error ? [] : ((r.data ?? []) as unknown as PublicInsight[]).filter((x) => !x.seo_noindex)))
+    ])
+    return pickRelated([...topical, ...sameCategory.filter((x) => !topical.some((t) => t.slug === x.slug))], picked, limit, () => true)
+      .filter((x) => x.slug !== post.slug)
+      .slice(0, limit)
   } catch {
     return []
   }

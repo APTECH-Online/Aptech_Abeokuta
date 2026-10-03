@@ -3,6 +3,7 @@ import { createAdminClient } from './supabase/admin'
 import type { Course as DbCourse, CourseCategory } from '../types/db'
 import { COURSE_CATEGORY_LABELS } from '../types/db'
 import type { Course } from '../data/courses'
+import { COURSE_TOPICS, courseH1, pickRelated } from './topics'
 
 /**
  * `courses` is staff-only under RLS (see migration 0007, same model as
@@ -26,20 +27,35 @@ const BASE_FIELDS = 'title, slug, category, duration, level, mode, summary, desc
 // back to the base columns instead of losing every course.
 const SEO_FIELDS = 'seo_title, seo_description, seo_noindex, updated_at'
 const PUBLIC_FIELDS = `${BASE_FIELDS}, ${SEO_FIELDS}`
+// Added by migration 0022_course_detail_fields.sql; same fallback rule as above.
+const DETAIL_FIELDS = 'audience, prerequisites, certification'
+const DETAIL_TIER = `${PUBLIC_FIELDS}, ${DETAIL_FIELDS}`
+// Added by migration 0023_course_crm_controls.sql; same fallback rule as above.
+const CONTROL_FIELDS = 'admission_status, intake_note, page_heading, related_courses, related_insights, curriculum, featured_home'
+const FULL_FIELDS = `${DETAIL_TIER}, ${CONTROL_FIELDS}`
 
 type Row = Pick<
   DbCourse,
   'title' | 'slug' | 'category' | 'duration' | 'level' | 'mode' | 'summary' | 'description' | 'highlights' | 'tools' | 'outcomes' | 'cover_image'
 > &
-  Partial<Pick<DbCourse, 'seo_title' | 'seo_description' | 'seo_noindex' | 'updated_at'>>
+  Partial<Pick<DbCourse, 'seo_title' | 'seo_description' | 'seo_noindex' | 'updated_at' | 'audience' | 'prerequisites' | 'certification' | 'admission_status' | 'intake_note' | 'page_heading' | 'related_courses' | 'related_insights' | 'curriculum' | 'featured_home'>>
 
 type QueryResult = { data: unknown; error: { code?: string; message?: string } | null }
 
-/** Runs a query with the SEO columns; on "undefined column" retries without them. */
+/**
+ * Runs a query with every column and, on "undefined column", steps down through
+ * the older column sets (pre-0023, pre-0022, pre-0018), so a deploy that runs
+ * ahead of a migration degrades gracefully instead of losing every course.
+ */
 async function withSeoFallback(run: (fields: string) => PromiseLike<QueryResult>): Promise<QueryResult> {
-  const result = await run(PUBLIC_FIELDS)
-  if (result.error && (result.error.code === '42703' || /seo_|updated_at/.test(result.error.message ?? ''))) {
-    return run(BASE_FIELDS)
+  const isMissingColumn = (r: QueryResult) =>
+    !!r.error &&
+    (r.error.code === '42703' ||
+      /audience|prerequisites|certification|admission_status|intake_note|page_heading|related_|curriculum|featured_home|seo_|updated_at/.test(r.error.message ?? ''))
+  let result: QueryResult = { data: null, error: null }
+  for (const fields of [FULL_FIELDS, DETAIL_TIER, PUBLIC_FIELDS, BASE_FIELDS]) {
+    result = await run(fields)
+    if (!isMissingColumn(result)) break
   }
   return result
 }
@@ -58,6 +74,17 @@ function toPublicCourse(row: Row): Course {
     tools: row.tools,
     outcomes: row.outcomes,
     coverImage: row.cover_image ?? undefined,
+    audience: row.audience?.trim() || undefined,
+    prerequisites: row.prerequisites?.trim() || undefined,
+    certification: row.certification?.trim() || undefined,
+    admissionStatus: row.admission_status ?? 'open',
+    intakeNote: row.intake_note?.trim() || undefined,
+    pageHeading: row.page_heading?.trim() || undefined,
+    relatedCourses: row.related_courses ?? [],
+    relatedInsights: row.related_insights ?? [],
+    curriculum: row.curriculum?.trim() || undefined,
+    featuredHome: row.featured_home ?? false,
+    controlsLoaded: row.admission_status !== undefined,
     seoTitle: row.seo_title ?? undefined,
     seoDescription: row.seo_description ?? undefined,
     noindex: row.seo_noindex ?? false,
@@ -103,8 +130,26 @@ export async function getPublishedCourseBySlug(slug: string): Promise<Course | n
   }
 }
 
+/**
+ * Hand-picked, topically related courses first (see lib/topics.ts), then the
+ * same programme category, then anything else. Previously this returned the
+ * first three other courses in database order, so every page linked to the
+ * same three programmes and the short courses received almost no
+ * contextual links from sibling pages.
+ */
 export function getRelatedCourses(all: Course[], course: Course, limit = 3): Course[] {
-  return all.filter((c) => c.slug !== course.slug).slice(0, limit)
+  const others = all.filter((c) => c.slug !== course.slug)
+  // CRM-chosen list when migration 0023 is in place; the in-code map only
+  // before it. An empty CRM list means "automatic": same category, then any.
+  const picked = course.controlsLoaded ? course.relatedCourses : COURSE_TOPICS[course.slug]?.relatedCourses ?? []
+  const sameCategory = pickRelated(others, picked, limit, (c) => c.category === course.category)
+  return sameCategory.length >= limit ? sameCategory : pickRelated(others, picked, limit, () => true)
+}
+
+/** The H1: CRM page heading, else (pre-0023 only) the in-code heading, else the title. */
+export function getCourseHeading(course: Course): string {
+  if (course.pageHeading) return course.pageHeading
+  return course.controlsLoaded ? course.title : courseH1(course.slug, course.title)
 }
 
 /**

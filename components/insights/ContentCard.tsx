@@ -37,7 +37,7 @@ export default function ContentCard({ post }: { post: PublicInsight }) {
           className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[0.68rem] font-bold tracking-wide"
           style={{ background: badge.bg, color: badge.fg }}
         >
-          {badgeLabel(post.content_type)}
+          {badgeLabel(post.content_type, post.category)}
         </span>
       </div>
 

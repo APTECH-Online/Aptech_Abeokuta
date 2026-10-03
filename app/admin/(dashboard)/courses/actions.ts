@@ -9,6 +9,8 @@ import { uploadCourseImage, deleteCourseImageByUrl } from '../../../../lib/supab
 import { isCourseSlugTaken } from '../../../../lib/crm/courses'
 import { slugify } from '../../../../lib/validation'
 import { recordSlugChange } from '../../../../lib/seo-redirects'
+import { parseCurriculum } from '../../../../lib/curriculum'
+import type { AdmissionStatus } from '../../../../types/db'
 import { resolveSeoFields } from '../../../../lib/seo'
 import type { CourseCategory, CourseStatus } from '../../../../types/db'
 
@@ -35,6 +37,13 @@ function revalidateCoursePaths(slug?: string, oldSlug?: string) {
 
 const CATEGORIES: CourseCategory[] = ['advanced_diploma', 'smart_pro', 'acns', 'short_term']
 const STATUSES: CourseStatus[] = ['draft', 'published', 'archived']
+const ADMISSION_STATUSES: AdmissionStatus[] = ['open', 'coming_soon', 'closed']
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+
+/** Checkbox values -> unique, well-formed slugs (max 12). Unknown slugs are harmless: the public site ignores any that are not published. */
+function cleanSlugList(values: FormDataEntryValue[]): string[] {
+  return Array.from(new Set(values.map((v) => String(v).trim()).filter((v) => SLUG_RE.test(v)))).slice(0, 12)
+}
 
 /** Splits a textarea's lines into a clean list, dropping blank lines. */
 function linesToArray(raw: string): string[] {
@@ -55,6 +64,11 @@ function validateFields(raw: {
   status: string
   seoTitle: string
   seoDescription: string
+  controlsAvailable?: boolean
+  admissionStatus?: string
+  intakeNote?: string
+  pageHeading?: string
+  curriculum?: string
 }) {
   const fieldErrors: Record<string, string> = {}
   if (raw.seoTitle.length > 70) fieldErrors.seoTitle = 'Keep the SEO title under 70 characters.'
@@ -68,6 +82,17 @@ function validateFields(raw: {
   if (!raw.summary.trim()) fieldErrors.summary = 'Summary is required.'
   if (!raw.description.trim()) fieldErrors.description = 'Description is required.'
   if (!STATUSES.includes(raw.status as CourseStatus)) fieldErrors.status = 'Choose a valid status.'
+  if (raw.controlsAvailable) {
+    if (!ADMISSION_STATUSES.includes((raw.admissionStatus ?? 'open') as AdmissionStatus)) fieldErrors.admissionStatus = 'Choose a valid admission status.'
+    if ((raw.intakeNote ?? '').length > 200) fieldErrors.intakeNote = 'Keep the intake note under 200 characters.'
+    if ((raw.pageHeading ?? '').length > 120) fieldErrors.pageHeading = 'Keep the page heading under 120 characters.'
+    const { errors } = parseCurriculum(raw.curriculum)
+    if ((raw.curriculum ?? '').length > 20000) fieldErrors.curriculum = 'The curriculum is too long (20,000 characters maximum).'
+    else if (errors.length > 0) {
+      const shown = errors.slice(0, 3).map((e) => (e.line ? `Line ${e.line}: ${e.message}` : e.message)).join(' ')
+      fieldErrors.curriculum = errors.length > 3 ? `${shown} (+${errors.length - 3} more)` : shown
+    }
+  }
   return fieldErrors
 }
 
@@ -84,11 +109,55 @@ function readCommon(formData: FormData) {
     highlights: linesToArray(String(formData.get('highlights') || '')),
     tools: linesToArray(String(formData.get('tools') || '')),
     outcomes: linesToArray(String(formData.get('outcomes') || '')),
+    audience: String(formData.get('audience') || '').trim(),
+    prerequisites: String(formData.get('prerequisites') || '').trim(),
+    certification: String(formData.get('certification') || '').trim(),
+    hadDetails: formData.get('hadDetails') === '1',
+    controlsAvailable: formData.get('controlsAvailable') === '1',
+    admissionStatus: String(formData.get('admissionStatus') || 'open'),
+    intakeNote: String(formData.get('intakeNote') || '').trim(),
+    pageHeading: String(formData.get('pageHeading') || '').trim(),
+    curriculum: String(formData.get('curriculum') || '').replace(/\r\n/g, '\n').trim(),
+    featuredHome: formData.get('featuredHome') === 'on',
+    relatedCourses: cleanSlugList(formData.getAll('relatedCourses')),
+    relatedInsights: cleanSlugList(formData.getAll('relatedInsights')),
     status: String(formData.get('status') || 'draft'),
     seoTitle: String(formData.get('seoTitle') || '').trim(),
     seoDescription: String(formData.get('seoDescription') || '').trim(),
     seoNoindex: formData.get('seoNoindex') === 'on',
     displayOrder: Number.isFinite(Number(formData.get('displayOrder'))) ? Math.trunc(Number(formData.get('displayOrder'))) : 0
+  }
+}
+
+/**
+ * Optional detail columns (migration 0022). Sent only when staff entered
+ * something, or when the course already had values (so they can be cleared).
+ * That keeps saves working on a database where 0022 has not been applied yet.
+ */
+function detailColumns(raw: ReturnType<typeof readCommon>) {
+  const any = raw.audience || raw.prerequisites || raw.certification
+  if (!any && !raw.hadDetails) return {}
+  return {
+    audience: raw.audience || null,
+    prerequisites: raw.prerequisites || null,
+    certification: raw.certification || null
+  }
+}
+
+/**
+ * CRM page controls (migration 0023). Written only when the form says the
+ * columns exist, so saving still works on a database that is not migrated yet.
+ */
+function controlColumns(raw: ReturnType<typeof readCommon>, ownSlug: string) {
+  if (!raw.controlsAvailable) return {}
+  return {
+    admission_status: raw.admissionStatus as AdmissionStatus,
+    intake_note: raw.intakeNote || null,
+    page_heading: raw.pageHeading || null,
+    related_courses: raw.relatedCourses.filter((s) => s !== ownSlug),
+    related_insights: raw.relatedInsights,
+    curriculum: raw.curriculum || null,
+    featured_home: raw.featuredHome
   }
 }
 
@@ -135,6 +204,8 @@ export async function createCourse(_prev: ActionResult, formData: FormData): Pro
       highlights: raw.highlights,
       tools: raw.tools,
       outcomes: raw.outcomes,
+      ...detailColumns(raw),
+      ...controlColumns(raw, slug),
       cover_image: coverImageUrl,
       status: raw.status as CourseStatus,
       display_order: raw.displayOrder,
@@ -217,6 +288,8 @@ export async function updateCourse(_prev: ActionResult, formData: FormData): Pro
         highlights: raw.highlights,
         tools: raw.tools,
         outcomes: raw.outcomes,
+        ...detailColumns(raw),
+        ...controlColumns(raw, slug),
         status: raw.status as CourseStatus,
         display_order: raw.displayOrder,
         seo_title: seo.seo_title,
@@ -241,12 +314,28 @@ export async function updateCourse(_prev: ActionResult, formData: FormData): Pro
     })
 
     // Renamed slug → keep the old URL alive with a permanent redirect.
-    if (slug !== existing.slug) await recordSlugChange(admin, '/courses', existing.slug, slug)
+    if (slug !== existing.slug) {
+      await recordSlugChange(admin, '/courses', existing.slug, slug)
+      // Keep other courses' "Related courses" lists pointing at the renamed course.
+      if (raw.controlsAvailable) await renameInRelatedCourses(admin, existing.slug, slug)
+    }
 
     revalidateCoursePaths(slug, existing.slug)
     return { ok: true, id: courseId }
   } catch (err) {
     return authError(err)
+  }
+}
+
+/** Best-effort: a failure here only means a stale slug, which the public site ignores. */
+async function renameInRelatedCourses(admin: ReturnType<typeof createAdminClient>, oldSlug: string, newSlug: string) {
+  try {
+    const { data } = await admin.from('courses').select('id, related_courses').contains('related_courses', [oldSlug])
+    for (const row of (data ?? []) as { id: string; related_courses: string[] }[]) {
+      await admin.from('courses').update({ related_courses: row.related_courses.map((s) => (s === oldSlug ? newSlug : s)) }).eq('id', row.id)
+    }
+  } catch (err) {
+    console.error('[crm] could not update related_courses after slug rename', err)
   }
 }
 

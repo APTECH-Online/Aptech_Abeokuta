@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { admissionUi } from '../../lib/admission'
 import Image from 'next/image'
 import { Course } from '../../data/courses'
 import CourseIcon from '../ui/CourseIcon'
@@ -38,11 +39,16 @@ export default function CourseCard({ course }: { course: Course }) {
         <span className="absolute top-3 left-3 badge" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', backdropFilter: 'blur(4px)' }}>
           {course.category}
         </span>
+        {course.admissionStatus !== 'open' && (
+          <span className="absolute top-3 right-3 badge" style={{ background: 'rgba(255,255,255,0.92)', color: 'var(--color-navy-900)' }}>
+            {admissionUi(course.admissionStatus).statusLabel}
+          </span>
+        )}
       </div>
 
       <div className="p-6 flex flex-col flex-1">
         <h3 className="text-[1.05rem] font-semibold text-[var(--color-ink)] font-display">
-          {course.title}
+          <Link href={`/courses/${course.slug}`} className="hover:underline">{course.title}</Link>
         </h3>
         <p className="mt-2 text-sm leading-relaxed line-clamp-3" style={{ color: 'var(--color-body)' }}>
           {course.summary}
@@ -66,6 +72,7 @@ export default function CourseCard({ course }: { course: Course }) {
             style={{ color: 'var(--color-navy-900)' }}
           >
             View programme
+            <span className="sr-only">: {course.title}</span>
             <span aria-hidden="true">→</span>
           </Link>
         </div>

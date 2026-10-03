@@ -242,6 +242,18 @@ export interface Course {
   tools: string[]
   outcomes: string[]
   cover_image: string | null
+  // Optional staff-written detail (migration 0022). Null/absent = not provided.
+  audience?: string | null
+  prerequisites?: string | null
+  certification?: string | null
+  // CRM page controls (migration 0023). Absent only before the migration has run.
+  admission_status?: AdmissionStatus
+  intake_note?: string | null
+  page_heading?: string | null
+  related_courses?: string[]
+  related_insights?: string[]
+  curriculum?: string | null
+  featured_home?: boolean
   seo_title: string | null
   seo_description: string | null
   seo_noindex: boolean
@@ -250,6 +262,14 @@ export interface Course {
   created_by: string | null
   created_at: string
   updated_at: string
+}
+
+export type AdmissionStatus = 'open' | 'coming_soon' | 'closed'
+
+export const ADMISSION_STATUS_LABELS: Record<AdmissionStatus, string> = {
+  open: 'Applications open',
+  coming_soon: 'Opening soon',
+  closed: 'Applications closed'
 }
 
 export const COURSE_CATEGORY_LABELS: Record<CourseCategory, string> = {

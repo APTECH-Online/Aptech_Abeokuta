@@ -1,10 +1,16 @@
+import Link from 'next/link'
 import { getPublishedCourses } from '../../../lib/courses-public'
+import { getInsightsBySlugs } from '../../../lib/insights-public'
+import { INSIGHT_TOPICS } from '../../../lib/topics'
 import CourseSearch from '../../../components/courses/CourseSearch'
 import PageHero from '../../../components/shared/PageHero'
 import Container from '../../../components/ui/Container'
 import { breadcrumbJsonLd } from '../../../lib/structured-data'
 import { buildMetadata, getSiteUrl } from '../../../lib/seo'
 import JsonLd from '../../../components/shared/JsonLd'
+
+// Hourly safety net; CRM course/insight actions also revalidate this page on every change.
+export const revalidate = 3600
 
 export const metadata = buildMetadata({
   title: 'IT Courses in Abeokuta | Diploma, Smart Pro & Short Courses',
@@ -16,6 +22,8 @@ export const metadata = buildMetadata({
 export default async function CoursesPage() {
   const baseUrl = getSiteUrl()
   const courses = await getPublishedCourses()
+  // The editorial guides, so the catalogue hub links to every guide that helps someone choose a course.
+  const guides = await getInsightsBySlugs(Object.keys(INSIGHT_TOPICS))
   return (
     <>
       <JsonLd data={breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Courses' }])} />
@@ -30,6 +38,30 @@ export default async function CoursesPage() {
           <CourseSearch initialCourses={courses} />
         </Container>
       </section>
+
+      {guides.length > 0 && (
+        <section className="section-tight" style={{ background: 'var(--color-paper-alt)', borderTop: '1px solid var(--color-line)' }}>
+          <Container>
+            <h2 className="h-section">Not sure which course to choose?</h2>
+            <p className="lede mt-3 max-w-2xl">
+              These guides explain the options in plain language, and each links to the matching APTECH Abeokuta courses.
+              You can also <Link href="/contact" className="font-semibold underline" style={{ color: 'var(--color-teal-700)' }}>ask the admissions team</Link>.
+            </p>
+            <ul className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {guides.map((g) => (
+                <li key={g.slug} className="card p-5">
+                  <h3 className="font-display font-semibold text-sm text-[var(--color-ink)] leading-snug">
+                    <Link href={`/insights/${g.slug}`} className="hover:underline">{g.title}</Link>
+                  </h3>
+                  {g.short_description && (
+                    <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--color-muted)' }}>{g.short_description}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </Container>
+        </section>
+      )}
     </>
   )
 }

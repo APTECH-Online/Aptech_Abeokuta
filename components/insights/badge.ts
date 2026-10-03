@@ -1,5 +1,6 @@
 import type { InsightContentType } from '../../types/db'
 import { BLOG_CONTENT_TYPES } from '../../lib/insights-public'
+import { isEvergreenInsight } from '../../lib/topics'
 
 /**
  * Short, all-caps badge label shown on content cards. News, Announcement
@@ -7,7 +8,10 @@ import { BLOG_CONTENT_TYPES } from '../../lib/insights-public'
  * (see BLOG_CONTENT_TYPES) are all badged as INSIGHT since that's how the
  * public site groups them (/insights/blog).
  */
-export function badgeLabel(contentType: InsightContentType): string {
+export function badgeLabel(contentType: InsightContentType, category?: string | null): string {
+  // The launch guides are stored as content_type 'news' but are evergreen
+  // explainers; labelling them NEWS misdescribes them to readers and crawlers.
+  if (isEvergreenInsight(category)) return 'GUIDE'
   if (contentType === 'news') return 'NEWS'
   if (contentType === 'announcement') return 'ANNOUNCEMENT'
   if (contentType === 'event') return 'EVENT'

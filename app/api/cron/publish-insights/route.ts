@@ -87,6 +87,7 @@ async function runScheduledPublishing() {
 
   if (publishedCount > 0 || archivedCount > 0) {
     revalidatePath('/insights')
+    revalidatePath('/courses') // catalogue hub links to published guides
     revalidatePath('/insights/news')
     revalidatePath('/insights/blog')
     revalidatePath('/insights/announcements')

@@ -372,6 +372,8 @@ a { color: inherit; }
 .console-status::before {
   content: ""; width: 6px; height: 6px; border-radius: 50%; background: #4ade80;
 }
+/* Status that supplies its own colour and dot (course admission status). */
+.console-status[data-status]::before { display: none; }
 
 .float-card {
   background: rgba(250, 246, 239, 0.97);

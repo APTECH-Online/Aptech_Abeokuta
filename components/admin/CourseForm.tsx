@@ -22,7 +22,27 @@ function SubmitButton({ children }: { children: string }) {
   )
 }
 
-export default function CourseForm({ mode, course }: { mode: 'create' | 'edit'; course?: Course }) {
+type Relations = { courses: { slug: string; title: string }[]; insights: { slug: string; title: string }[] }
+
+const CURRICULUM_EXAMPLE = `## Term 1: Foundations | 120 Hours
+Optional one-line description of the term.
+- Module name :: what the learner can do after it
+- Another module
+
+## Term 2: Next stage
+- Module name`
+
+export default function CourseForm({
+  mode,
+  course,
+  controlsAvailable = false,
+  relations = { courses: [], insights: [] }
+}: {
+  mode: 'create' | 'edit'
+  course?: Course
+  controlsAvailable?: boolean
+  relations?: Relations
+}) {
   const action = mode === 'create' ? createCourse : updateCourse
   const [state, formAction] = useActionState(action, initial)
   useActionFeedback(state, 'Action completed successfully.')
@@ -154,6 +174,107 @@ export default function CourseForm({ mode, course }: { mode: 'create' | 'edit'; 
           <textarea id="outcomes" name="outcomes" rows={6} defaultValue={course?.outcomes.join('\n') ?? ''} className="admin-input" />
         </div>
       </div>
+
+      <fieldset className="space-y-4">
+        <legend className="field-label">Course details <span className="font-normal" style={{ color: 'var(--color-muted)' }}>(optional. Each one appears on the public page only if you fill it in; leave blank if unsure)</span></legend>
+        <input type="hidden" name="hadDetails" value={course?.audience || course?.prerequisites || course?.certification ? '1' : '0'} />
+        <div>
+          <label htmlFor="audience" className="field-label">Who is this course for?</label>
+          <textarea id="audience" name="audience" rows={3} maxLength={800} defaultValue={course?.audience ?? ''} className="admin-input" />
+        </div>
+        <div>
+          <label htmlFor="prerequisites" className="field-label">Entry requirements / prerequisites</label>
+          <textarea id="prerequisites" name="prerequisites" rows={3} maxLength={800} defaultValue={course?.prerequisites ?? ''} className="admin-input" />
+        </div>
+        <div>
+          <label htmlFor="certification" className="field-label">Certification awarded</label>
+          <textarea id="certification" name="certification" rows={3} maxLength={800} defaultValue={course?.certification ?? ''} className="admin-input" />
+        </div>
+      </fieldset>
+
+      <fieldset className="space-y-4 rounded-lg p-4" style={{ border: '1px solid var(--color-line)' }}>
+        <legend className="field-label px-1">Page controls</legend>
+        {!controlsAvailable ? (
+          <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
+            These controls (admission status, page heading, related links, curriculum, homepage) switch on after database migration
+            <code> 0023_course_crm_controls.sql </code> is applied. Until then the public site keeps its previous behaviour.
+          </p>
+        ) : (
+          <>
+            <input type="hidden" name="controlsAvailable" value="1" />
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="admissionStatus" className="field-label">Admission status</label>
+                <select id="admissionStatus" name="admissionStatus" defaultValue={course?.admission_status ?? 'open'} className="admin-input">
+                  <option value="open">Applications open (shows Enroll now)</option>
+                  <option value="coming_soon">Opening soon (shows Register your interest)</option>
+                  <option value="closed">Applications closed (shows Ask about the next intake)</option>
+                </select>
+                {fieldErrors?.admissionStatus && <p className="field-error">{fieldErrors.admissionStatus}</p>}
+              </div>
+              <div>
+                <label htmlFor="intakeNote" className="field-label">Intake note <span className="font-normal" style={{ color: 'var(--color-muted)' }}>(optional, shown under the status)</span></label>
+                <input id="intakeNote" name="intakeNote" type="text" maxLength={200} defaultValue={course?.intake_note ?? ''} className="admin-input" placeholder="Only enter dates you have confirmed" />
+                {fieldErrors?.intakeNote && <p className="field-error">{fieldErrors.intakeNote}</p>}
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="pageHeading" className="field-label">Page heading (H1) <span className="font-normal" style={{ color: 'var(--color-muted)' }}>(optional, defaults to the title)</span></label>
+              <input id="pageHeading" name="pageHeading" type="text" maxLength={120} defaultValue={course?.page_heading ?? ''} className="admin-input" placeholder="e.g. Linux Course in Abeokuta" />
+              {fieldErrors?.pageHeading && <p className="field-error">{fieldErrors.pageHeading}</p>}
+            </div>
+
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="featuredHome" defaultChecked={course?.featured_home ?? false} />
+              Show on the homepage &ldquo;career paths&rdquo; row (the first three flagged courses are shown)
+            </label>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <p className="field-label">Related courses <span className="font-normal" style={{ color: 'var(--color-muted)' }}>(leave empty for automatic)</span></p>
+                <div className="admin-input" style={{ maxHeight: 180, overflowY: 'auto' }}>
+                  {relations.courses.length === 0 && <p className="text-xs" style={{ color: 'var(--color-muted)' }}>No other published courses yet.</p>}
+                  {/* Keep links to courses that are currently unpublished, so saving never silently drops them. */}
+                  {(course?.related_courses ?? []).filter((s) => !relations.courses.some((c) => c.slug === s)).map((s) => (
+                    <input key={`keep-${s}`} type="hidden" name="relatedCourses" value={s} />
+                  ))}
+                  {relations.courses.map((c) => (
+                    <label key={c.slug} className="flex items-start gap-2 text-sm py-0.5">
+                      <input type="checkbox" name="relatedCourses" value={c.slug} defaultChecked={course?.related_courses?.includes(c.slug)} className="mt-1" />
+                      {c.title}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="field-label">Related guides <span className="font-normal" style={{ color: 'var(--color-muted)' }}>(this course is also listed on those guides, up to 5 courses per guide)</span></p>
+                <div className="admin-input" style={{ maxHeight: 180, overflowY: 'auto' }}>
+                  {relations.insights.length === 0 && <p className="text-xs" style={{ color: 'var(--color-muted)' }}>No published insights yet.</p>}
+                  {(course?.related_insights ?? []).filter((s) => !relations.insights.some((i) => i.slug === s)).map((s) => (
+                    <input key={`keep-${s}`} type="hidden" name="relatedInsights" value={s} />
+                  ))}
+                  {relations.insights.map((i) => (
+                    <label key={i.slug} className="flex items-start gap-2 text-sm py-0.5">
+                      <input type="checkbox" name="relatedInsights" value={i.slug} defaultChecked={course?.related_insights?.includes(i.slug)} className="mt-1" />
+                      {i.title}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="curriculum" className="field-label">Curriculum <span className="font-normal" style={{ color: 'var(--color-muted)' }}>(optional modules/terms)</span></label>
+              <textarea id="curriculum" name="curriculum" rows={10} defaultValue={course?.curriculum ?? ''} className="admin-input" style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: '0.85rem' }} placeholder={CURRICULUM_EXAMPLE} spellCheck={false} />
+              <p className="mt-1 text-xs" style={{ color: 'var(--color-muted)' }}>
+                Use <code>## Heading | hours</code> for each term or block and <code>- Module :: detail</code> for each module. The three flagship programmes (ADSE, Smart Pro, ACNS) keep their built-in detailed curricula, so leave this empty for them.
+              </p>
+              {fieldErrors?.curriculum && <p className="field-error">{fieldErrors.curriculum}</p>}
+            </div>
+          </>
+        )}
+      </fieldset>
 
       <div>
         <label htmlFor="coverImage" className="field-label">

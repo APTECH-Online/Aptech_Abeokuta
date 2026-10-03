@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ArrowRight, CalendarDays, MapPin, Link2, Phone } from 'lucide-react'
+import { ArrowLeft, CalendarDays, MapPin, Link2, Phone } from 'lucide-react'
 import Container from '../../../../components/ui/Container'
 import Breadcrumbs from '../../../../components/shared/Breadcrumbs'
 import CTABand from '../../../../components/home/CTABand'
@@ -11,6 +11,9 @@ import { breadcrumbJsonLd, articleJsonLd, eventJsonLd } from '../../../../lib/st
 import { INSIGHT_CONTENT_TYPE_LABELS } from '../../../../types/db'
 import { buildMetadata, getSiteUrl, pickTitle, stripHtml, truncate } from '../../../../lib/seo'
 import { findSlugRedirect } from '../../../../lib/seo-redirects'
+import { getPublishedCourses } from '../../../../lib/courses-public'
+import { INSIGHT_TOPICS, isEvergreenInsight, pickRelated } from '../../../../lib/topics'
+import { formatPublishedDate } from '../../../../components/insights/badge'
 import { siteConfig } from '../../../../data/site'
 import JsonLd from '../../../../components/shared/JsonLd'
 
@@ -49,7 +52,21 @@ export default async function InsightArticlePage({ params }: Props) {
     notFound()
   }
 
-  const related = await getRelatedInsights(post)
+  const [related, allCourses] = await Promise.all([getRelatedInsights(post), getPublishedCourses()])
+  // Courses a reader of this article is most likely to want next:
+  //   1. courses whose CRM "Related guides" list includes this article (so a new
+  //      course appears here the moment staff link it, with no code change), then
+  //   2. the in-code editorial map (lib/topics.ts) for guides not yet linked from a course.
+  // Only published courses are ever in `allCourses`, so a link can never 404.
+  const fromCourses = allCourses.filter((c) => c.controlsLoaded && c.relatedInsights.includes(post.slug)).map((c) => c.slug)
+  const mapped = INSIGHT_TOPICS[post.slug]?.relatedCourses ?? []
+  const wanted = Array.from(new Set([...fromCourses, ...mapped]))
+  // Up to five, so a course staff link to a guide in the CRM reliably appears even
+  // when several flagship courses already point at the same guide.
+  const relatedCourses = pickRelated(allCourses, wanted, 5).filter((c) => wanted.includes(c.slug))
+  const evergreen = isEvergreenInsight(post.category)
+  const published = formatPublishedDate(post.publish_at ?? post.created_at)
+  const updated = formatPublishedDate(post.updated_at)
   const baseUrl = getSiteUrl()
   const isEvent = post.content_type === 'event'
   const articleOrEventJsonLd = isEvent ? await eventJsonLd(baseUrl, post) : articleJsonLd(baseUrl, post)
@@ -67,13 +84,18 @@ export default async function InsightArticlePage({ params }: Props) {
       <section className="border-b hairline pattern-adire" style={{ background: 'var(--color-navy-900)' }}>
         <div className="container py-12 sm:py-16">
           <Breadcrumbs items={crumbs} />
-          <p className="eyebrow eyebrow-inverse mt-5">{post.category} · {INSIGHT_CONTENT_TYPE_LABELS[post.content_type]}</p>
+          <p className="eyebrow eyebrow-inverse mt-5">{post.category} · {evergreen ? 'Guide' : INSIGHT_CONTENT_TYPE_LABELS[post.content_type]}</p>
           <h1 className="h-display mt-2 max-w-3xl" style={{ color: '#fff' }}>{post.title}</h1>
           {post.short_description && (
             <p className="mt-4 max-w-2xl text-[1.05rem] leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>
               {post.short_description}
             </p>
           )}
+          <p className="mt-4 text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            By {siteConfig.name}
+            {published && <> · Published <time dateTime={post.publish_at ?? post.created_at}>{published}</time></>}
+            {updated && updated !== published && <> · Updated <time dateTime={post.updated_at}>{updated}</time></>}
+          </p>
         </div>
       </section>
 
@@ -140,6 +162,24 @@ export default async function InsightArticlePage({ params }: Props) {
 
           <div className="insight-content mt-8" dangerouslySetInnerHTML={{ __html: post.content }} />
 
+          {relatedCourses.length > 0 && (
+            <aside className="mt-10 card p-6" aria-labelledby="related-courses-heading">
+              <h2 id="related-courses-heading" className="font-display font-semibold text-[1.05rem] text-[var(--color-ink)]">
+                Courses at {siteConfig.name} related to this guide
+              </h2>
+              <ul className="mt-4 space-y-3">
+                {relatedCourses.map((c) => (
+                  <li key={c.slug} className="text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>
+                    <Link href={`/courses/${c.slug}`} className="font-semibold underline" style={{ color: 'var(--color-teal-700)' }}>
+                      {c.title}
+                    </Link>
+                    <span style={{ color: 'var(--color-muted)' }}> · {c.duration} · {c.level}</span>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+          )}
+
           <div className="mt-10 pt-8" style={{ borderTop: '1px solid var(--color-line)' }}>
             <CTABand />
           </div>
@@ -149,24 +189,18 @@ export default async function InsightArticlePage({ params }: Props) {
       {related.length > 0 && (
         <section className="section-tight" style={{ background: 'var(--color-paper-alt)', borderTop: '1px solid var(--color-line)' }}>
           <Container>
-            <p className="eyebrow">More in {post.category}</p>
+            <h2 className="h-section">Keep reading</h2>
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
               {related.map((r) => (
                 <article key={r.slug} className="card p-5 flex flex-col">
-                  <h2 className="font-display font-semibold text-sm text-[var(--color-ink)] leading-snug">{r.title}</h2>
+                  <h3 className="font-display font-semibold text-sm text-[var(--color-ink)] leading-snug">
+                    <Link href={`/insights/${r.slug}`} className="hover:underline">{r.title}</Link>
+                  </h3>
                   {r.short_description && (
                     <p className="mt-2 text-xs leading-relaxed flex-1" style={{ color: 'var(--color-muted)' }}>
                       {r.short_description}
                     </p>
                   )}
-                  <Link
-                    href={`/insights/${r.slug}`}
-                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold"
-                    style={{ color: 'var(--color-teal-700)' }}
-                  >
-                    Read article
-                    <ArrowRight size={12} aria-hidden="true" />
-                  </Link>
                 </article>
               ))}
             </div>

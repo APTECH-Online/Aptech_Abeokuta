@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Code2, Network, BarChart3, ArrowRight } from 'lucide-react'
+import { Code2, Network, BarChart3, BookOpen, ArrowRight } from 'lucide-react'
 import type { Course } from '../../data/courses'
 
 /**
@@ -15,23 +15,28 @@ const FLAGSHIP_SLUGS = [
   'aptech-certified-network-specialist'
 ] as const
 
-const ICONS: Record<(typeof FLAGSHIP_SLUGS)[number], typeof Code2> = {
+const ICONS: Record<string, typeof Code2> = {
   'advanced-diploma-software-engineering': Code2,
   'smart-pro': BarChart3,
   'aptech-certified-network-specialist': Network
 }
+// Courses without a dedicated icon (anything staff feature later) get this one.
+const FALLBACK_ICON = BookOpen
 
 export default function CareerPaths({ courses }: { courses: Course[] }) {
-  const flagships = FLAGSHIP_SLUGS.map((slug) => courses.find((c) => c.slug === slug)).filter(
-    (c): c is NonNullable<typeof c> => Boolean(c)
-  )
+  // Featured in the CRM ("Show on homepage"); the fixed slug list is only the
+  // fallback before migration 0023 exists or while nothing is flagged.
+  const featured = courses.filter((c) => c.featuredHome).slice(0, 3)
+  const flagships = featured.length > 0
+    ? featured
+    : FLAGSHIP_SLUGS.map((slug) => courses.find((c) => c.slug === slug)).filter((c): c is NonNullable<typeof c> => Boolean(c))
 
   if (flagships.length === 0) return null
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
       {flagships.map((course) => {
-        const Icon = ICONS[course.slug as (typeof FLAGSHIP_SLUGS)[number]]
+        const Icon = ICONS[course.slug] ?? FALLBACK_ICON
         return (
           <div key={course.slug} className="card p-7 flex flex-col">
             <div

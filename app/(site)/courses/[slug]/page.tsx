@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
-import { getPublishedCourses, getPublishedCourseBySlug, getRelatedCourses } from '../../../../lib/courses-public'
+import { getPublishedCourses, getPublishedCourseBySlug, getRelatedCourses, getCourseHeading } from '../../../../lib/courses-public'
+import { admissionUi } from '../../../../lib/admission'
+import { parseCurriculum } from '../../../../lib/curriculum'
 import Container from '../../../../components/ui/Container'
 import Breadcrumbs from '../../../../components/shared/Breadcrumbs'
 import CourseCard from '../../../../components/courses/CourseCard'
@@ -20,6 +22,8 @@ import Image from 'next/image'
 import { courseJsonLd, breadcrumbJsonLd } from '../../../../lib/structured-data'
 import { buildMetadata, getSiteUrl, pickTitle, truncate } from '../../../../lib/seo'
 import { findSlugRedirect } from '../../../../lib/seo-redirects'
+import { getInsightsBySlugs } from '../../../../lib/insights-public'
+import { COURSE_TOPICS } from '../../../../lib/topics'
 import { siteConfig } from '../../../../data/site'
 import JsonLd from '../../../../components/shared/JsonLd'
 
@@ -62,6 +66,16 @@ export default async function CoursePage({ params }: Props) {
 
   const allCourses = await getPublishedCourses()
   const related = getRelatedCourses(allCourses, course)
+  // Hand-picked guides (lib/topics.ts); only published, indexable ones come back.
+  const CHOOSER_SLUG = 'choosing-between-short-course-and-diploma'
+  // CRM-chosen guides once migration 0023 is in place; the in-code map only before it.
+  const guideSlugs = course.controlsLoaded ? course.relatedInsights : COURSE_TOPICS[course.slug]?.relatedInsights ?? []
+  const admission = admissionUi(course.admissionStatus)
+  const curriculum = parseCurriculum(course.curriculum).blocks
+  const fetchedGuides = await getInsightsBySlugs(Array.from(new Set([...guideSlugs, CHOOSER_SLUG])))
+  const relatedGuides = fetchedGuides.filter((g) => guideSlugs.includes(g.slug))
+  // Only link the programme-length guide when it is actually published (never a dead link).
+  const chooserGuide = fetchedGuides.find((g) => g.slug === CHOOSER_SLUG)
   const baseUrl = getSiteUrl()
   const crumbs = [
     { label: 'Home', href: '/' },
@@ -86,7 +100,7 @@ export default async function CoursePage({ params }: Props) {
             </div>
             <div>
               <p className="eyebrow eyebrow-inverse">{course.category}</p>
-              <h1 className="h-display mt-2" style={{ color: '#fff' }}>{course.title}</h1>
+              <h1 className="h-display mt-2" style={{ color: '#fff' }}>{getCourseHeading(course)}</h1>
             </div>
           </div>
           <div className="mt-4 flex flex-col lg:flex-row gap-8 items-start">
@@ -105,6 +119,28 @@ export default async function CoursePage({ params }: Props) {
                   priority
                 />
               </div>
+            )}
+          </div>
+
+          {/* Mobile only: the sidebar card below the page body is a long scroll away on a phone. */}
+          <dl className="mt-6 grid grid-cols-3 gap-3 text-xs lg:hidden" style={{ color: 'rgba(255,255,255,0.75)' }}>
+            <div>
+              <dt className="eyebrow eyebrow-inverse" style={{ fontSize: '0.62rem' }}>Duration</dt>
+              <dd className="mt-1" style={{ color: '#fff' }}>{course.duration}</dd>
+            </div>
+            <div>
+              <dt className="eyebrow eyebrow-inverse" style={{ fontSize: '0.62rem' }}>Level</dt>
+              <dd className="mt-1" style={{ color: '#fff' }}>{course.level}</dd>
+            </div>
+            <div>
+              <dt className="eyebrow eyebrow-inverse" style={{ fontSize: '0.62rem' }}>Format</dt>
+              <dd className="mt-1" style={{ color: '#fff' }}>{course.mode}</dd>
+            </div>
+          </dl>
+          <div className="mt-5 flex flex-wrap gap-3 lg:hidden">
+            <Link href={admission.href} className="btn btn-accent">{admission.mobileLabel}</Link>
+            {admission.canApply && (
+              <Link href="/contact" className="btn" style={{ color: '#dbe4f3', border: '1px solid rgba(255,255,255,0.25)' }}>Ask a question</Link>
             )}
           </div>
         </div>
@@ -390,6 +426,86 @@ export default async function CoursePage({ params }: Props) {
                   </li>
                 ))}
               </ul>
+
+              {curriculum.length > 0 && (
+                <div className="mt-12">
+                  <h2 className="h-section" style={{ fontSize: '1.35rem' }}>{course.title} curriculum</h2>
+                  <div className="mt-4 space-y-6">
+                    {curriculum.map((b) => (
+                      <section key={b.title} className="card p-5">
+                        <h3 className="font-display font-semibold text-[1.02rem] text-[var(--color-ink)]">
+                          {b.title}
+                          {b.subtitle && <span className="ml-2 text-xs font-medium" style={{ color: 'var(--color-muted)' }}>{b.subtitle}</span>}
+                        </h3>
+                        {b.description && <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>{b.description}</p>}
+                        {b.modules.length > 0 && (
+                          <ul className="mt-3 space-y-2">
+                            {b.modules.map((m) => (
+                              <li key={m.name} className="text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>
+                                <span className="font-semibold text-[var(--color-ink)]">{m.name}</span>
+                                {m.detail && <span> &mdash; {m.detail}</span>}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </section>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(course.audience || course.prerequisites || course.certification) && (
+                <div className="mt-12 space-y-8">
+                  {course.audience && (
+                    <div>
+                      <h2 className="h-section" style={{ fontSize: '1.35rem' }}>Who is {course.title} for?</h2>
+                      <p className="mt-3 text-[0.95rem] leading-relaxed whitespace-pre-line" style={{ color: 'var(--color-body)' }}>{course.audience}</p>
+                    </div>
+                  )}
+                  {course.prerequisites && (
+                    <div>
+                      <h2 className="h-section" style={{ fontSize: '1.35rem' }}>Entry requirements</h2>
+                      <p className="mt-3 text-[0.95rem] leading-relaxed whitespace-pre-line" style={{ color: 'var(--color-body)' }}>{course.prerequisites}</p>
+                    </div>
+                  )}
+                  {course.certification && (
+                    <div>
+                      <h2 className="h-section" style={{ fontSize: '1.35rem' }}>Certification</h2>
+                      <p className="mt-3 text-[0.95rem] leading-relaxed whitespace-pre-line" style={{ color: 'var(--color-body)' }}>{course.certification}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <h2 className="mt-12 h-section" style={{ fontSize: '1.35rem' }}>{course.title}: duration, level and format</h2>
+              <dl className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="card p-4">
+                  <dt className="eyebrow">How long is it?</dt>
+                  <dd className="mt-1.5 text-sm" style={{ color: 'var(--color-body)' }}>{course.duration}</dd>
+                </div>
+                <div className="card p-4">
+                  <dt className="eyebrow">Who is it pitched at?</dt>
+                  <dd className="mt-1.5 text-sm" style={{ color: 'var(--color-body)' }}>{course.level} level</dd>
+                </div>
+                <div className="card p-4">
+                  <dt className="eyebrow">How is it taught?</dt>
+                  <dd className="mt-1.5 text-sm" style={{ color: 'var(--color-body)' }}>{course.mode}</dd>
+                </div>
+              </dl>
+              <p className="mt-5 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>
+                {course.prerequisites ? 'Fees and intake dates' : 'Entry requirements, fees and intake dates'} are confirmed by the admissions team, so
+                check the <Link href="/admissions" className="font-semibold underline" style={{ color: 'var(--color-teal-700)' }}>admissions page</Link> or{' '}
+                <Link href="/contact" className="font-semibold underline" style={{ color: 'var(--color-teal-700)' }}>contact the academy</Link> before you apply.{' '}
+                {chooserGuide ? (
+                  <>
+                    Not sure whether a short course or a longer programme suits you? Compare them in{' '}
+                    <Link href={`/insights/${chooserGuide.slug}`} className="font-semibold underline" style={{ color: 'var(--color-teal-700)' }}>{chooserGuide.title}</Link>, or{' '}
+                  </>
+                ) : (
+                  <>Not sure this is the right fit? You can </>
+                )}
+                browse the <Link href="/courses" className="font-semibold underline" style={{ color: 'var(--color-teal-700)' }}>full course catalogue</Link>.
+              </p>
             </div>
 
             <aside className="lg:sticky lg:top-24">
@@ -401,14 +517,18 @@ export default async function CoursePage({ params }: Props) {
                   <span className="console-card__title">programme_info.sh</span>
                 </div>
                 <div className="console-card__body">
-                  <p className="console-status">Applications open</p>
+                  <p className="console-status" data-status={course.admissionStatus} style={{ color: admission.text }}>
+                    <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: '50%', background: admission.dot, display: 'inline-block' }} />
+                    {admission.statusLabel}
+                  </p>
+                  {course.intakeNote && <p className="mt-2 text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>{course.intakeNote}</p>}
                   <div className="mt-4 space-y-2">
                     <p className="console-line"><span className="console-key">duration </span><span className="console-val">{course.duration}</span></p>
                     <p className="console-line"><span className="console-key">level    </span><span className="console-val">{course.level}</span></p>
                     <p className="console-line"><span className="console-key">format   </span><span className="console-val">{course.mode}</span></p>
                   </div>
-                  <Link href="/admissions#apply" className="btn btn-accent btn-block mt-5">
-                    Enroll now
+                  <Link href={admission.href} className="btn btn-accent btn-block mt-5">
+                    {admission.primaryLabel}
                   </Link>
                   <Link href="/contact" className="btn btn-block mt-2" style={{ color: '#dbe4f3', border: '1px solid rgba(255,255,255,0.15)' }}>
                     Ask a question
@@ -420,10 +540,30 @@ export default async function CoursePage({ params }: Props) {
         </Container>
       </section>
 
+      {relatedGuides.length > 0 && (
+        <section className="section-tight" style={{ borderTop: '1px solid var(--color-line)' }}>
+          <Container>
+            <h2 className="h-section">Guides related to {course.title}</h2>
+            <ul className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+              {relatedGuides.map((g) => (
+                <li key={g.slug} className="card p-5 flex flex-col">
+                  <h3 className="font-display font-semibold text-sm text-[var(--color-ink)] leading-snug">
+                    <Link href={`/insights/${g.slug}`} className="hover:underline">{g.title}</Link>
+                  </h3>
+                  {g.short_description && (
+                    <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--color-muted)' }}>{g.short_description}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </Container>
+        </section>
+      )}
+
       {related.length > 0 && (
         <section className="section-tight" style={{ background: 'var(--color-paper-alt)', borderTop: '1px solid var(--color-line)' }}>
           <Container>
-            <h2 className="h-section">Other programmes</h2>
+            <h2 className="h-section">Related courses at APTECH Abeokuta</h2>
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {related.map((c) => (
                 <CourseCard key={c.slug} course={c} />

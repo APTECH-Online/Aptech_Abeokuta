@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { requireStaff, canManageCourses } from '../../../../../lib/auth'
-import { getCourseById } from '../../../../../lib/crm/courses'
+import { getCourseById, courseControlsAvailable, getRelationOptions } from '../../../../../lib/crm/courses'
 import CourseForm from '../../../../../components/admin/CourseForm'
 
 export const metadata = { title: 'Edit Course | Admissions CRM' }
@@ -13,6 +13,7 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
   const { id } = await params
   const course = await getCourseById(id)
   if (!course) notFound()
+  const [controlsAvailable, relations] = await Promise.all([courseControlsAvailable(), getRelationOptions(course.slug)])
 
   return (
     <div className="grid gap-6">
@@ -20,7 +21,7 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
         <p className="eyebrow">Content management</p>
         <h1 className="h-section mt-1">Edit course</h1>
       </div>
-      <CourseForm mode="edit" course={course} />
+      <CourseForm mode="edit" course={course} controlsAvailable={controlsAvailable} relations={relations} />
     </div>
   )
 }

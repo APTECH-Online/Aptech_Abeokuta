@@ -40,6 +40,7 @@ function revalidateInsightPaths(slug?: string, oldSlug?: string) {
   revalidatePath('/admin/insights')
   revalidatePath('/admin')
   revalidatePath('/insights')
+  revalidatePath('/courses') // the catalogue hub links to the published guides
   revalidatePath('/insights/news')
   revalidatePath('/insights/blog')
   revalidatePath('/insights/announcements')
@@ -288,7 +289,18 @@ export async function updateInsight(_prev: ActionResult, formData: FormData): Pr
     })
 
     // Renamed slug → keep the old URL alive with a permanent redirect.
-    if (slug !== existing.slug) await recordSlugChange(admin, '/insights', existing.slug, slug)
+    if (slug !== existing.slug) {
+      await recordSlugChange(admin, '/insights', existing.slug, slug)
+      // Courses link to guides by slug (course "Related guides"); keep those in step. Best-effort.
+      try {
+        const { data: refs } = await admin.from('courses').select('id, related_insights').contains('related_insights', [existing.slug])
+        for (const row of (refs ?? []) as { id: string; related_insights: string[] }[]) {
+          await admin.from('courses').update({ related_insights: row.related_insights.map((s) => (s === existing.slug ? slug : s)) }).eq('id', row.id)
+        }
+      } catch (err) {
+        console.error('[crm] could not update courses.related_insights after slug rename', err)
+      }
+    }
 
     revalidateInsightPaths(slug, existing.slug)
     return { ok: true, id: insightId }

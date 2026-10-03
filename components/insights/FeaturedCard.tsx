@@ -37,7 +37,7 @@ export default function FeaturedCard({ post }: { post: PublicInsight }) {
           className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold tracking-wide"
           style={{ background: badge.bg, color: badge.fg }}
         >
-          {badgeLabel(post.content_type)}
+          {badgeLabel(post.content_type, post.category)}
         </span>
       </div>
 

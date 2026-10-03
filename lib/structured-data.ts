@@ -3,6 +3,7 @@ import type { Course } from '../data/courses'
 import { getPublishedSocialLinks } from '../lib/social-links-public'
 import { getPublicContactInfo } from '../lib/contact-info-public'
 import { BLOG_CONTENT_TYPES, type PublicInsight } from '../lib/insights-public'
+import { isEvergreenInsight } from './topics'
 import {
   absoluteUrl,
   DEFAULT_OG_IMAGE,
@@ -144,7 +145,11 @@ export function breadcrumbJsonLd(baseUrl: string, crumbs: { label: string; href?
  * Picks the most specific schema.org article type for an Insight:
  * blog-style content → BlogPosting, news → NewsArticle, otherwise Article.
  */
-function articleType(contentType: PublicInsight['content_type']) {
+function articleType(contentType: PublicInsight['content_type'], category?: string | null) {
+  // The six launch guides are stored as content_type 'news' (migration 0004) but
+  // are evergreen how-to/explainer content, not time-bound reporting, so they
+  // must not be marked up as NewsArticle.
+  if (isEvergreenInsight(category)) return 'Article'
   if (BLOG_CONTENT_TYPES.includes(contentType)) return 'BlogPosting'
   if (contentType === 'news') return 'NewsArticle'
   return 'Article'
@@ -160,13 +165,14 @@ export function articleJsonLd(baseUrl: string, insight: PublicInsight) {
   const image = insight.featured_image ?? absoluteUrl(DEFAULT_OG_IMAGE.url)
   return {
     '@context': 'https://schema.org',
-    '@type': articleType(insight.content_type),
+    '@type': articleType(insight.content_type, insight.category),
     headline: truncate(insight.title, 110),
     description: insight.seo_description || insight.short_description || truncate(stripHtml(insight.content), 200),
     url,
     mainEntityOfPage: { '@type': 'WebPage', '@id': url },
     image: [image],
     articleSection: insight.category,
+    wordCount: stripHtml(insight.content).split(' ').filter(Boolean).length,
     inLanguage: 'en-NG',
     datePublished: insight.publish_at ?? insight.created_at,
     dateModified: insight.updated_at,
@@ -228,6 +234,18 @@ export async function eventJsonLd(baseUrl: string, insight: PublicInsight) {
  * level and stated outcomes, all of which the page displays. Deliberately no
  * price, rating or start-date data: none is stored, so none is claimed.
  */
+/**
+ * ISO 8601 duration for the simple, unambiguous forms stored in the CMS
+ * ("1 Month", "4 Months", "2 years"). Anything else ("Foundation (146 hrs) + a
+ * 200-hour specialisation", "4 terms · 692 instructional hours") returns null,
+ * so schema never states a duration the page does not state in the same terms.
+ */
+export function isoDuration(text: string): string | null {
+  const m = /^\s*(\d{1,2})\s*(month|months|year|years)\s*$/i.exec(text)
+  if (!m) return null
+  return `P${m[1]}${/^y/i.test(m[2]) ? 'Y' : 'M'}`
+}
+
 export function courseJsonLd(baseUrl: string, course: Course) {
   const url = `${baseUrl}/courses/${course.slug}`
   return {
@@ -238,6 +256,9 @@ export function courseJsonLd(baseUrl: string, course: Course) {
     url,
     inLanguage: 'en',
     educationalLevel: course.level,
+    ...(isoDuration(course.duration) ? { timeRequired: isoDuration(course.duration) } : {}),
+    // Only when staff wrote it and the page displays it under "Entry requirements".
+    ...(course.prerequisites ? { coursePrerequisites: course.prerequisites } : {}),
     ...(course.coverImage ? { image: absoluteUrl(course.coverImage) } : {}),
     ...(course.outcomes.length > 0 ? { teaches: course.outcomes.slice(0, 6) } : {}),
     provider: orgRef(baseUrl)

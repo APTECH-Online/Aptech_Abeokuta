@@ -3,7 +3,7 @@ import { Plus, BookOpen } from 'lucide-react'
 import { guardAdminPage, canManageCourses } from '../../../../lib/auth'
 import { hasAnyModulePermission } from '../../../../lib/permissions'
 import { getCourses } from '../../../../lib/crm/courses'
-import { COURSE_CATEGORY_LABELS, COURSE_CATEGORY_ORDER, COURSE_STATUS_LABELS } from '../../../../types/db'
+import { COURSE_CATEGORY_LABELS, COURSE_CATEGORY_ORDER, COURSE_STATUS_LABELS, ADMISSION_STATUS_LABELS } from '../../../../types/db'
 import type { CourseCategory, CourseStatus } from '../../../../types/db'
 import StatusBadge from '../../../../components/admin/StatusBadge'
 import Pagination from '../../../../components/admin/Pagination'
@@ -100,6 +100,7 @@ export default async function CoursesListPage({
                 <th>Category</th>
                 <th>Duration</th>
                 <th>Status</th>
+                <th>Admissions</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -113,6 +114,7 @@ export default async function CoursesListPage({
                   <td>{COURSE_CATEGORY_LABELS[course.category]}</td>
                   <td>{course.duration}</td>
                   <td><StatusBadge status={course.status} label={COURSE_STATUS_LABELS[course.status]} /></td>
+                  <td>{course.admission_status ? ADMISSION_STATUS_LABELS[course.admission_status] : 'Open (migration 0023 not applied)'}</td>
                   <td><CourseRowActions course={course} canManage={canManage} /></td>
                 </tr>
               ))}

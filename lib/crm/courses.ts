@@ -66,3 +66,30 @@ export async function isCourseSlugTaken(slug: string, excludeId?: string): Promi
   const { data } = await query
   return (data?.length ?? 0) > 0
 }
+
+/** True once migration 0023 (CRM page controls) has been applied to this database. */
+export async function courseControlsAvailable(): Promise<boolean> {
+  await requireCoursesAccess('view')
+  const supabase = await createClient()
+  const { error } = await supabase.from('courses').select('admission_status').limit(1)
+  return !error
+}
+
+export type RelationOptions = {
+  courses: { slug: string; title: string }[]
+  insights: { slug: string; title: string }[]
+}
+
+/** Published courses and guides a course can be linked to in the CRM form. */
+export async function getRelationOptions(excludeCourseSlug?: string): Promise<RelationOptions> {
+  await requireCoursesAccess('view')
+  const supabase = await createClient()
+  const [c, i] = await Promise.all([
+    supabase.from('courses').select('slug, title').eq('status', 'published').order('title', { ascending: true }),
+    supabase.from('insights').select('slug, title').eq('status', 'published').order('title', { ascending: true })
+  ])
+  return {
+    courses: ((c.data ?? []) as { slug: string; title: string }[]).filter((x) => x.slug !== excludeCourseSlug),
+    insights: (i.data ?? []) as { slug: string; title: string }[]
+  }
+}

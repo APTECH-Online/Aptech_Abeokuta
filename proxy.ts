@@ -88,7 +88,13 @@ export async function proxy(request: NextRequest) {
     // below rather than run an unnecessary session lookup on every page view.
     return result ?? NextResponse.next()
   }
-  if (insightMatch && !RESERVED_INSIGHT_SLUGS.includes(insightMatch[1])) {
+  if (insightMatch) {
+    // /insights/news, /blog, /events and /announcements are static public
+    // listing pages that merely share the one-segment URL shape. They have
+    // nothing to check and are never admin routes, so answer immediately
+    // instead of falling through to the CRM session lookup (a Supabase auth
+    // round-trip that previously ran on every request to those four pages).
+    if (RESERVED_INSIGHT_SLUGS.includes(insightMatch[1])) return NextResponse.next()
     const result = await handleSlugRequest(request, '/insights', decodeURIComponent(insightMatch[1]))
     return result ?? NextResponse.next()
   }

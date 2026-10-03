@@ -62,12 +62,28 @@ const toneClass: Record<string, string> = {
   indigo: 'program-finder__icon--indigo'
 }
 
+const COMMITMENT_FALLBACK_ORDER: Record<Commitment, Commitment[]> = {
+  short: ['short', 'professional', 'long'],
+  professional: ['professional', 'short', 'long'],
+  long: ['long', 'professional', 'short']
+}
+
+function pickRecommendation(courses: Course[], interest: Interest, commitment: Commitment): Course | null {
+  for (const c of COMMITMENT_FALLBACK_ORDER[commitment]) {
+    const hit = courses.find((x) => x.slug === RECOMMENDATIONS[interest][c])
+    if (hit) return hit
+  }
+  return courses[0] ?? null
+}
+
 export default function ProgramFinder({ courses }: { courses: Course[] }) {
   const [interest, setInterest] = useState<Interest | null>(null)
   const [commitment, setCommitment] = useState<Commitment | null>(null)
 
-  const recommendedSlug = interest && commitment ? RECOMMENDATIONS[interest][commitment] : null
-  const recommended = recommendedSlug ? courses.find((c) => c.slug === recommendedSlug) : null
+  // The mapping below is an editorial suggestion, not course data. If the mapped
+  // course is no longer published, fall back to the nearest published choice for
+  // the same interest so the visitor always gets a result.
+  const recommended = interest && commitment ? pickRecommendation(courses, interest, commitment) : null
 
   function reset() {
     setInterest(null)
