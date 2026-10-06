@@ -105,7 +105,7 @@ export default function CourseForm({
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-3 gap-4">
         <div>
           <label htmlFor="category" className="field-label">Category</label>
           <select id="category" name="category" defaultValue={course?.category ?? 'short_term'} className="admin-select">

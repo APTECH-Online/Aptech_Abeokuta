@@ -60,6 +60,9 @@ export function canAccessModule(staff: Pick<Staff, 'role' | 'permissions'>, modu
  */
 export function canAccessPath(staff: Pick<Staff, 'role' | 'permissions'>, pathname: string): boolean {
   if (staff.role === 'super_admin') return true
+  // Every active staff member has their own notification inbox; what appears in it
+  // is scoped by role / recipient (see lib/notifications.ts).
+  if (pathname.startsWith('/admin/notifications')) return true
   if (staff.role === 'content_manager') {
     if (pathname === '/admin') return hasPermission(staff, 'dashboard_access')
     if (pathname.startsWith('/admin/insights')) return hasAnyModulePermission(staff, 'news') || hasAnyModulePermission(staff, 'events')

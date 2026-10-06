@@ -92,13 +92,13 @@ export default async function InsightsListPage({
         ))}
       </div>
 
-      <form className="card p-4 sm:p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 items-end">
+      <form className="card p-4 sm:p-5 admin-filters">
         <input type="hidden" name="tab" value={activeTab.key} />
-        <div className="col-span-2 sm:col-span-3 lg:col-span-2">
+        <div className="admin-filter admin-filter--search">
           <label htmlFor="search" className="field-label">Search</label>
           <input id="search" name="search" defaultValue={sp.search} placeholder="Title, slug, description" className="admin-input w-full" />
         </div>
-        <div>
+        <div className="admin-filter">
           <label htmlFor="category" className="field-label">Category</label>
           <select id="category" name="category" defaultValue={sp.category || ''} className="admin-select w-full">
             <option value="">All categories</option>
@@ -108,7 +108,7 @@ export default async function InsightsListPage({
           </select>
         </div>
         {activeTab.key === 'all' && (
-          <div>
+          <div className="admin-filter">
             <label htmlFor="contentType" className="field-label">Content type</label>
             <select id="contentType" name="contentType" defaultValue={sp.contentType || ''} className="admin-select w-full">
               <option value="">All types</option>
@@ -118,7 +118,7 @@ export default async function InsightsListPage({
             </select>
           </div>
         )}
-        <div className="flex gap-2">
+        <div className="admin-filter-actions">
           <button type="submit" className="btn btn-primary btn-sm">Filter</button>
           <Link href={buildTabHref(activeTab.key)} className="btn btn-ghost btn-sm">Reset</Link>
         </div>

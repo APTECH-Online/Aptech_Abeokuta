@@ -38,16 +38,16 @@ export default function ApplicationStatusForm({
   const [state, formAction] = useActionState(updateApplicationStatus, initial)
   useActionFeedback(state, 'Application status updated successfully.')
   return (
-    <form action={formAction} className="flex items-center gap-2">
+    <form action={formAction} className="flex flex-wrap items-center gap-2">
       <input type="hidden" name="applicationId" value={applicationId} />
       <input type="hidden" name="leadId" value={leadId} />
-      <select name="status" defaultValue={currentStatus} className="admin-select">
+      <select name="status" defaultValue={currentStatus} className="admin-select min-w-0 flex-1">
         {STATUS_ORDER.map((s) => (
           <option key={s} value={s}>{APPLICATION_STATUS_LABELS[s]}</option>
         ))}
       </select>
       <Button />
-      {!state.ok && <span className="text-xs" style={{ color: 'var(--color-danger)' }}>{state.message}</span>}
+      {!state.ok && <span className="text-xs w-full" style={{ color: 'var(--color-danger)' }}>{state.message}</span>}
     </form>
   )
 }

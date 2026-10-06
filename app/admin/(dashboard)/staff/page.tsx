@@ -24,8 +24,12 @@ export default async function StaffPage() {
 
       {currentStaff.role === 'super_admin' ? (
         <section className="grid gap-4">
-          <div className="flex items-center justify-between">
-            <p className="eyebrow">Staff &amp; roles</p>
+          {/* The heading row wraps rather than squeezing: an opened Add Staff form
+              drops onto its own full-width row below the heading. */}
+          <div className="admin-section-head">
+            <div className="admin-section-head__text">
+              <p className="eyebrow">Staff &amp; roles</p>
+            </div>
             <AddStaffForm />
           </div>
           {/* Table view: md screens and up. Below md, a stacked card layout
@@ -33,7 +37,7 @@ export default async function StaffPage() {
               controls never get cramped or force horizontal scrolling on
               small screens. */}
           <div className="admin-table-wrap hidden md:block">
-            <table className="admin-table">
+            <table className="admin-table admin-staff-table">
               <thead>
                 <tr>
                   <th>Name</th>

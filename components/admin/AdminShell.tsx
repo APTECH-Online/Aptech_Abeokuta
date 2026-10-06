@@ -57,12 +57,18 @@ const NAV_ITEMS = [
   { href: '/admin/staff', label: 'Staff', icon: UserCog, access: 'super_admin' },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3, access: 'reports' },
   { href: '/admin/reports/seo', label: 'SEO Metrics', icon: Gauge, access: 'seo' },
-  { href: '/admin/notifications', label: 'Notifications', icon: Bell, access: 'super_admin' },
+  { href: '/admin/notifications', label: 'Notifications', icon: Bell, access: 'any_staff' },
   { href: '/admin/settings', label: 'Settings', icon: Settings, access: 'super_admin' }
 ]
 
 function canSeeNavItem(staff: Staff, access: string): boolean {
   if (staff.role === 'super_admin') return true
+  if (access === 'any_staff') return true
+  // Admissions Officers work the admissions pipeline (the same paths canAccessPath
+  // allows them). Without this branch they fell through to `false` and had an empty menu.
+  if (staff.role === 'admissions_officer') {
+    return access === 'dashboard' || access === 'enquiries' || access === 'applications' || access === 'follow_ups'
+  }
   if (staff.role !== 'content_manager') return false
   switch (access) {
     case 'super_admin':
@@ -142,10 +148,7 @@ export default function AdminShell({
                 <Icon size={17} aria-hidden="true" />
                 {item.label}
                 {item.href === '/admin/notifications' && unreadNotifications > 0 && (
-                  <span
-                    className="ml-auto text-[0.65rem] font-semibold rounded-full px-1.5 py-0.5"
-                    style={{ background: 'var(--color-primary)', color: 'white' }}
-                  >
+                  <span className="admin-nav-badge" aria-label={`${unreadNotifications} unread`}>
                     {unreadNotifications > 99 ? '99+' : unreadNotifications}
                   </span>
                 )}
@@ -172,7 +175,9 @@ export default function AdminShell({
             <p className="admin-topbar-eyebrow">Official Administration Portal</p>
             <p className="admin-topbar-title truncate">{currentItem?.label ?? 'Dashboard'}</p>
           </div>
-          <NotificationBell initialCount={unreadNotifications} enabled />
+          {/* Every role has a bell. The count is whatever was delivered to this staff
+              member (broadcasts, their role, or addressed to them directly). */}
+          <NotificationBell initialCount={unreadNotifications} />
           <div className="admin-topbar-actions">
             <Link
               href="/"

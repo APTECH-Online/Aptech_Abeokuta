@@ -54,8 +54,8 @@ export default async function SocialLinksListPage({
         </p>
       )}
 
-      <form className="card p-4 sm:p-5 flex flex-wrap items-end gap-3">
-        <div>
+      <form className="card p-4 sm:p-5 admin-filters">
+        <div className="admin-filter">
           <label htmlFor="status" className="field-label">Status</label>
           <select id="status" name="status" defaultValue={sp.status || ''} className="admin-select">
             <option value="">All</option>
@@ -63,8 +63,10 @@ export default async function SocialLinksListPage({
             <option value="unpublished">Unpublished</option>
           </select>
         </div>
-        <button type="submit" className="btn btn-primary btn-sm">Filter</button>
-        <Link href="/admin/settings/social" className="btn btn-ghost btn-sm">Reset</Link>
+        <div className="admin-filter-actions">
+          <button type="submit" className="btn btn-primary btn-sm">Filter</button>
+          <Link href="/admin/settings/social" className="btn btn-ghost btn-sm">Reset</Link>
+        </div>
       </form>
 
       {items.length === 0 ? (

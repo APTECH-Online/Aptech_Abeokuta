@@ -1,6 +1,7 @@
 import 'server-only'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Notification, NotificationType, Staff, StaffRole } from '../types/db'
+import { canAccessPath } from './auth'
 
 export interface CreateNotificationInput {
   type: NotificationType
@@ -43,6 +44,29 @@ export async function createNotification(admin: SupabaseClient, input: CreateNot
 }
 
 /**
+ * The delivery rule, in one place. A notification belongs to a staff member
+ * when it is a broadcast, was addressed to them directly, or was sent to a
+ * role they hold. The notifications_select_by_role RLS policy (migration 0024)
+ * enforces the same rule in the database; the server actions that use the
+ * service-role client (which bypasses RLS) call this to stay consistent.
+ *
+ * A notification that links into a part of the CRM the person cannot open
+ * (e.g. an enquiry link for a Content Manager with no Enquiries permission)
+ * is not shown either, so the bell never counts something they can't act on.
+ */
+export function isNotificationForStaff(
+  n: Pick<Notification, 'recipient_id' | 'target_roles' | 'link'>,
+  staff: Pick<Staff, 'id' | 'role' | 'permissions'>
+): boolean {
+  const addressed =
+    n.recipient_id === staff.id ||
+    (n.recipient_id === null && (n.target_roles === null || n.target_roles.includes(staff.role)))
+  if (!addressed) return false
+  if (n.link && n.link.startsWith('/admin')) return canAccessPath(staff, n.link)
+  return true
+}
+
+/**
  * Fetches notifications visible to `staff` (RLS already scopes this to
  * broadcasts + their own role + direct mentions), merged with their own
  * read state. Supabase-js can't express "left join a per-user read table"
@@ -72,7 +96,9 @@ export async function getNotificationsForStaff(
 
   const readMap = new Map((reads ?? []).map((r) => [r.notification_id, r.read_at]))
 
-  return (notifications as Notification[]).map((n) => ({ ...n, read_at: readMap.get(n.id) ?? null }))
+  return (notifications as Notification[])
+    .filter((n) => isNotificationForStaff(n, staff))
+    .map((n) => ({ ...n, read_at: readMap.get(n.id) ?? null }))
 }
 
 /** Count of notifications visible to `staff` with no read receipt yet. */

@@ -56,12 +56,12 @@ export default async function CoursesListPage({
         </p>
       )}
 
-      <form className="card p-4 sm:p-5 flex flex-wrap items-end gap-3">
-        <div>
+      <form className="card p-4 sm:p-5 admin-filters">
+        <div className="admin-filter admin-filter--search">
           <label htmlFor="search" className="field-label">Search</label>
           <input id="search" name="search" type="text" defaultValue={sp.search || ''} className="admin-input" placeholder="Title, summary or slug" />
         </div>
-        <div>
+        <div className="admin-filter">
           <label htmlFor="category" className="field-label">Category</label>
           <select id="category" name="category" defaultValue={sp.category || ''} className="admin-select">
             <option value="">All</option>
@@ -70,7 +70,7 @@ export default async function CoursesListPage({
             ))}
           </select>
         </div>
-        <div>
+        <div className="admin-filter">
           <label htmlFor="status" className="field-label">Status</label>
           <select id="status" name="status" defaultValue={sp.status || ''} className="admin-select">
             <option value="">All</option>
@@ -79,8 +79,10 @@ export default async function CoursesListPage({
             ))}
           </select>
         </div>
-        <button type="submit" className="btn btn-primary btn-sm">Filter</button>
-        <Link href="/admin/courses" className="btn btn-ghost btn-sm">Reset</Link>
+        <div className="admin-filter-actions">
+          <button type="submit" className="btn btn-primary btn-sm">Filter</button>
+          <Link href="/admin/courses" className="btn btn-ghost btn-sm">Reset</Link>
+        </div>
       </form>
 
       {courses.length === 0 ? (

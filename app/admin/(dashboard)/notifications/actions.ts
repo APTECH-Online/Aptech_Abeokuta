@@ -1,7 +1,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { requireRole } from '../../../../lib/auth'
+import { requireStaff } from '../../../../lib/auth'
+import { isNotificationForStaff } from '../../../../lib/notifications'
 import { createAdminClient } from '../../../../lib/supabase/admin'
 
 export type ActionResult = { ok: boolean; message?: string }
@@ -14,11 +15,23 @@ export type ActionResult = { ok: boolean; message?: string }
  */
 export async function markNotificationRead(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireRole('super_admin')
+    const staff = await requireStaff()
     const notificationId = String(formData.get('notificationId') || '')
     if (!notificationId) return { ok: false, message: 'Missing notification.' }
 
     const admin = createAdminClient()
+
+    // The admin client bypasses RLS, so confirm this notification was actually
+    // delivered to this staff member before writing a receipt for it.
+    const { data: target } = await admin
+      .from('notifications')
+      .select('recipient_id, target_roles, link')
+      .eq('id', notificationId)
+      .maybeSingle()
+    if (!target || !isNotificationForStaff(target, staff)) {
+      return { ok: false, message: 'Notification not found.' }
+    }
+
     const { error } = await admin
       .from('notification_reads')
       .upsert({ notification_id: notificationId, staff_id: staff.id }, { onConflict: 'notification_id,staff_id' })
@@ -39,26 +52,21 @@ export async function markNotificationRead(_prev: ActionResult, formData: FormDa
 /** Marks every notification currently visible to this staff member as read. */
 export async function markAllNotificationsRead(_prev: ActionResult, _formData: FormData): Promise<ActionResult> {
   try {
-    const staff = await requireRole('super_admin')
+    const staff = await requireStaff()
     const admin = createAdminClient()
 
     const { data: notifications, error: fetchError } = await admin
       .from('notifications')
-      .select('id, recipient_id, target_roles')
+      .select('id, recipient_id, target_roles, link')
     if (fetchError) {
       console.error('[notifications] failed to load notifications for mark-all', fetchError)
       return { ok: false, message: 'Could not update notifications.' }
     }
 
-    // The admin client bypasses RLS, so re-apply the same visibility rule
-    // notifications_select_staff enforces (broadcast, own role, or direct)
-    // — otherwise "mark all read" would create receipts for notifications
-    // this staff member was never shown.
-    const visible = (notifications ?? []).filter(
-      (n) =>
-        n.recipient_id === staff.id ||
-        (n.recipient_id === null && (n.target_roles === null || n.target_roles.includes(staff.role)))
-    )
+    // The admin client bypasses RLS, so re-apply the same delivery rule
+    // (broadcast, own role, or direct) — otherwise "mark all read" would create
+    // receipts for notifications this staff member was never shown.
+    const visible = (notifications ?? []).filter((n) => isNotificationForStaff(n, staff))
 
     const rows = visible.map((n) => ({ notification_id: n.id, staff_id: staff.id }))
     if (rows.length > 0) {

@@ -1942,7 +1942,81 @@ button, input, select, textarea { font: inherit; }
 .kpi-card-danger .kpi-progress span { background:var(--color-danger); }
 .metric-highlight { display:flex; align-items:center; gap:.5rem; color:var(--color-muted); }
 .metric-highlight .kpi-value { color:var(--color-ink); }
-.admin-notification-bell { position:relative; display:inline-flex; align-items:center; justify-content:center; width:2.25rem; height:2.25rem; border-radius:.7rem; color:var(--color-ink); transition:background .15s ease, transform .15s ease; flex-shrink:0; }
+/* Topbar notification bell + unread counter.
+   The badge is absolutely positioned inside the bell's own box, so it can never
+   change the topbar's layout; its size comes from min-width + padding, so one-,
+   two- and "99+" counts all stay neatly pill-shaped without a fixed width.
+   Background uses the existing --color-danger token (the previous rule pointed at
+   --color-primary, which is not defined anywhere, so the badge rendered invisible). */
+.admin-notification-bell { position:relative; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:2.5rem; height:2.5rem; border-radius:.7rem; color:var(--color-ink); transition:background .15s ease, transform .15s ease; }
 .admin-notification-bell:hover { background:var(--color-navy-50); transform:translateY(-1px); }
-.admin-notification-badge { position:absolute; top:-.15rem; right:-.15rem; min-width:1.05rem; height:1.05rem; padding:0 .22rem; display:flex; align-items:center; justify-content:center; border-radius:999px; border:2px solid var(--color-paper); background:var(--color-primary); color:#fff; font-size:.58rem; line-height:1; font-weight:800; }
+.admin-notification-bell:focus-visible { outline:2px solid var(--color-navy-600); outline-offset:2px; }
+.admin-notification-badge { position:absolute; top:-.1rem; right:-.3rem; box-sizing:border-box; min-width:1.2rem; height:1.2rem; padding:0 .32rem; display:inline-flex; align-items:center; justify-content:center; border-radius:999px; background:var(--color-danger); color:#fff; box-shadow:0 0 0 2px var(--color-paper-alt); font-size:.7rem; line-height:1; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:0; pointer-events:none; }
+/* Same unread count, shown on the sidebar "Notifications" link. */
+.admin-nav-badge { margin-left:auto; flex-shrink:0; box-sizing:border-box; min-width:1.35rem; height:1.35rem; padding:0 .4rem; display:inline-flex; align-items:center; justify-content:center; border-radius:999px; background:var(--color-danger); color:#fff; font-size:.7rem; line-height:1; font-weight:700; font-variant-numeric:tabular-nums; }
+@media (max-width: 767px) { .admin-notification-bell { width:2.75rem; height:2.75rem; } .admin-notification-badge { top:0; right:-.15rem; } }
 @media (prefers-reduced-motion: reduce) { .admin-notification-bell, .kpi-progress span { transition:none; } }
+
+/* ==========================================================================
+   Responsive search / select filter bars (CRM list pages)
+   --------------------------------------------------------------------------
+   One shared pattern for every list page's filter form. The bar is an
+   auto-fill grid: it fits as many equal-width columns as the card has room for
+   (each at least 11rem), so fields reflow from one per row on a phone up to
+   several per row on a wide desktop, and stay aligned in columns from row to
+   row. There are no fixed widths and no per-breakpoint overrides; min-width: 0
+   lets a field shrink below its content, so nothing can force horizontal
+   scrolling. The search box spans two columns only when the bar's own width
+   (a container query, not the viewport) has room for two, so it can never
+   create a phantom column on a phone.
+   ========================================================================== */
+.admin-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr));
+  gap: .75rem;
+  align-items: end;
+  container-type: inline-size;
+}
+.admin-filters > * { min-width: 0; }
+.admin-filter .admin-input,
+.admin-filter .admin-select { width: 100%; min-width: 0; min-height: 2.5rem; }
+.admin-filter-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+@container (min-width: 23rem) {
+  .admin-filter--search { grid-column: span 2; }
+}
+@media (max-width: 767px) {
+  /* Filter / Reset share the row evenly (44px touch targets come from the mobile .btn rules). */
+  .admin-filter-actions > .btn { flex: 1 1 0; justify-content: center; }
+}
+
+/* ==========================================================================
+   /admin/staff — heading, role control and table spacing
+   ========================================================================== */
+/* Section heading row ("Staff & roles" + Add Staff). Wraps instead of squeezing,
+   so the heading keeps its natural width and an opened form drops onto its own
+   full-width row beneath it. */
+.admin-section-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; padding-bottom: .15rem; }
+.admin-section-head__text { min-width: 0; flex: 1 1 auto; }
+.admin-section-head__text .eyebrow { white-space: nowrap; }
+.admin-section-head > form { flex: 1 1 100%; }
+
+/* Role select + Save: share a row when there is room, stack when there is not. */
+.admin-role-form { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.admin-role-form > select { flex: 1 1 9rem; width: auto; min-width: 0; }
+.admin-role-form > .btn { flex: 0 0 auto; }
+
+/* Staff table: top-aligned cells with even padding so multi-line cells
+   (permission chips, buttons) don't leave Name/Email floating mid-row. */
+.admin-staff-table th { padding: .85rem 1.1rem; }
+.admin-staff-table td { padding: 1rem 1.1rem; vertical-align: top; }
+.admin-staff-table td:first-child { min-width: 9rem; }
+.admin-staff-table td:nth-child(2) { min-width: 11rem; }
+.admin-staff-table td:nth-child(3) { min-width: 11.5rem; }
+.admin-staff-table td:nth-child(4) { min-width: 12rem; }
+
+/* The mobile card list: `.staff-cards { display: grid }` is unlayered CSS and so
+   outranks Tailwind's layered `md:hidden`, which left the cards showing beneath the
+   desktop table. Hide them explicitly from md up. */
+@media (min-width: 768px) { .staff-cards { display: none; } }
+.staff-card__row { gap: .5rem; }
+.staff-card__label { line-height: 1.3; }

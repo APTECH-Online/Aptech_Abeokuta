@@ -43,7 +43,7 @@ export function StatusChangeForm({ leadId, currentStatus }: { leadId: string; cu
       <input type="hidden" name="leadId" value={leadId} />
       <label htmlFor="status" className="field-label">Pipeline status</label>
       <div className="flex flex-wrap gap-2">
-        <select id="status" name="status" defaultValue={currentStatus} className="admin-select flex-1 min-w-[180px]">
+        <select id="status" name="status" defaultValue={currentStatus} className="admin-select flex-[1_1_10rem]">
           {LEAD_STATUS_ORDER.map((s) => (
             <option key={s} value={s}>{LEAD_STATUS_LABELS[s]}</option>
           ))}
@@ -71,7 +71,7 @@ export function AssignForm({
       <input type="hidden" name="leadId" value={leadId} />
       <label htmlFor="assignedTo" className="field-label">Assigned to</label>
       <div className="flex flex-wrap gap-2">
-        <select id="assignedTo" name="assignedTo" defaultValue={currentAssignedTo ?? ''} className="admin-select flex-1 min-w-[180px]">
+        <select id="assignedTo" name="assignedTo" defaultValue={currentAssignedTo ?? ''} className="admin-select flex-[1_1_10rem]">
           <option value="">Unassigned</option>
           {staffOptions.map((s) => (
             <option key={s.id} value={s.id}>{s.full_name}</option>
@@ -261,7 +261,7 @@ export function StartApplicationForm({
       <input type="hidden" name="leadId" value={leadId} />
       <label htmlFor="programmeId" className="field-label">Programme</label>
       <div className="flex flex-wrap gap-2">
-        <select id="programmeId" name="programmeId" defaultValue={defaultProgrammeId ?? ''} required className="admin-select flex-1 min-w-[200px]">
+        <select id="programmeId" name="programmeId" defaultValue={defaultProgrammeId ?? ''} required className="admin-select flex-[1_1_10rem]">
           <option value="" disabled>Select programme</option>
           {programmes.map((p) => (
             <option key={p.id} value={p.id}>{p.name}</option>

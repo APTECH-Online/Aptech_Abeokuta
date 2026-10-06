@@ -1,4 +1,4 @@
-import { requireRole } from '../../../../lib/auth'
+import { guardAdminPage } from '../../../../lib/auth'
 import { createClient } from '../../../../lib/supabase/server'
 import { getNotificationsForStaff } from '../../../../lib/notifications'
 import NotificationsList from '../../../../components/admin/NotificationsList'
@@ -7,7 +7,8 @@ export const metadata = { title: 'Notifications | Admissions CRM' }
 export const dynamic = 'force-dynamic'
 
 export default async function NotificationsPage() {
-  const staff = await requireRole('super_admin')
+  // Every active staff member has their own inbox; the list is scoped to them by role / recipient.
+  const staff = await guardAdminPage(() => true)
   const supabase = await createClient()
   const notifications = await getNotificationsForStaff(supabase, staff)
 

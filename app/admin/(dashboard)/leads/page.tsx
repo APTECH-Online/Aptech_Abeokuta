@@ -56,8 +56,8 @@ export default async function LeadsPage({
         )}
       </div>
 
-      <form className="card p-4 sm:p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 items-end">
-        <div className="col-span-2 sm:col-span-3 lg:col-span-2">
+      <form className="card p-4 sm:p-5 admin-filters">
+        <div className="admin-filter admin-filter--search">
           <label htmlFor="search" className="field-label">Search</label>
           <input
             id="search"
@@ -67,7 +67,7 @@ export default async function LeadsPage({
             className="admin-input w-full"
           />
         </div>
-        <div>
+        <div className="admin-filter">
           <label htmlFor="status" className="field-label">Status</label>
           <select id="status" name="status" defaultValue={sp.status || ''} className="admin-select w-full">
             <option value="">All statuses</option>
@@ -76,7 +76,7 @@ export default async function LeadsPage({
             ))}
           </select>
         </div>
-        <div>
+        <div className="admin-filter">
           <label htmlFor="programmeId" className="field-label">Programme</label>
           <select id="programmeId" name="programmeId" defaultValue={sp.programmeId || ''} className="admin-select w-full">
             <option value="">All programmes</option>
@@ -85,7 +85,7 @@ export default async function LeadsPage({
             ))}
           </select>
         </div>
-        <div>
+        <div className="admin-filter">
           <label htmlFor="source" className="field-label">Source</label>
           <select id="source" name="source" defaultValue={sp.source || ''} className="admin-select w-full">
             <option value="">All sources</option>
@@ -94,7 +94,7 @@ export default async function LeadsPage({
             ))}
           </select>
         </div>
-        <div>
+        <div className="admin-filter">
           <label htmlFor="assignedTo" className="field-label">Assigned staff</label>
           <select id="assignedTo" name="assignedTo" defaultValue={sp.assignedTo || ''} className="admin-select w-full">
             <option value="">Anyone</option>
@@ -103,15 +103,15 @@ export default async function LeadsPage({
             ))}
           </select>
         </div>
-        <div>
+        <div className="admin-filter">
           <label htmlFor="dateFrom" className="field-label">From</label>
           <input id="dateFrom" name="dateFrom" type="date" defaultValue={sp.dateFrom} className="admin-input w-full" />
         </div>
-        <div>
+        <div className="admin-filter">
           <label htmlFor="dateTo" className="field-label">To</label>
           <input id="dateTo" name="dateTo" type="date" defaultValue={sp.dateTo} className="admin-input w-full" />
         </div>
-        <div className="flex gap-2">
+        <div className="admin-filter-actions">
           <button type="submit" className="btn btn-primary btn-sm">Filter</button>
           <Link href="/admin/leads" className="btn btn-ghost btn-sm">Reset</Link>
         </div>

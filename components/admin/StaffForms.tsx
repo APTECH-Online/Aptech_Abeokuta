@@ -289,7 +289,7 @@ function RoleForm({ member, isSelf }: { member: Staff; isSelf: boolean }) {
 
   return (
     <div>
-      <form action={roleAction} className="flex items-center gap-2 flex-wrap">
+      <form action={roleAction} className="admin-role-form">
         <input type="hidden" name="staffId" value={member.id} />
         <select name="role" defaultValue={member.role} className="admin-select" disabled={isSelf}>
           {ROLES.map((r) => <option key={r} value={r}>{STAFF_ROLE_LABELS[r]}</option>)}

@@ -84,7 +84,7 @@ export default function NotificationsList({ notifications }: { notifications: No
             <>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-primary)' }}>
+                  <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-navy-600)' }}>
                     {TYPE_LABELS[n.type] ?? n.type}
                   </p>
                   <p className="font-semibold mt-0.5" style={{ color: 'var(--color-ink)' }}>{n.title}</p>
@@ -96,7 +96,7 @@ export default function NotificationsList({ notifications }: { notifications: No
                 {isUnread && (
                   <span
                     className="shrink-0 mt-1"
-                    style={{ width: 8, height: 8, borderRadius: '999px', background: 'var(--color-primary)' }}
+                    style={{ width: 8, height: 8, borderRadius: '999px', background: 'var(--color-danger)' }}
                     aria-label="Unread"
                   />
                 )}
@@ -108,7 +108,7 @@ export default function NotificationsList({ notifications }: { notifications: No
             <li
               key={n.id}
               className="card p-4 sm:p-5"
-              style={isUnread ? { borderColor: 'var(--color-primary)', background: 'var(--color-primary-050, transparent)' } : undefined}
+              style={isUnread ? { borderColor: 'var(--color-navy-600)', background: 'var(--color-navy-50)' } : undefined}
             >
               {n.link ? (
                 <Link href={n.link} className="block hover:opacity-80">
