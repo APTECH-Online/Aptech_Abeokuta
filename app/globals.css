@@ -980,6 +980,135 @@ a { color: inherit; }
 }
 
 /* ========================================================================
+   CRM mobile pass: stacked table cards, 16px form controls (no iOS focus
+   zoom), 44px touch targets, compact KPI grid, consistent fieldsets.
+   Everything below is additive; desktop (>= 768px) is unchanged except for
+   the fieldset rules, which only normalise the legend/border.
+   ======================================================================== */
+
+/* Fieldsets: browsers centre the legend on the border and add default
+   padding, so groups looked different from form to form. */
+.admin-content fieldset { min-width: 0; margin: 0; }
+.admin-mono { font-family: var(--font-mono, monospace); font-size: .85rem; }
+.admin-fieldset { border: 1px solid var(--color-line); border-radius: 12px; padding: 1rem; background: var(--color-paper-alt); }
+.admin-fieldset > legend { float: left; width: 100%; padding: 0; margin: 0 0 .75rem; }
+.admin-fieldset > legend ~ * { clear: both; }
+
+@media (max-width: 767px) {
+  /* --- Grids: a "col-span-2" item inside a collapsed one-column grid creates an
+         implicit second column, which is what kept filter bars two-up and clipped. --- */
+  .admin-content .grid > [class*="col-span-"] { grid-column: auto; }
+  /* --- KPI cards: two across, compact (the generic collapse above made them one per row). --- */
+  .admin-content .grid.grid-cols-1:has(> .kpi-card),
+  .admin-content .grid.grid-cols-2:has(> .kpi-card),
+  .admin-content .grid.grid-cols-3:has(> .kpi-card),
+  .admin-content .grid.grid-cols-4:has(> .kpi-card) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+  .kpi-card { padding: .8rem .85rem; border-radius: 10px; }
+  .kpi-card .kpi-label { font-size: .6rem; letter-spacing: .05em; }
+  .kpi-card .kpi-value { font-size: 1.45rem; margin-top: .25rem; }
+  .kpi-card .kpi-sub { font-size: .68rem; }
+  .kpi-card .kpi-icon { transform: scale(.85); transform-origin: top right; }
+
+  /* --- Form controls: 16px stops iOS Safari zooming the page on focus. --- */
+  .admin-content input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]):not([type="range"]),
+  .admin-content select,
+  .admin-content textarea,
+  .admin-input, .admin-select, .field-input, .field-select, .field-textarea { font-size: 16px; }
+  .admin-input, .admin-select, .field-input, .field-select,
+  .admin-content input[type="text"], .admin-content input[type="email"], .admin-content input[type="tel"],
+  .admin-content input[type="url"], .admin-content input[type="number"], .admin-content input[type="date"],
+  .admin-content input[type="datetime-local"], .admin-content input[type="password"], .admin-content input[type="search"],
+  .admin-content select { min-height: 44px; }
+  .admin-content textarea { min-height: 6.5rem; }
+  .admin-content .field-label { margin-bottom: .4rem; }
+
+  /* --- Checkboxes / radios: a 13px box is not tappable. Make the box and its row 44px. --- */
+  .admin-content input[type="checkbox"], .admin-content input[type="radio"] {
+    width: 1.25rem; height: 1.25rem; flex: none; accent-color: var(--color-navy-700);
+  }
+  .admin-content label:has(> input[type="checkbox"]),
+  .admin-content label:has(> input[type="radio"]) { min-height: 44px; align-items: center; gap: .65rem; padding-block: .25rem; }
+
+  /* --- Rich text editor toolbar: thumb-sized buttons that wrap onto a second row. --- */
+  .rte-toolbar { gap: .25rem; }
+  .rte-btn { min-width: 40px; min-height: 40px; display: inline-flex; align-items: center; justify-content: center; }
+  .insight-editor-surface { font-size: 16px; min-height: 14rem; }
+
+  /* --- Buttons: 44px touch targets, including the small ones inside tables. --- */
+  .btn, .btn-sm, .admin-table .btn { min-height: 44px; }
+  /* Filter / Reset pair fills the row instead of two tiny buttons on the left. */
+  .admin-content form.card > div.flex.gap-2 > .btn { flex: 1; justify-content: center; }
+  .admin-content form.card > div.flex.gap-2 { width: 100%; }
+
+  /* --- Tables become labelled cards. Needs data-label on each <td> (set in the
+         markup); tables without it keep the scrolling behaviour. --- */
+  .admin-table-wrap:has(> .admin-table.is-stackable) { overflow: visible; border: 0; background: transparent; box-shadow: none; border-radius: 0; }
+  .admin-table.is-stackable { display: block; min-width: 0; width: 100%; font-size: .85rem; }
+  .admin-table.is-stackable thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .admin-table.is-stackable tbody { display: block; }
+  .admin-table.is-stackable tr {
+    display: flex; flex-direction: column; margin: 0 0 .75rem; overflow: hidden;
+    border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-paper-alt); box-shadow: var(--shadow-card);
+  }
+  /* Label sits in a left gutter (absolutely positioned) and the value flows in the
+     remaining width, so cells with mixed inline content (badge + date, text + link)
+     stay together instead of being split across grid slots. */
+  .admin-table.is-stackable td {
+    display: block; position: relative; max-width: none; text-align: left; overflow-wrap: anywhere;
+    padding: .65rem .9rem .65rem 38%; min-height: 2.6rem; border-bottom: 1px solid var(--color-line);
+  }
+  .admin-table.is-stackable tr > td:last-child { border-bottom: 0; }
+  .admin-table.is-stackable td::before {
+    content: attr(data-label); position: absolute; left: .9rem; top: .8rem; width: calc(38% - 1.2rem);
+    font-family: var(--font-mono); font-size: .62rem; letter-spacing: .06em; line-height: 1.3;
+    text-transform: uppercase; color: var(--color-muted);
+  }
+  /* The identifying cell (Title / Name / Applicant ...) is the card header. */
+  .admin-table.is-stackable td[data-primary] {
+    order: -1; padding: .85rem .9rem; min-height: 0; background: var(--color-paper);
+    font-weight: 600; color: var(--color-ink); font-size: .95rem;
+  }
+  .admin-table.is-stackable td[data-primary]::before { display: none; }
+  /* Cells holding buttons or forms need the full width, label above. */
+  .admin-table.is-stackable td:has(.btn, form, select, input, textarea) { padding: .65rem .9rem .8rem; }
+  .admin-table.is-stackable td:has(.btn, form, select, input, textarea)::before { position: static; display: block; width: auto; margin-bottom: .4rem; }
+  .admin-table.is-stackable td:has(.btn, form, select, input, textarea) form { width: 100%; }
+  /* Row actions: outlined buttons sharing the row, not bare text links stacked one per line. */
+  .admin-table.is-stackable td .btn-ghost { border: 1px solid var(--color-line-strong); background: var(--color-paper); }
+  .admin-table.is-stackable td > div.flex { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .admin-table.is-stackable td > div.flex > form { width: auto; flex: 1 1 6.5rem; }
+  .admin-table.is-stackable td > div.flex > .btn,
+  .admin-table.is-stackable td > div.flex > form .btn { width: 100%; justify-content: center; }
+  .admin-table.is-stackable td > .status-pill, .admin-table.is-stackable td > span:has(> .status-pill) { justify-self: start; }
+  .admin-content form select, .admin-content form .admin-select { width: 100%; }
+  /* Cells that were ellipsised for a wide table (Tailwind "truncate") should wrap in a card. */
+  .admin-table.is-stackable td { white-space: normal; }
+  .admin-table.is-stackable td.truncate, .admin-table.is-stackable td [class*="truncate"] { overflow: visible; text-overflow: clip; white-space: normal; max-width: none; }
+  /* "No results" row (colspan, no data-label) is a plain message. */
+  .admin-table.is-stackable td:not([data-label]) { text-align: center; padding: 1.5rem .9rem; }
+  .admin-table.is-stackable td:not([data-label])::before { display: none; }
+  .admin-table.is-stackable tr.is-clickable:hover td { background: transparent; }
+  .admin-table.is-stackable tr.is-clickable:hover td[data-primary] { background: var(--color-paper); }
+}
+
+/* Desktop/tablet: keep row actions (Edit | Archive) side by side instead of stacking in a narrow column. */
+@media (min-width: 768px) {
+  .admin-table td[data-label="Action"] > div.flex,
+  .admin-table td[data-label="Actions"] > div.flex { flex-wrap: nowrap; }
+  /* The title column must not collapse to a few characters ("anywhere" lets the table shrink it to 1ch). */
+  .admin-table td[data-primary] { min-width: 11rem; }
+  .admin-table th, .admin-table td { overflow-wrap: break-word; }
+}
+
+/* Very narrow phones: single-column KPI cards again so labels do not wrap to shreds. */
+@media (max-width: 339px) {
+  .admin-content .grid.grid-cols-1:has(> .kpi-card),
+  .admin-content .grid.grid-cols-2:has(> .kpi-card),
+  .admin-content .grid.grid-cols-3:has(> .kpi-card),
+  .admin-content .grid.grid-cols-4:has(> .kpi-card) { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ========================================================================
    Admin metric bar chart
    ======================================================================== */
 .admin-bar-chart { width:100%; min-width:0; overflow:visible; }

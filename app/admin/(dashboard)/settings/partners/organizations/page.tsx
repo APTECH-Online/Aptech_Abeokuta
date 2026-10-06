@@ -76,7 +76,7 @@ export default async function PartnerOrganizationsListPage({
         </div>
       ) : (
         <div className="admin-table-wrap">
-          <table className="admin-table">
+          <table className="admin-table is-stackable">
             <thead>
               <tr>
                 <th>Title</th>
@@ -89,19 +89,19 @@ export default async function PartnerOrganizationsListPage({
             <tbody>
               {items.map((item) => (
                 <tr key={item.id}>
-                  <td><p className="font-semibold" style={{ color: 'var(--color-ink)' }}>{item.title}</p></td>
-                  <td>
+                  <td data-label="Title" data-primary><p className="font-semibold" style={{ color: 'var(--color-ink)' }}>{item.title}</p></td>
+                  <td data-label="Description">
                     <p className="text-xs line-clamp-2 max-w-sm" style={{ color: 'var(--color-muted)' }}>{item.body}</p>
                   </td>
-                  <td>
+                  <td data-label="Status">
                     {item.is_published ? (
                       <span className="status-pill" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success)' }}>Published</span>
                     ) : (
                       <span className="status-pill" style={{ background: '#F2F0F5', color: 'var(--color-muted)' }}>Unpublished</span>
                     )}
                   </td>
-                  <td>{item.sort_order}</td>
-                  <td><PartnerOrganizationRowActions item={item} canManage={canManage} /></td>
+                  <td data-label="Sort">{item.sort_order}</td>
+                  <td data-label="Action"><PartnerOrganizationRowActions item={item} canManage={canManage} /></td>
                 </tr>
               ))}
             </tbody>

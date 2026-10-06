@@ -77,7 +77,7 @@ export default async function SocialLinksListPage({
         </div>
       ) : (
         <div className="admin-table-wrap">
-          <table className="admin-table">
+          <table className="admin-table is-stackable">
             <thead>
               <tr>
                 <th>Platform</th>
@@ -90,7 +90,7 @@ export default async function SocialLinksListPage({
             <tbody>
               {items.map((item) => (
                 <tr key={item.id}>
-                  <td>
+                  <td data-label="Platform" data-primary>
                     <p className="font-semibold" style={{ color: 'var(--color-ink)' }}>
                       {PLATFORM_LABELS[item.platform] ?? item.platform}
                     </p>
@@ -98,7 +98,7 @@ export default async function SocialLinksListPage({
                       <p className="text-xs" style={{ color: 'var(--color-muted)' }}>{item.label}</p>
                     )}
                   </td>
-                  <td>
+                  <td data-label="Link">
                     <a
                       href={item.url}
                       target="_blank"
@@ -109,15 +109,15 @@ export default async function SocialLinksListPage({
                       {item.url}
                     </a>
                   </td>
-                  <td>
+                  <td data-label="Status">
                     {item.is_published ? (
                       <span className="status-pill" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success)' }}>Published</span>
                     ) : (
                       <span className="status-pill" style={{ background: '#F2F0F5', color: 'var(--color-muted)' }}>Unpublished</span>
                     )}
                   </td>
-                  <td>{item.sort_order}</td>
-                  <td><SocialLinkRowActions item={item} canManage={canManage} /></td>
+                  <td data-label="Sort">{item.sort_order}</td>
+                  <td data-label="Action"><SocialLinkRowActions item={item} canManage={canManage} /></td>
                 </tr>
               ))}
             </tbody>

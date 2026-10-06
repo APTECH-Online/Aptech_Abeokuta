@@ -175,7 +175,7 @@ export default function CourseForm({
         </div>
       </div>
 
-      <fieldset className="space-y-4">
+      <fieldset className="admin-fieldset space-y-4">
         <legend className="field-label">Course details <span className="font-normal" style={{ color: 'var(--color-muted)' }}>(optional. Each one appears on the public page only if you fill it in; leave blank if unsure)</span></legend>
         <input type="hidden" name="hadDetails" value={course?.audience || course?.prerequisites || course?.certification ? '1' : '0'} />
         <div>
@@ -192,8 +192,8 @@ export default function CourseForm({
         </div>
       </fieldset>
 
-      <fieldset className="space-y-4 rounded-lg p-4" style={{ border: '1px solid var(--color-line)' }}>
-        <legend className="field-label px-1">Page controls</legend>
+      <fieldset className="admin-fieldset space-y-4">
+        <legend className="field-label">Page controls</legend>
         {!controlsAvailable ? (
           <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
             These controls (admission status, page heading, related links, curriculum, homepage) switch on after database migration
@@ -206,10 +206,11 @@ export default function CourseForm({
               <div>
                 <label htmlFor="admissionStatus" className="field-label">Admission status</label>
                 <select id="admissionStatus" name="admissionStatus" defaultValue={course?.admission_status ?? 'open'} className="admin-input">
-                  <option value="open">Applications open (shows Enroll now)</option>
-                  <option value="coming_soon">Opening soon (shows Register your interest)</option>
-                  <option value="closed">Applications closed (shows Ask about the next intake)</option>
+                  <option value="open">Applications open</option>
+                  <option value="coming_soon">Opening soon</option>
+                  <option value="closed">Applications closed</option>
                 </select>
+                <p className="field-hint">Open shows &ldquo;Enroll now&rdquo;; opening soon shows &ldquo;Register your interest&rdquo;; closed shows &ldquo;Ask about the next intake&rdquo;.</p>
                 {fieldErrors?.admissionStatus && <p className="field-error">{fieldErrors.admissionStatus}</p>}
               </div>
               <div>
@@ -266,7 +267,7 @@ export default function CourseForm({
 
             <div>
               <label htmlFor="curriculum" className="field-label">Curriculum <span className="font-normal" style={{ color: 'var(--color-muted)' }}>(optional modules/terms)</span></label>
-              <textarea id="curriculum" name="curriculum" rows={10} defaultValue={course?.curriculum ?? ''} className="admin-input" style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: '0.85rem' }} placeholder={CURRICULUM_EXAMPLE} spellCheck={false} />
+              <textarea id="curriculum" name="curriculum" rows={10} defaultValue={course?.curriculum ?? ''} className="admin-input admin-mono" placeholder={CURRICULUM_EXAMPLE} spellCheck={false} />
               <p className="mt-1 text-xs" style={{ color: 'var(--color-muted)' }}>
                 Use <code>## Heading | hours</code> for each term or block and <code>- Module :: detail</code> for each module. The three flagship programmes (ADSE, Smart Pro, ACNS) keep their built-in detailed curricula, so leave this empty for them.
               </p>

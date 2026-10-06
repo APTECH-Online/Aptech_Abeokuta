@@ -55,7 +55,7 @@ export default async function FollowUpsPage({
       </form>
 
       <div className="admin-table-wrap">
-        <table className="admin-table">
+        <table className="admin-table is-stackable">
           <thead>
             <tr>
               <th>Lead</th>
@@ -78,22 +78,22 @@ export default async function FollowUpsPage({
             ) : (
               followUps.map((f: any) => (
                 <tr key={f.id}>
-                  <td className="font-medium" style={{ color: 'var(--color-ink)' }}>
+                  <td data-label="Lead" data-primary className="font-medium" style={{ color: 'var(--color-ink)' }}>
                     {f.leads ? <Link href={`/admin/leads/${f.leads.id}`}>{f.leads.first_name} {f.leads.last_name}</Link> : '—'}
                   </td>
-                  <td style={{ color: f.isOverdue ? 'var(--color-danger)' : undefined }}>
+                  <td data-label="Due" style={{ color: f.isOverdue ? 'var(--color-danger)' : undefined }}>
                     {f.isOverdue && <span className="font-semibold">Overdue · </span>}
                     {formatDateTime(f.due_date)}
                   </td>
-                  <td>{INTERACTION_TYPE_LABELS[f.type as keyof typeof INTERACTION_TYPE_LABELS]}</td>
-                  <td>{f.staff?.full_name || 'Unassigned'}</td>
-                  <td><StatusBadge status={f.isOverdue ? 'overdue' : f.status} label={f.isOverdue ? 'Overdue' : FOLLOW_UP_STATUS_LABELS[f.status as keyof typeof FOLLOW_UP_STATUS_LABELS]} /></td>
-                  <td className="max-w-[220px] truncate">{f.notes || '—'}</td>
-                  <td>
+                  <td data-label="Type">{INTERACTION_TYPE_LABELS[f.type as keyof typeof INTERACTION_TYPE_LABELS]}</td>
+                  <td data-label="Assigned">{f.staff?.full_name || 'Unassigned'}</td>
+                  <td data-label="Status"><StatusBadge status={f.isOverdue ? 'overdue' : f.status} label={f.isOverdue ? 'Overdue' : FOLLOW_UP_STATUS_LABELS[f.status as keyof typeof FOLLOW_UP_STATUS_LABELS]} /></td>
+                  <td data-label="Notes" className="max-w-[220px] truncate">{f.notes || '—'}</td>
+                  <td data-label="Action">
                     {f.status === 'pending' && <FollowUpStatusForm followUpId={f.id} leadId={f.lead_id} />}
                   </td>
                   {canDelete && (
-                    <td>
+                    <td data-label="Admin">
                       <DeleteFollowUpButton followUpId={f.id} />
                     </td>
                   )}

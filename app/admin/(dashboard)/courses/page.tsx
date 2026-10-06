@@ -93,7 +93,7 @@ export default async function CoursesListPage({
         </div>
       ) : (
         <div className="admin-table-wrap">
-          <table className="admin-table">
+          <table className="admin-table is-stackable">
             <thead>
               <tr>
                 <th>Title</th>
@@ -107,15 +107,15 @@ export default async function CoursesListPage({
             <tbody>
               {courses.map((course) => (
                 <tr key={course.id}>
-                  <td>
+                  <td data-label="Title" data-primary>
                     <p className="font-semibold" style={{ color: 'var(--color-ink)' }}>{course.title}</p>
                     <p className="text-xs" style={{ color: 'var(--color-muted)' }}>/{course.slug}</p>
                   </td>
-                  <td>{COURSE_CATEGORY_LABELS[course.category]}</td>
-                  <td>{course.duration}</td>
-                  <td><StatusBadge status={course.status} label={COURSE_STATUS_LABELS[course.status]} /></td>
-                  <td>{course.admission_status ? ADMISSION_STATUS_LABELS[course.admission_status] : 'Open (migration 0023 not applied)'}</td>
-                  <td><CourseRowActions course={course} canManage={canManage} /></td>
+                  <td data-label="Category">{COURSE_CATEGORY_LABELS[course.category]}</td>
+                  <td data-label="Duration">{course.duration}</td>
+                  <td data-label="Status"><StatusBadge status={course.status} label={COURSE_STATUS_LABELS[course.status]} /></td>
+                  <td data-label="Admissions">{course.admission_status ? ADMISSION_STATUS_LABELS[course.admission_status] : 'Open (migration 0023 not applied)'}</td>
+                  <td data-label="Action"><CourseRowActions course={course} canManage={canManage} /></td>
                 </tr>
               ))}
             </tbody>

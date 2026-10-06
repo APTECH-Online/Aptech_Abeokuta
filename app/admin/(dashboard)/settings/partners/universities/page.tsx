@@ -77,7 +77,7 @@ export default async function AffiliatedUniversitiesListPage({
         </div>
       ) : (
         <div className="admin-table-wrap">
-          <table className="admin-table">
+          <table className="admin-table is-stackable">
             <thead>
               <tr>
                 <th>Logo</th>
@@ -91,15 +91,15 @@ export default async function AffiliatedUniversitiesListPage({
             <tbody>
               {items.map((item) => (
                 <tr key={item.id}>
-                  <td>
+                  <td data-label="Logo">
                     <div className="flex items-center justify-center w-16 h-10 rounded border p-1.5" style={{ borderColor: 'var(--color-border)', background: '#fff' }}>
                       <div className="relative w-full h-full">
                         <Image src={item.logo_url} alt={`${item.name} logo`} fill className="object-contain" sizes="64px" />
                       </div>
                     </div>
                   </td>
-                  <td><p className="font-semibold" style={{ color: 'var(--color-ink)' }}>{item.name}</p></td>
-                  <td>
+                  <td data-label="Name" data-primary><p className="font-semibold" style={{ color: 'var(--color-ink)' }}>{item.name}</p></td>
+                  <td data-label="Website">
                     {item.website_url ? (
                       <a
                         href={item.website_url}
@@ -114,15 +114,15 @@ export default async function AffiliatedUniversitiesListPage({
                       <span className="text-xs" style={{ color: 'var(--color-muted)' }}>—</span>
                     )}
                   </td>
-                  <td>
+                  <td data-label="Status">
                     {item.is_published ? (
                       <span className="status-pill" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success)' }}>Published</span>
                     ) : (
                       <span className="status-pill" style={{ background: '#F2F0F5', color: 'var(--color-muted)' }}>Unpublished</span>
                     )}
                   </td>
-                  <td>{item.sort_order}</td>
-                  <td><AffiliatedUniversityRowActions item={item} canManage={canManage} /></td>
+                  <td data-label="Sort">{item.sort_order}</td>
+                  <td data-label="Action"><AffiliatedUniversityRowActions item={item} canManage={canManage} /></td>
                 </tr>
               ))}
             </tbody>

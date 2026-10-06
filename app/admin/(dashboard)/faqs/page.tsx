@@ -79,7 +79,7 @@ export default async function FaqsListPage({
         </div>
       ) : (
         <div className="admin-table-wrap">
-          <table className="admin-table">
+          <table className="admin-table is-stackable">
             <thead>
               <tr>
                 <th>Question</th>
@@ -91,19 +91,19 @@ export default async function FaqsListPage({
             <tbody>
               {items.map((item) => (
                 <tr key={item.id}>
-                  <td>
+                  <td data-label="Question" data-primary>
                     <p className="font-semibold" style={{ color: 'var(--color-ink)' }}>{item.question}</p>
                     <p className="text-xs line-clamp-1" style={{ color: 'var(--color-muted)' }}>{item.answer}</p>
                   </td>
-                  <td>
+                  <td data-label="Status">
                     {item.is_published ? (
                       <span className="status-pill" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success)' }}>Published</span>
                     ) : (
                       <span className="status-pill" style={{ background: '#F2F0F5', color: 'var(--color-muted)' }}>Unpublished</span>
                     )}
                   </td>
-                  <td>{item.sort_order}</td>
-                  <td><FaqRowActions item={item} canManage={canManage} /></td>
+                  <td data-label="Sort">{item.sort_order}</td>
+                  <td data-label="Action"><FaqRowActions item={item} canManage={canManage} /></td>
                 </tr>
               ))}
             </tbody>

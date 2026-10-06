@@ -125,7 +125,7 @@ export default async function InsightsListPage({
       </form>
 
       <div className="admin-table-wrap">
-        <table className="admin-table">
+        <table className="admin-table is-stackable">
           <thead>
             <tr>
               <th>Title</th>
@@ -149,7 +149,7 @@ export default async function InsightsListPage({
             ) : (
               insights.map((insight) => (
                 <tr key={insight.id}>
-                  <td className="font-medium max-w-[220px] truncate" style={{ color: 'var(--color-ink)' }}>
+                  <td data-label="Title" data-primary className="font-medium max-w-[220px] truncate" style={{ color: 'var(--color-ink)' }}>
                     {insight.title}
                     {insight.content_type === 'event' && insight.event_start_at && (
                       <span className="block text-xs mt-0.5" style={{ color: 'var(--color-muted)' }}>
@@ -157,14 +157,14 @@ export default async function InsightsListPage({
                       </span>
                     )}
                   </td>
-                  <td>{insight.category}</td>
-                  <td>{INSIGHT_CONTENT_TYPE_LABELS[insight.content_type]}</td>
-                  <td>{insight.authorName || '—'}</td>
-                  <td><StatusBadge status={insight.status} label={INSIGHT_STATUS_LABELS[insight.status]} /></td>
-                  <td>{insight.is_featured ? '★' : '—'}</td>
-                  <td>{insight.publish_at ? new Date(insight.publish_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
-                  <td>{new Date(insight.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</td>
-                  <td>
+                  <td data-label="Category">{insight.category}</td>
+                  <td data-label="Type">{INSIGHT_CONTENT_TYPE_LABELS[insight.content_type]}</td>
+                  <td data-label="Author">{insight.authorName || '—'}</td>
+                  <td data-label="Status"><StatusBadge status={insight.status} label={INSIGHT_STATUS_LABELS[insight.status]} /></td>
+                  <td data-label="Featured">{insight.is_featured ? '★' : '—'}</td>
+                  <td data-label="Publish date">{insight.publish_at ? new Date(insight.publish_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
+                  <td data-label="Updated">{new Date(insight.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</td>
+                  <td data-label="Actions">
                     <InsightRowActions
                       insight={insight}
                       actions={

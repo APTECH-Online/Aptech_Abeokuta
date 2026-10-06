@@ -26,7 +26,7 @@ export default function Pagination({
   }
 
   return (
-    <nav className="flex items-center justify-between mt-4 text-sm" aria-label="Pagination">
+    <nav className="flex flex-wrap items-center justify-between gap-3 mt-4 text-sm" aria-label="Pagination">
       <p style={{ color: 'var(--color-muted)' }}>
         Page {page} of {totalPages} · {total} total
       </p>

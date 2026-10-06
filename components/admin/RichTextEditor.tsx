@@ -64,7 +64,7 @@ export default function RichTextEditor({
       onClick={onClick}
       aria-label={label}
       title={label}
-      className="p-1.5 rounded-md hover:bg-[var(--color-navy-50)] transition-colors"
+      className="rte-btn p-1.5 rounded-md hover:bg-[var(--color-navy-50)] transition-colors"
       style={{ color: 'var(--color-ink)' }}
     >
       {children}
@@ -74,7 +74,7 @@ export default function RichTextEditor({
   return (
     <div>
       <div
-        className="flex flex-wrap items-center gap-0.5 p-1.5 rounded-t-lg border border-b-0"
+        className="rte-toolbar flex flex-wrap items-center gap-0.5 p-1.5 rounded-t-lg border border-b-0"
         style={{ borderColor: 'var(--color-line-strong)', background: 'var(--color-paper-alt)' }}
       >
         <ToolbarButton label="Heading 2" onClick={() => exec('formatBlock', '<h2>')}><Heading2 size={16} /></ToolbarButton>

@@ -52,7 +52,7 @@ export default async function ApplicationsPage({
       </form>
 
       <div className="admin-table-wrap">
-        <table className="admin-table">
+        <table className="admin-table is-stackable">
           <thead>
             <tr>
               <th>Reference</th>
@@ -75,21 +75,21 @@ export default async function ApplicationsPage({
             ) : (
               applications.map((a) => (
                 <tr key={a.id}>
-                  <td className="font-mono text-xs font-semibold" style={{ color: 'var(--color-navy-700)' }}>{a.application_reference}</td>
-                  <td className="font-medium" style={{ color: 'var(--color-ink)' }}>
+                  <td data-label="Reference" className="font-mono text-xs font-semibold" style={{ color: 'var(--color-navy-700)' }}>{a.application_reference}</td>
+                  <td data-label="Applicant" data-primary className="font-medium" style={{ color: 'var(--color-ink)' }}>
                     {a.leads ? (
                       <Link href={`/admin/leads/${a.leads.id}`}>{a.leads.first_name} {a.leads.last_name}</Link>
                     ) : '—'}
                   </td>
-                  <td>{a.programmes?.name || '—'}</td>
-                  <td><StatusBadge status={a.status} label={APPLICATION_STATUS_LABELS[a.status as keyof typeof APPLICATION_STATUS_LABELS]} /></td>
-                  <td>{new Date(a.submitted_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                  <td>{a.staff?.full_name || 'Unassigned'}</td>
-                  <td>
+                  <td data-label="Programme">{a.programmes?.name || '—'}</td>
+                  <td data-label="Status"><StatusBadge status={a.status} label={APPLICATION_STATUS_LABELS[a.status as keyof typeof APPLICATION_STATUS_LABELS]} /></td>
+                  <td data-label="Submitted">{new Date(a.submitted_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                  <td data-label="Assigned">{a.staff?.full_name || 'Unassigned'}</td>
+                  <td data-label="Update status">
                     <ApplicationStatusForm applicationId={a.id} leadId={a.leads?.id || ''} currentStatus={a.status} />
                   </td>
                   {canDelete && (
-                    <td>
+                    <td data-label="Actions">
                       <DeleteApplicationButton applicationId={a.id} reference={a.application_reference} />
                     </td>
                   )}

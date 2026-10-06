@@ -118,7 +118,7 @@ export default async function LeadsPage({
       </form>
 
       <div className="admin-table-wrap">
-        <table className="admin-table">
+        <table className="admin-table is-stackable">
           <thead>
             <tr>
               <th>Reference</th>
@@ -144,24 +144,24 @@ export default async function LeadsPage({
             ) : (
               leads.map((lead) => (
                 <tr key={lead.id} className="is-clickable">
-                  <td>
+                  <td data-label="Reference">
                     <Link href={`/admin/leads/${lead.id}`} className="font-mono text-xs font-semibold" style={{ color: 'var(--color-navy-700)' }}>
                       {lead.lead_reference}
                     </Link>
                   </td>
-                  <td className="font-medium" style={{ color: 'var(--color-ink)' }}>
+                  <td data-label="Name" data-primary className="font-medium" style={{ color: 'var(--color-ink)' }}>
                     <Link href={`/admin/leads/${lead.id}`}>{lead.first_name} {lead.last_name}</Link>
                   </td>
-                  <td>{lead.phone}</td>
-                  <td className="truncate max-w-[180px]">{lead.email}</td>
-                  <td>{lead.programmeName || '—'}</td>
-                  <td><StatusBadge status={lead.status} label={LEAD_STATUS_LABELS[lead.status]} /></td>
-                  <td>{LEAD_SOURCE_LABELS[lead.source]}</td>
-                  <td>{lead.assignedName || 'Unassigned'}</td>
-                  <td>{new Date(lead.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                  <td>{new Date(lead.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                  <td data-label="Phone">{lead.phone}</td>
+                  <td data-label="Email" className="truncate max-w-[180px]">{lead.email}</td>
+                  <td data-label="Programme">{lead.programmeName || '—'}</td>
+                  <td data-label="Status"><StatusBadge status={lead.status} label={LEAD_STATUS_LABELS[lead.status]} /></td>
+                  <td data-label="Source">{LEAD_SOURCE_LABELS[lead.source]}</td>
+                  <td data-label="Assigned">{lead.assignedName || 'Unassigned'}</td>
+                  <td data-label="Created">{new Date(lead.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                  <td data-label="Last activity">{new Date(lead.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                   {canDelete && (
-                    <td>
+                    <td data-label="Actions">
                       <DeleteLeadButton leadId={lead.id} name={`${lead.first_name} ${lead.last_name}`} />
                     </td>
                   )}

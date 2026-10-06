@@ -117,3 +117,22 @@ Verified with migrated data in three states: migration applied unchanged, CRM ed
 course created with no code change, empty related list falling back to automatic), and migration not yet applied.
 Not exercised: the CRM form in a browser (admin requires sign-in); its save logic is type-checked and the database
 constraints were tested directly.
+
+## Addendum 3: CRM mobile responsiveness
+Measured and screenshotted in headless Chromium against the real admin pages (sample data, fake sign-in in a scratch copy
+only) at 375px, 820px and 1280px.
+- Tables: 9 of 10 admin tables become labelled cards below 768px (identifying cell as header, label in a left gutter,
+  actions full width). Cells carry `data-label` in the markup, so there is no JavaScript dependency or layout flash.
+  Staff keeps its existing card layout. New tables opt in with `is-stackable`, `data-label` on each `<td>` and
+  `data-primary` on the title cell.
+- Forms: 16px controls (stops iOS focus zoom), 44px minimum control and tap-target height, larger checkboxes, consistent
+  `admin-fieldset` groups, thumb-sized rich-text toolbar.
+- Layout fixes: dashboard KPIs two-up on phones; filter bars no longer create an implicit second column; Filter/Reset fill
+  the row; pagination wraps; long emails wrap instead of clipping.
+- Tablet/desktop: tables unchanged apart from keeping Edit/Archive side by side, a minimum width for the title column
+  and word-boundary wrapping.
+Measured at 375px: small form inputs 23 to 0 on the course form; undersized table buttons 13 to 0; no sideways page scroll
+on any of the 11 admin pages tested.
+Not covered: real iOS/Android devices, a production build (tested in dev mode), and the Gallery, Testimonials,
+Programmes, Reports and Settings pages beyond those listed. Observed separately: a university saved without a logo
+renders an `<img>` with an empty `src`.
