@@ -54,24 +54,23 @@ export default async function ChallengeDetail({ params }: { params: Promise<{ id
         </div>
         <input type="hidden" name="id" value={id} />
 
-        <div className="grid sm:grid-cols-2 gap-4 min-w-0">
-          <label>Name<input name="name" defaultValue={challenge.name} className="input mt-1" /></label>
-          <label>Slug<input name="slug" defaultValue={challenge.slug} className="input mt-1" /></label>
-          <label>Category<input name="category" defaultValue={challenge.category} className="input mt-1" /></label>
-          <label>Status<select name="status" defaultValue={challenge.status} className="input mt-1"><option>draft</option><option>active</option><option>archived</option></select></label>
-          <label>Difficulty<select name="difficulty" defaultValue={challenge.difficulty} className="input mt-1"><option>beginner</option><option>intermediate</option><option>advanced</option></select></label>
-          <label>Type<select name="challenge_type" defaultValue={challenge.challenge_type} className="input mt-1"><option>quiz</option><option>debug</option><option>logic</option><option>sql</option><option>weekly</option></select></label>
-          <label>Estimated minutes<input name="estimated_minutes" type="number" defaultValue={challenge.estimated_minutes} className="input mt-1" /></label>
-          <label>Sort order<input name="sort_order" type="number" defaultValue={challenge.sort_order} className="input mt-1" /></label>
+        <div className="tz-field-grid tz-field-grid--2">
+          <label className="tz-field">Name<input name="name" defaultValue={challenge.name} className="input mt-1" /></label>
+          <label className="tz-field">Slug<input name="slug" defaultValue={challenge.slug} className="input mt-1" /></label>
+          <label className="tz-field">Category<input name="category" defaultValue={challenge.category} className="input mt-1" /></label>
+          <label className="tz-field">Status<select name="status" defaultValue={challenge.status} className="input mt-1"><option>draft</option><option>active</option><option>archived</option></select></label>
+          <label className="tz-field">Difficulty<select name="difficulty" defaultValue={challenge.difficulty} className="input mt-1"><option>beginner</option><option>intermediate</option><option>advanced</option></select></label>
+          <label className="tz-field">Type<select name="challenge_type" defaultValue={challenge.challenge_type} className="input mt-1"><option>quiz</option><option>debug</option><option>logic</option><option>sql</option><option>weekly</option></select></label>
+          <label className="tz-field">Estimated minutes<input name="estimated_minutes" type="number" defaultValue={challenge.estimated_minutes} className="input mt-1" /></label>
+          <label className="tz-field">Sort order<input name="sort_order" type="number" defaultValue={challenge.sort_order} className="input mt-1" /></label>
         </div>
 
-        <label>Description<textarea name="description" defaultValue={challenge.description} className="input mt-1" rows={4} /></label>
-        <label>Recommendation rules (JSON)<textarea name="recommendation_rules" defaultValue={JSON.stringify(challenge.recommendation_rules || [], null, 2)} className="input mt-1 font-mono text-xs" rows={6} /></label>
-        <span className="text-xs tech-zone-help-text">Use skillArea + programmeCodes, e.g. [{`{`}"skillArea":"Programming","programmeCodes":["ADSE"]{`}`}].</span>
+        <label className="tz-field">Description<textarea name="description" defaultValue={challenge.description} className="input mt-1" rows={4} /></label>
+        <label className="tz-field">Recommendation rules (JSON)<textarea name="recommendation_rules" defaultValue={JSON.stringify(challenge.recommendation_rules || [], null, 2)} className="input mt-1 font-mono text-xs" rows={6} /><span className="text-xs tech-zone-help-text">Use skillArea + programmeCodes, e.g. [{`{`}"skillArea":"Programming","programmeCodes":["ADSE"]{`}`}].</span></label>
 
         <div className="flex flex-wrap gap-5 min-w-0 tech-zone-checkboxes">
-          <label className="flex gap-2"><input type="checkbox" name="is_featured" defaultChecked={challenge.is_featured} /> Featured challenge</label>
-          <label className="flex gap-2"><input type="checkbox" name="is_weekly" defaultChecked={challenge.is_weekly} /> Weekly challenge</label>
+          <label className="tz-check"><input type="checkbox" name="is_featured" defaultChecked={challenge.is_featured} /> Featured challenge</label>
+          <label className="tz-check"><input type="checkbox" name="is_weekly" defaultChecked={challenge.is_weekly} /> Weekly challenge</label>
         </div>
 
         <input type="hidden" name="scoring_config" value={JSON.stringify(challenge.scoring_config || {})} />
@@ -92,17 +91,17 @@ export default async function ChallengeDetail({ params }: { params: Promise<{ id
 
         <form action={saveQuestionAction} className="grid gap-4 mt-5 min-w-0">
           <input type="hidden" name="challenge_id" value={id} />
-          <label>Question<textarea name="question" required className="input mt-1" rows={4} /></label>
-          <label>Options (JSON)<textarea name="options" required className="input mt-1 font-mono text-xs" rows={4} placeholder='["Option A","Option B","Option C"]' /></label>
+          <label className="tz-field">Question<textarea name="question" required className="input mt-1" rows={4} /></label>
+          <label className="tz-field">Options (JSON)<textarea name="options" required className="input mt-1 font-mono text-xs" rows={5} placeholder='["Option A","Option B","Option C"]' /><span className="text-xs tech-zone-help-text">One entry per answer option. "Correct index" below is zero-based (0 = first option).</span></label>
 
-          <div className="grid sm:grid-cols-4 gap-3 min-w-0">
-            <label>Correct index<input name="correct_answer" type="number" min="0" defaultValue="0" className="input mt-1" /></label>
-            <label>Points<input name="points" type="number" defaultValue="10" className="input mt-1" /></label>
-            <label>Skill area<input name="skill_area" defaultValue="Technology Fundamentals" className="input mt-1" /></label>
-            <label>Order<input name="sort_order" type="number" defaultValue={questions.length + 1} className="input mt-1" /></label>
+          <div className="tz-field-grid tz-field-grid--4">
+            <label className="tz-field">Correct index<input name="correct_answer" type="number" min="0" defaultValue="0" className="input mt-1" /></label>
+            <label className="tz-field">Points<input name="points" type="number" defaultValue="10" className="input mt-1" /></label>
+            <label className="tz-field">Skill area<input name="skill_area" defaultValue="Technology Fundamentals" className="input mt-1" /></label>
+            <label className="tz-field">Order<input name="sort_order" type="number" defaultValue={questions.length + 1} className="input mt-1" /></label>
           </div>
 
-          <label>Explanation<textarea name="explanation" className="input mt-1" rows={3} /></label>
+          <label className="tz-field">Explanation<textarea name="explanation" className="input mt-1" rows={3} /></label>
           <input type="hidden" name="difficulty" value={challenge.difficulty} />
           <div className="tech-zone-form-actions">
             <button className="btn btn-primary btn-sm">Add question</button>
@@ -137,17 +136,17 @@ export default async function ChallengeDetail({ params }: { params: Promise<{ id
               <form action={saveQuestionAction} className="grid gap-4 min-w-0">
                 <input type="hidden" name="id" value={q.id} />
                 <input type="hidden" name="challenge_id" value={id} />
-                <label>Question<textarea name="question" defaultValue={q.question} className="input mt-1" rows={4} /></label>
-                <label>Options (JSON)<textarea name="options" defaultValue={JSON.stringify(q.options)} className="input mt-1 font-mono text-xs" rows={4} /></label>
+                <label className="tz-field">Question<textarea name="question" defaultValue={q.question} className="input mt-1" rows={4} /></label>
+                <label className="tz-field">Options (JSON)<textarea name="options" defaultValue={JSON.stringify(q.options)} className="input mt-1 font-mono text-xs" rows={4} /></label>
 
-                <div className="grid sm:grid-cols-4 gap-3 min-w-0">
-                  <label>Correct index<input name="correct_answer" type="number" defaultValue={q.correct_answer} className="input mt-1" /></label>
-                  <label>Points<input name="points" type="number" defaultValue={q.points} className="input mt-1" /></label>
-                  <label>Skill area<input name="skill_area" defaultValue={q.skill_area} className="input mt-1" /></label>
-                  <label>Order<input name="sort_order" type="number" defaultValue={q.sort_order} className="input mt-1" /></label>
+                <div className="tz-field-grid tz-field-grid--4">
+                  <label className="tz-field">Correct index<input name="correct_answer" type="number" defaultValue={q.correct_answer} className="input mt-1" /></label>
+                  <label className="tz-field">Points<input name="points" type="number" defaultValue={q.points} className="input mt-1" /></label>
+                  <label className="tz-field">Skill area<input name="skill_area" defaultValue={q.skill_area} className="input mt-1" /></label>
+                  <label className="tz-field">Order<input name="sort_order" type="number" defaultValue={q.sort_order} className="input mt-1" /></label>
                 </div>
 
-                <label>Explanation<textarea name="explanation" defaultValue={q.explanation || ''} className="input mt-1" rows={3} /></label>
+                <label className="tz-field">Explanation<textarea name="explanation" defaultValue={q.explanation || ''} className="input mt-1" rows={3} /></label>
                 <input type="hidden" name="difficulty" value={q.difficulty} />
                 <div className="tech-zone-form-actions">
                   <button className="btn btn-primary btn-sm">Save question</button>
