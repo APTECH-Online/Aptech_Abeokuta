@@ -17,7 +17,7 @@ export default function AdseRoadmap({ className = 'w-full h-auto block' }: { cla
       role="img"
       aria-label="Four-term Advanced Diploma in Software Engineering roadmap"
     >
-      <rect x="0" y="0" width="600" height="340" fill="#1D1250" />
+      <rect x="0" y="0" width="600" height="340" fill="#0B1747" />
 
       {/* fine trace grid, matching .pattern-adire */}
       <defs>
@@ -68,7 +68,7 @@ export default function AdseRoadmap({ className = 'w-full h-auto block' }: { cla
             fontFamily="var(--font-sans, sans-serif)"
             fontSize="12"
             fontWeight={600}
-            fill="#F5F2FC"
+            fill="#F1F5FD"
           >
             {['Foundations', 'Java & OOP', 'App Dev', 'Specialise'][i]}
           </text>

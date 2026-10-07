@@ -449,12 +449,12 @@ export function staticNotFoundHtml(homeUrl: string, coursesUrl: string): string 
 <meta name="robots" content="noindex, nofollow">
 <title>Page not found | APTECH Abeokuta</title>
 <style>
-  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:#1D1250; color:#fff; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; text-align:center; padding:2rem; box-sizing:border-box; }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:#0B1747; color:#fff; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; text-align:center; padding:2rem; box-sizing:border-box; }
   .card { max-width:32rem; }
   h1 { font-size:1.5rem; margin:0 0 .75rem; }
   p { color:rgba(255,255,255,0.75); line-height:1.6; margin:0 0 1.5rem; }
   a { display:inline-block; margin:0 .4rem; padding:.65rem 1.25rem; border-radius:.5rem; text-decoration:none; font-weight:600; }
-  .primary { background:#EFC077; color:#1D1250; }
+  .primary { background:#EFC077; color:#0B1747; }
   .secondary { border:1px solid rgba(255,255,255,0.3); color:#fff; }
 </style>
 </head>

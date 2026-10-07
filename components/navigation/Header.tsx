@@ -121,7 +121,7 @@ function NavDropdown({
           role="group"
           aria-labelledby={buttonId}
           className={`site-header__explore-menu absolute left-0 top-full mt-2 min-w-[200px] rounded-xl py-2 z-50 ${isDark ? 'site-header__explore-menu--dark' : ''}`}
-          style={{ border: isDark ? '1px solid rgba(132,113,232,.32)' : '1px solid var(--color-line)', boxShadow: isDark ? '0 18px 40px rgba(5,4,22,.38)' : '0 12px 32px rgba(19,12,46,.14)' }}
+          style={{ border: isDark ? '1px solid rgba(61,118,253,.32)' : '1px solid var(--color-line)', boxShadow: isDark ? '0 18px 40px rgba(3,8,28,.38)' : '0 12px 32px rgba(5,13,42,.14)' }}
         >
           {group.items.map((sub, index) => (
             <Link
@@ -242,7 +242,7 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
       className={`sticky top-0 z-50 transition-all duration-200 ${isDark ? 'site-header site-header--dark' : 'site-header'}`}
       style={{
         borderBottom: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid var(--color-line)',
-        boxShadow: isDark ? (scrolled ? '0 12px 32px rgba(5,4,22,0.34)' : 'none') : (scrolled ? '0 8px 24px rgba(19,12,46,0.08)' : 'none')
+        boxShadow: isDark ? (scrolled ? '0 12px 32px rgba(3,8,28,0.34)' : 'none') : (scrolled ? '0 8px 24px rgba(5,13,42,0.08)' : 'none')
       }}
     >
       <div

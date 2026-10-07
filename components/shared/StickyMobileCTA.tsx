@@ -17,7 +17,7 @@ export default function StickyMobileCTA({ whatsapp }: { whatsapp: string }) {
         borderTop: '1px solid var(--color-line)',
         background: 'var(--color-paper-alt)',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        boxShadow: '0 -8px 24px rgba(19,12,46,0.08)'
+        boxShadow: '0 -8px 24px rgba(5,13,42,0.08)'
       }}
     >
       <a
