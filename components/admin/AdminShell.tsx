@@ -12,6 +12,7 @@ import {
   GraduationCap,
   BarChart3,
   Megaphone,
+  Gamepad2,
   Settings,
   Menu,
   X,
@@ -58,6 +59,7 @@ const NAV_ITEMS = [
   { href: '/admin/staff', label: 'Staff', icon: UserCog, access: 'super_admin' },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3, access: 'reports' },
   { href: '/admin/campaigns', label: 'Campaigns', icon: Megaphone, access: 'campaigns' },
+  { href: '/admin/challenges', label: 'Tech Zone', icon: Gamepad2, access: 'challenges' },
   { href: '/admin/reports/seo', label: 'SEO Metrics', icon: Gauge, access: 'seo' },
   { href: '/admin/notifications', label: 'Notifications', icon: Bell, access: 'any_staff' },
   { href: '/admin/settings', label: 'Settings', icon: Settings, access: 'super_admin' }
@@ -81,6 +83,8 @@ function canSeeNavItem(staff: Staff, access: string): boolean {
       return hasPermission(staff, 'dashboard_access') && hasPermission(staff, 'dashboard_view_reports') && hasPermission(staff, 'dashboard_view_admissions_stats') && hasPermission(staff, 'enquiries.view') && hasPermission(staff, 'applications.view') && hasPermission(staff, 'follow_ups.view')
     case 'campaigns':
       return hasAnyModulePermission(staff, 'campaigns')
+    case 'challenges':
+      return hasAnyModulePermission(staff, 'challenges')
     case 'seo':
       return hasPermission(staff, 'dashboard_access') && hasPermission(staff, 'dashboard_view_seo_metrics')
     case 'insights':

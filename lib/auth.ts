@@ -37,7 +37,8 @@ export function canAccessModule(staff: Pick<Staff, 'role' | 'permissions'>, modu
       hasAnyModulePermission(staff, 'media') ||
       hasAnyModulePermission(staff, 'faqs') ||
       hasAnyModulePermission(staff, 'website_content') ||
-      hasAnyModulePermission(staff, 'campaigns')
+      hasAnyModulePermission(staff, 'campaigns') ||
+      hasAnyModulePermission(staff, 'challenges')
     )
   }
   if (module === 'admissions') {
@@ -72,6 +73,7 @@ export function canAccessPath(staff: Pick<Staff, 'role' | 'permissions'>, pathna
     if (pathname.startsWith('/admin/faqs')) return hasAnyModulePermission(staff, 'faqs')
     if (pathname.startsWith('/admin/settings')) return hasAnyModulePermission(staff, 'website_content')
     if (pathname.startsWith('/admin/campaigns')) return hasAnyModulePermission(staff, 'campaigns')
+    if (pathname.startsWith('/admin/challenges')) return hasAnyModulePermission(staff, 'challenges')
     if (pathname.startsWith('/admin/reports/seo')) return hasPermission(staff, 'dashboard_access') && hasPermission(staff, 'dashboard_view_seo_metrics')
     if (pathname.startsWith('/admin/reports')) return hasPermission(staff, 'dashboard_access') && hasPermission(staff, 'dashboard_view_reports')
     if (pathname.startsWith('/admin/leads')) return hasAnyModulePermission(staff, 'enquiries')
@@ -369,6 +371,9 @@ export function canManageCourses(staff: Pick<Staff, 'role' | 'permissions'>) {
 }
 export async function requireCoursesAccess(action: ContentAction = 'view'): Promise<Staff> {
   return requireContentModuleAction('courses', action)
+}
+export async function requireChallengesAccess(action: ContentAction = 'view'): Promise<Staff> {
+  return requireContentModuleAction('challenges', action)
 }
 
 export function canManageGallery(staff: Pick<Staff, 'role' | 'permissions'>) {

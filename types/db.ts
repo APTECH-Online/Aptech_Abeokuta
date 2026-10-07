@@ -171,6 +171,49 @@ export interface Lead {
   updated_at: string
 }
 
+export type TechChallengeDifficulty = 'beginner' | 'intermediate' | 'advanced'
+export type TechChallengeStatus = 'draft' | 'active' | 'archived'
+export type TechChallengeType = 'quiz' | 'debug' | 'logic' | 'sql' | 'weekly'
+
+export interface TechChallenge {
+  id: string
+  name: string
+  slug: string
+  description: string
+  category: string
+  difficulty: TechChallengeDifficulty
+  estimated_minutes: number
+  challenge_type: TechChallengeType
+  status: TechChallengeStatus
+  is_featured: boolean
+  is_weekly: boolean
+  start_date: string | null
+  end_date: string | null
+  sort_order: number
+  scoring_config: Record<string, unknown>
+  recommendation_rules: unknown[]
+  created_by: string | null
+  updated_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface TechChallengeQuestion {
+  id: string
+  challenge_id: string
+  question: string
+  question_type: 'multiple_choice'
+  options: string[]
+  correct_answer: number
+  explanation: string | null
+  skill_area: string
+  difficulty: TechChallengeDifficulty
+  points: number
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
 export interface LeadEducation {
   id: string
   lead_id: string

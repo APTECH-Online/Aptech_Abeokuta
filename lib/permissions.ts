@@ -24,7 +24,7 @@ import type { Staff } from '../types/db'
  * the four can_* columns from migration 0016) — untouched by this file.
  */
 
-export type ContentModule = 'news' | 'events' | 'courses' | 'media' | 'faqs' | 'website_content' | 'campaigns'
+export type ContentModule = 'news' | 'events' | 'courses' | 'media' | 'faqs' | 'website_content' | 'campaigns' | 'challenges'
 export type CrmModule = 'enquiries' | 'applications' | 'follow_ups'
 
 export interface PermissionActionDef {
@@ -81,6 +81,12 @@ export const CONTENT_PERMISSION_CATALOG: PermissionModuleDef[] = [
     module: 'campaigns',
     label: 'Marketing Campaigns',
     description: 'Campaign setup, attribution and conversion performance.',
+    actions: [VIEW, CREATE, EDIT, DELETE]
+  },
+  {
+    module: 'challenges',
+    label: 'Tech Zone Challenges',
+    description: 'Manage challenge content, questions, recommendations and weekly challenges.',
     actions: [VIEW, CREATE, EDIT, DELETE]
   },
   {

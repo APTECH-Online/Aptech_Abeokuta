@@ -21,7 +21,14 @@ const ALLOWED = new Set([
   'enquiry_cta_clicked',
   'application_cta_clicked',
   'campaign_landing_viewed',
-  'campaign_cta_clicked'
+  'campaign_cta_clicked',
+  'tech_zone_viewed',
+  'challenge_started',
+  'challenge_completed',
+  'challenge_result_viewed',
+  'challenge_lead_captured',
+  'challenge_cta_clicked',
+  'challenge_whatsapp_clicked'
 ])
 
 export async function POST(request: Request) {

@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next'
 import { getSiteUrl, RESERVED_INSIGHT_SLUGS, STATIC_INDEXABLE_PATHS } from '../lib/seo'
 import { getSitemapCourses } from '../lib/courses-public'
 import { getSitemapInsights } from '../lib/insights-public'
+import { getPublicChallenges } from '../lib/tech-zone'
 
 /**
  * XML sitemap, served at /sitemap.xml.
@@ -24,7 +25,7 @@ export const revalidate = 3600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getSiteUrl()
-  const [courses, insights] = await Promise.all([getSitemapCourses(), getSitemapInsights()])
+  const [courses, insights, challenges] = await Promise.all([getSitemapCourses(), getSitemapInsights(), getPublicChallenges()])
 
   const latest = (dates: (string | undefined)[]) => {
     const times = dates.filter(Boolean).map((d) => Date.parse(d as string)).filter((t) => Number.isFinite(t))
@@ -49,9 +50,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...(c.updatedAt ? { lastModified: new Date(c.updatedAt) } : {})
   }))
 
+  const challengeEntries: MetadataRoute.Sitemap = challenges.map((c) => ({ url: `${base}/tech-zone/${c.slug}` }))
+
   const insightEntries: MetadataRoute.Sitemap = insights
     .filter((i) => !RESERVED_INSIGHT_SLUGS.includes(i.slug))
     .map((i) => ({ url: `${base}/insights/${i.slug}`, lastModified: new Date(i.updatedAt) }))
 
-  return [...staticEntries, ...courseEntries, ...insightEntries]
+  return [...staticEntries, ...courseEntries, ...challengeEntries, ...insightEntries]
 }
