@@ -35,6 +35,9 @@ export type LeadSource =
   | 'walk_in'
   | 'advertisement'
   | 'other'
+  | 'career_quiz'
+  | 'tech_challenge'
+  | 'advisor_request'
 
 export type StudyMode = 'full_time' | 'part_time' | 'weekend' | 'online' | 'hybrid'
 
@@ -449,7 +452,10 @@ export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
   website: 'Website',
   walk_in: 'Walk-in',
   advertisement: 'Advertisement',
-  other: 'Other'
+  other: 'Other',
+  career_quiz: 'Career Quiz',
+  tech_challenge: 'Tech Challenge',
+  advisor_request: 'Advisor Request'
 }
 
 export const STUDY_MODE_LABELS: Record<StudyMode, string> = {

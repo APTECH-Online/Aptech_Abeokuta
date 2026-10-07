@@ -25,7 +25,10 @@ const SOURCE_OPTIONS = [
   { value: 'website', label: 'Website' },
   { value: 'walk_in', label: 'Walk-in' },
   { value: 'advertisement', label: 'Advertisement' },
-  { value: 'other', label: 'Other' }
+  { value: 'other', label: 'Other' },
+  { value: 'career_quiz', label: 'Career Quiz' },
+  { value: 'tech_challenge', label: 'Tech Challenge' },
+  { value: 'advisor_request', label: 'Advisor Request' }
 ]
 
 const STUDY_MODE_OPTIONS = [
@@ -233,7 +236,7 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
             <legend className="eyebrow mb-1">Programme information</legend>
             <div>
               <label htmlFor="programmeId" className="field-label">Programme of interest *</label>
-              <select id="programmeId" name="programmeId" required className={`field-select ${errorClass('programmeId')}`} defaultValue="">
+              <select id="programmeId" name="programmeId" required className={`field-select ${errorClass('programmeId')}`} defaultValue={searchParams.get('programmeId') || ""}>
                 <option value="" disabled>Select a programme</option>
                 {programmes.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}{p.duration ? ` (${p.duration})` : ''}</option>
@@ -267,7 +270,7 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
             <legend className="eyebrow mb-1">How did you hear about us?</legend>
             <div>
               <label htmlFor="source" className="field-label">Source *</label>
-              <select id="source" name="source" required className={`field-select ${errorClass('source')}`} defaultValue="">
+              <select id="source" name="source" required className={`field-select ${errorClass('source')}`} defaultValue={searchParams.get('source') || ""}>
                 <option value="" disabled>Select an option</option>
                 {SOURCE_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>

@@ -14,6 +14,8 @@ import CTABand from '../../components/home/CTABand'
 import BuildSection from '../../components/home/BuildSection'
 import PartnerLogos from '../../components/shared/PartnerLogos'
 import LatestUpdates from '../../components/home/LatestUpdates'
+import TechChallenge from '../../components/home/TechChallenge'
+import { getPublicContactInfo } from '../../lib/contact-info-public'
 import { getPublishedTestimonials } from '../../lib/testimonials-public'
 import { getPublishedFaqs } from '../../lib/faqs-public'
 import { getPublishedPartnersHighlight } from '../../lib/partners-public'
@@ -33,6 +35,7 @@ export default async function Home() {
   const testimonials = await getPublishedTestimonials(3)
   const faqs = await getPublishedFaqs()
   const partnersHighlight = await getPublishedPartnersHighlight()
+  const { whatsapp } = await getPublicContactInfo()
   return (
     <>
       {/* FAQPage schema mirrors the visible FAQ accordion below; null (nothing rendered) when there are no published FAQs. */}
@@ -40,7 +43,7 @@ export default async function Home() {
       <Hero />
       <StatsBand courses={courses} />
 
-      <section className="section program-finder-section">
+      <section id="programme-discovery" className="section program-finder-section">
         <Container className="max-w-6xl">
           <SectionHeading
             eyebrow="Program finder"
@@ -49,7 +52,7 @@ export default async function Home() {
             align="center"
           />
           <div className="mt-10">
-            <ProgramFinder courses={courses} />
+            <ProgramFinder courses={courses} whatsapp={whatsapp} />
           </div>
         </Container>
       </section>
@@ -91,6 +94,12 @@ export default async function Home() {
       </section>
 
       <BuildSection />
+
+      <section className="section-tight">
+        <Container>
+          <TechChallenge whatsapp={whatsapp} />
+        </Container>
+      </section>
 
       <section className="section-tight">
         <Container>

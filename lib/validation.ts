@@ -56,7 +56,10 @@ export const admissionsFormSchema = z.object({
     'website',
     'walk_in',
     'advertisement',
-    'other'
+    'other',
+    'career_quiz',
+    'tech_challenge',
+    'advisor_request'
   ]),
 
   // Honeypot — must always be empty. Bots that fill every field will trip this.

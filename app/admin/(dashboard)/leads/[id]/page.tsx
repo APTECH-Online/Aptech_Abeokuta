@@ -42,7 +42,7 @@ export default async function LeadProfilePage({ params }: { params: Promise<{ id
 
   if (!detail) notFound()
 
-  const { lead, education, interests, applications, interactions, followUps, staffOptions, programmeOptions } = detail
+  const { lead, education, interests, applications, interactions, followUps, staffOptions, programmeOptions, quizResults } = detail
   const activeProgrammeOptions = programmeOptions.filter((p: any) => p.status === 'active')
   const latestInterest = interests[0]
 
@@ -122,6 +122,25 @@ export default async function LeadProfilePage({ params }: { params: Promise<{ id
               </ul>
             )}
           </section>
+
+          {quizResults.length > 0 && (
+            <section className="card p-5 sm:p-6">
+              <p className="eyebrow mb-3">Career discovery context</p>
+              {quizResults.slice(0, 3).map((result: any) => (
+                <div key={result.id} className="grid gap-3 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div><dt style={{ color: 'var(--color-muted)' }}>Recommended programme</dt><dd className="font-semibold" style={{ color: 'var(--color-ink)' }}>{result.recommended?.name || result.recommended_course_title || '—'}</dd></div>
+                    <div><dt style={{ color: 'var(--color-muted)' }}>Secondary recommendation</dt><dd className="font-semibold" style={{ color: 'var(--color-ink)' }}>{result.secondary?.name || result.secondary_course_title || '—'}</dd></div>
+                    <div><dt style={{ color: 'var(--color-muted)' }}>Career interest</dt><dd className="font-medium" style={{ color: 'var(--color-ink)' }}>{result.career_interest || '—'}</dd></div>
+                    <div><dt style={{ color: 'var(--color-muted)' }}>Goal</dt><dd className="font-medium" style={{ color: 'var(--color-ink)' }}>{result.goal || '—'}</dd></div>
+                    <div><dt style={{ color: 'var(--color-muted)' }}>Experience</dt><dd className="font-medium" style={{ color: 'var(--color-ink)' }}>{result.experience_level || '—'}</dd></div>
+                    <div><dt style={{ color: 'var(--color-muted)' }}>Completed</dt><dd className="font-medium" style={{ color: 'var(--color-ink)' }}>{formatDateTime(result.completed_at)}</dd></div>
+                  </div>
+                  <p style={{ color: 'var(--color-body)' }}>{result.result_summary}</p>
+                </div>
+              ))}
+            </section>
+          )}
 
           <section className="card p-5 sm:p-6">
             <p className="eyebrow mb-3">Education</p>
