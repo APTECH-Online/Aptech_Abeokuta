@@ -70,6 +70,8 @@ export function canAccessPath(staff: Pick<Staff, 'role' | 'permissions'>, pathna
     if (pathname.startsWith('/admin/gallery')) return hasAnyModulePermission(staff, 'media')
     if (pathname.startsWith('/admin/faqs')) return hasAnyModulePermission(staff, 'faqs')
     if (pathname.startsWith('/admin/settings')) return hasAnyModulePermission(staff, 'website_content')
+    if (pathname.startsWith('/admin/reports/seo')) return hasPermission(staff, 'dashboard_access') && hasPermission(staff, 'dashboard_view_seo_metrics')
+    if (pathname.startsWith('/admin/reports')) return hasPermission(staff, 'dashboard_access') && hasPermission(staff, 'dashboard_view_reports')
     if (pathname.startsWith('/admin/leads')) return hasAnyModulePermission(staff, 'enquiries')
     if (pathname.startsWith('/admin/applications')) return hasAnyModulePermission(staff, 'applications')
     if (pathname.startsWith('/admin/follow-ups')) return hasAnyModulePermission(staff, 'follow_ups')
@@ -79,6 +81,32 @@ export function canAccessPath(staff: Pick<Staff, 'role' | 'permissions'>, pathna
     return pathname === '/admin' || pathname.startsWith('/admin/leads') || pathname.startsWith('/admin/applications') || pathname.startsWith('/admin/follow-ups')
   }
   return false
+}
+
+/**
+ * First page this staff member may open, in sidebar order. Used to land people
+ * somewhere useful after login (and when /admin itself is not permitted for
+ * them) instead of an access-denied page. /admin/notifications is open to every
+ * active staff member, so this always returns a page that renders the menu.
+ */
+const LANDING_CANDIDATES = [
+  '/admin',
+  '/admin/leads',
+  '/admin/applications',
+  '/admin/follow-ups',
+  '/admin/insights',
+  '/admin/gallery',
+  '/admin/courses',
+  '/admin/faqs',
+  '/admin/settings/social',
+  '/admin/reports'
+]
+
+export function getLandingPath(staff: Pick<Staff, 'role' | 'permissions'>): string {
+  for (const path of LANDING_CANDIDATES) {
+    if (canAccessPath(staff, path)) return path
+  }
+  return '/admin/notifications'
 }
 
 /** Resolves the signed-in Supabase user to an active CRM staff row. */

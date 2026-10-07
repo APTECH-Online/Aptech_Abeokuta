@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { guardAdminPage } from '../../../lib/auth'
+import { redirect } from 'next/navigation'
+import { getCurrentStaff, getLandingPath } from '../../../lib/auth'
 import { hasPermission } from '../../../lib/permissions'
 import { getDashboardData } from '../../../lib/crm/dashboard'
 import { getInsightsDashboardStats } from '../../../lib/crm/insights'
@@ -13,7 +14,13 @@ export const dynamic = 'force-dynamic'
 export default async function AdminDashboardPage() {
   // Content Manager: dashboard access is opt-in (spec section 4). Admissions
   // Officer keeps unconditional access, exactly as before this change.
-  const staff = await guardAdminPage((s) => s.role === 'super_admin' || s.role === 'admissions_officer' || hasPermission(s, 'dashboard_access'))
+  // /admin is where login lands everyone. If this person has no dashboard access,
+  // send them to the first page they can use rather than an access-denied screen.
+  const staff = await getCurrentStaff()
+  if (!staff) redirect('/admin/login')
+  if (!(staff.role === 'super_admin' || staff.role === 'admissions_officer' || hasPermission(staff, 'dashboard_access'))) {
+    redirect(getLandingPath(staff))
+  }
   const isSuperAdmin = staff.role === 'super_admin'
   const showCrmStats = isSuperAdmin || staff.role === 'admissions_officer' || hasPermission(staff, 'dashboard_view_crm_stats')
   const showContentStats = isSuperAdmin || hasPermission(staff, 'dashboard_view_content_stats')

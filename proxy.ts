@@ -149,17 +149,12 @@ export async function proxy(request: NextRequest) {
       return new NextResponse('Access Denied', { status: 403 })
     }
 
-    if (pathname === '/admin') {
-      if (staff.role === 'content_manager') return NextResponse.redirect(new URL('/admin/insights', request.url))
-      if (staff.role === 'admissions_officer') return NextResponse.redirect(new URL('/admin/leads', request.url))
-    }
-
-    const allowed =
-      staff.role === 'super_admin' ||
-      (staff.role === 'content_manager' && pathname.startsWith('/admin/insights')) ||
-      (staff.role === 'admissions_officer' && (pathname.startsWith('/admin/leads') || pathname.startsWith('/admin/applications') || pathname.startsWith('/admin/follow-ups')))
-
-    if (!allowed) return new NextResponse('Access Denied', { status: 403 })
+    // Authentication + active-status only. Per-page authorization is enforced
+    // inside each page by guardAdminPage()/require*Access() (lib/auth.ts), which
+    // redirects to /admin/access-denied. That keeps the AdminShell (sidebar and
+    // top bar) rendered around a denial instead of a bare, menu-less 403.
+    // Do NOT re-add a role/path allowlist here: it drifts from lib/permissions.ts
+    // and strands staff on a blank page.
   }
 
   return response

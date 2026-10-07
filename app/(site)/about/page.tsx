@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { CheckCircle2 } from 'lucide-react'
 import PageHero from '../../../components/shared/PageHero'
 import Container from '../../../components/ui/Container'
@@ -12,6 +11,7 @@ import { getPublishedPartnerOrganizations } from '../../../lib/partners-public'
 import { breadcrumbJsonLd, webPageJsonLd } from '../../../lib/structured-data'
 import { buildMetadata, getSiteUrl } from '../../../lib/seo'
 import JsonLd from '../../../components/shared/JsonLd'
+import AboutJourney from '../../../components/about/AboutJourney'
 
 export const metadata = buildMetadata({
   title: 'About APTECH Abeokuta | IT Training Centre in Ogun State',
@@ -45,19 +45,7 @@ export default async function About() {
         crumbs={[{ label: 'Home', href: '/' }, { label: 'About' }]}
       />
 
-      <section className="section-tight">
-        <Container>
-          <div className="card overflow-hidden">
-            <Image
-              src="/images/about-illustration.svg"
-              alt="Illustration of a student working across a laptop, code panels, and a data chart"
-              width={1200}
-              height={420}
-              className="w-full h-auto block"
-            />
-          </div>
-        </Container>
-      </section>
+      <AboutJourney />
 
       <section className="section">
         <Container>
