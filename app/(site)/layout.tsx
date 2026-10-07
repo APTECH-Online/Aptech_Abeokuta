@@ -7,6 +7,7 @@ import { getPublicContactInfo } from '../../lib/contact-info-public'
 import { siteGraphJsonLd } from '../../lib/structured-data'
 import { getSiteUrl } from '../../lib/seo'
 import AttributionCapture from '../../components/shared/AttributionCapture'
+import TechIqFloatingButton from '../../components/shared/TechIqFloatingButton'
 
 /**
  * Layout for the public marketing website only (everything under the
@@ -40,6 +41,7 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
         <div className="md:hidden" style={{ height: '3.5rem' }} aria-hidden="true" />
       </div>
       <StickyMobileCTA whatsapp={whatsapp} />
+      <TechIqFloatingButton />
     </>
   )
 }

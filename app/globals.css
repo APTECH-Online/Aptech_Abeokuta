@@ -2236,6 +2236,91 @@ button, input, select, textarea { font: inherit; }
   .journey-growth-window { min-height: 180px; }
 }
 
+/* Tech IQ premium entry point + game experience. */
+.tech-iq-float {
+  position: fixed;
+  right: 1.35rem;
+  bottom: 1.35rem;
+  z-index: 45;
+  display: inline-flex;
+  align-items: center;
+  gap: .7rem;
+  min-height: 58px;
+  padding: .58rem .82rem .58rem .62rem;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 17px;
+  background: linear-gradient(145deg, #0b1747 0%, #111f58 100%);
+  color: #fff;
+  box-shadow: 0 18px 42px rgba(5,13,42,.22), 0 4px 12px rgba(5,13,42,.12);
+  text-decoration: none;
+  transition: transform .2s ease, box-shadow .2s ease, padding .2s ease;
+}
+.tech-iq-float:hover { transform: translateY(-3px); color: #fff; box-shadow: 0 22px 48px rgba(5,13,42,.27), 0 5px 15px rgba(5,13,42,.13); }
+.tech-iq-float:focus-visible { outline: 3px solid rgba(245,189,53,.6); outline-offset: 3px; }
+.tech-iq-float__icon { display: grid; place-items: center; width: 40px; height: 40px; flex: 0 0 40px; border: 1px solid rgba(245,189,53,.34); border-radius: 12px; background: rgba(245,189,53,.12); color: #f5bd35; }
+.tech-iq-float__copy { display: grid; gap: .12rem; min-width: 0; }
+.tech-iq-float__label { font-size: .76rem; font-weight: 800; letter-spacing: .02em; }
+.tech-iq-float__hint { color: rgba(255,255,255,.64); font-size: .61rem; white-space: nowrap; }
+.tech-iq-float__spark { margin-left: .15rem; color: #f5bd35; }
+.tech-iq-float.is-compact { padding-right: .64rem; }
+.tech-iq-float.is-compact .tech-iq-float__copy, .tech-iq-float.is-compact .tech-iq-float__spark { display: none; }
+.tech-iq-float.is-compact .tech-iq-float__icon { width: 42px; height: 42px; flex-basis: 42px; }
+
+.tech-challenge--intro { position: relative; overflow: hidden; grid-template-columns: minmax(0, 1.4fr) minmax(220px, .6fr); min-height: 340px; padding: clamp(1.5rem, 4vw, 2.5rem); background: linear-gradient(145deg, #071337 0%, #0c1b4f 58%, #101f58 100%); border-color: rgba(255,255,255,.1); color: #fff; box-shadow: 0 24px 70px rgba(5,13,42,.18); }
+.tech-challenge__intro-glow { position: absolute; width: 300px; height: 300px; right: -100px; top: -120px; border-radius: 50%; background: rgba(245,189,53,.12); filter: blur(12px); pointer-events: none; }
+.tech-challenge__intro-main, .tech-challenge__intro-actions { position: relative; z-index: 1; }
+.tech-challenge--intro .eyebrow { color: #f5bd35; }
+.tech-challenge--intro .lede { max-width: 660px; color: rgba(255,255,255,.72); }
+.tech-challenge__badge { display: inline-flex; align-items: center; gap: .45rem; padding: .48rem .7rem; border: 1px solid rgba(245,189,53,.28); border-radius: 999px; background: rgba(245,189,53,.08); color: #f5bd35; font-size: .67rem; font-weight: 800; letter-spacing: .04em; }
+.tech-challenge__meta { display: flex; flex-wrap: wrap; gap: .65rem; }
+.tech-challenge__meta span { padding: .55rem .7rem; border: 1px solid rgba(255,255,255,.1); border-radius: 11px; background: rgba(255,255,255,.045); color: rgba(255,255,255,.58); font-size: .68rem; }
+.tech-challenge__meta strong { margin-right: .25rem; color: #fff; }
+.tech-challenge__intro-actions { align-self: end; display: grid; gap: .65rem; justify-items: start; padding: 1rem; border: 1px solid rgba(255,255,255,.1); border-radius: 17px; background: rgba(255,255,255,.045); backdrop-filter: blur(10px); }
+.tech-challenge__intro-actions .btn-secondary { border-color: rgba(255,255,255,.18); background: transparent; color: #fff; }
+.tech-challenge__intro-actions p { margin: .15rem 0 0; color: rgba(255,255,255,.48); font-size: .62rem; }
+
+.tech-challenge--game { gap: 1.1rem; }
+.tech-challenge__gamebar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.tech-challenge__question-count { margin-top: .22rem; color: var(--color-ink); font-size: .74rem; font-weight: 800; }
+.tech-challenge__question-count span { color: var(--color-muted); font-weight: 600; }
+.tech-challenge__progress { height: 5px; overflow: hidden; border-radius: 999px; background: var(--color-paper-alt); }
+.tech-challenge__progress span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--color-navy-700), var(--color-navy-500)); transition: width .28s ease; }
+.tech-challenge__timer.is-low { color: var(--color-danger); background: color-mix(in srgb, var(--color-danger) 8%, white); }
+.tech-challenge__question-card { position: relative; overflow: hidden; padding: clamp(1.2rem, 3vw, 1.75rem); border: 1px solid var(--color-line); border-radius: 18px; background: linear-gradient(145deg, #fff, #fafbff); }
+.tech-challenge__question-number { position: absolute; right: 1rem; top: .75rem; color: var(--color-navy-50); font-family: var(--font-mono); font-size: 3.5rem; font-weight: 600; line-height: 1; }
+.tech-challenge__answers { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .75rem; }
+.tech-challenge__answer { position: relative; display: flex; align-items: center; gap: .75rem; min-height: 68px; width: 100%; padding: .78rem .85rem; border: 1px solid var(--color-line); border-radius: 14px; background: #fff; color: var(--color-ink); text-align: left; font: inherit; cursor: pointer; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease; }
+.tech-challenge__answer:hover { transform: translateY(-2px); border-color: var(--color-navy-600); background: var(--color-navy-50); box-shadow: 0 12px 28px rgba(11,23,71,.08); }
+.tech-challenge__answer:focus-visible { outline: 3px solid rgba(11,23,71,.2); outline-offset: 2px; }
+.tech-challenge__answer-key { display: grid; place-items: center; width: 34px; height: 34px; flex: 0 0 34px; border: 1px solid var(--color-line); border-radius: 10px; background: var(--color-paper-alt); color: var(--color-navy-700); font-size: .72rem; font-weight: 800; }
+.tech-challenge__game-foot { margin: 0; color: var(--color-muted); font-size: .62rem; text-align: center; }
+
+.tech-challenge__result-top { display: flex; align-items: center; gap: .8rem; }
+.tech-challenge__result-label { display: block; margin-top: .12rem; color: var(--color-ink); font-size: .86rem; font-weight: 800; }
+.tech-challenge__score-wrap { display: grid; grid-template-columns: 150px minmax(0,1fr); align-items: center; gap: clamp(1rem, 4vw, 2rem); }
+.tech-challenge__score-ring { --score: 0%; position: relative; display: grid; place-items: center; width: 142px; aspect-ratio: 1; border-radius: 50%; background: conic-gradient(var(--color-navy-700) var(--score), var(--color-paper-alt) 0); }
+.tech-challenge__score-ring::before { content: ''; position: absolute; inset: 10px; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 1px var(--color-line); }
+.tech-challenge__score-ring strong, .tech-challenge__score-ring span { position: relative; z-index: 1; }
+.tech-challenge__score-ring strong { margin-top: .9rem; font-size: 1.7rem; line-height: 1; }
+.tech-challenge__score-ring span { margin-top: -1.2rem; color: var(--color-muted); font-size: .58rem; }
+.tech-challenge__level { color: var(--color-navy-700); font-family: var(--font-mono); font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.tech-challenge__result-note { display: flex; gap: .55rem; align-items: flex-start; padding: .8rem .9rem; border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-paper-alt); color: var(--color-muted); font-size: .67rem; line-height: 1.5; }
+
+@media (max-width: 767px) {
+  .tech-iq-float { right: .8rem; bottom: calc(4.7rem + env(safe-area-inset-bottom, 0px)); min-height: 50px; padding: .48rem .58rem; border-radius: 15px; }
+  .tech-iq-float__icon { width: 36px; height: 36px; flex-basis: 36px; }
+  .tech-iq-float__hint, .tech-iq-float__spark { display: none; }
+  .tech-challenge--intro { grid-template-columns: 1fr; min-height: 0; }
+  .tech-challenge__intro-actions { width: 100%; }
+  .tech-challenge__intro-actions .btn { width: 100%; justify-content: center; }
+  .tech-challenge__answers { grid-template-columns: 1fr; }
+  .tech-challenge__score-wrap { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .tech-challenge__score-wrap > div:last-child { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tech-iq-float, .tech-challenge__answer, .tech-challenge__progress span { transition: none; }
+}
+
 /* Interactive conversion experiences — deliberately uses the existing site card/button language. */
 .program-finder__progress { position: relative; overflow: hidden; }
 .program-finder__progress span { display: block; min-width: 0; width: 0; }
