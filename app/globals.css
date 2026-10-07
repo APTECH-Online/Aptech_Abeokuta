@@ -2730,3 +2730,66 @@ button, input, select, textarea { font: inherit; }
     font-size: 1.25rem;
   }
 }
+
+/* Digital Skills Speed Test admin page — scoped layout polish. */
+.tech-zone-challenge-detail .tech-zone-detail-header { min-width: 0; }
+.tech-zone-detail-title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  min-width: 0;
+}
+.tech-zone-detail-description { color: var(--color-muted); overflow-wrap: anywhere; }
+.tech-zone-detail-meta { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: .5rem; flex: 0 1 auto; }
+.tech-zone-meta-text { display: inline-flex; align-items: center; min-height: 30px; padding: .35rem .65rem; border: 1px solid var(--color-line); border-radius: 999px; color: var(--color-muted); font-size: .75rem; text-transform: capitalize; white-space: nowrap; }
+.tech-zone-section-heading, .tech-zone-question-bank-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; min-width: 0; }
+.tech-zone-section-note, .tech-zone-question-count { flex: 0 0 auto; color: var(--color-muted); font-size: .75rem; padding-top: .25rem; }
+.tech-zone-help-text { color: var(--color-muted); overflow-wrap: anywhere; }
+.tech-zone-checkboxes label { align-items: center; }
+.tech-zone-form-actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.tech-zone-question-bank { min-width: 0; }
+.tech-zone-question-item { overflow: hidden; }
+.tech-zone-question-summary {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .75rem;
+  list-style: none;
+  cursor: pointer;
+  padding: 1rem 1.25rem;
+  min-width: 0;
+}
+.tech-zone-question-summary::-webkit-details-marker { display: none; }
+.tech-zone-question-number { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: .6rem; background: var(--color-paper-alt); color: var(--color-muted); font-size: .75rem; font-weight: 700; }
+.tech-zone-question-summary-text { min-width: 0; overflow-wrap: anywhere; line-height: 1.5; }
+.tech-zone-question-chevron { width: 1.75rem; height: 1.75rem; display: grid; place-items: center; border: 1px solid var(--color-line); border-radius: 50%; color: var(--color-muted); font-size: 1rem; transition: transform .15s ease; }
+.tech-zone-question-item[open] .tech-zone-question-chevron { transform: rotate(45deg); }
+.tech-zone-question-editor { border-top: 1px solid var(--color-line); padding: 1.25rem; min-width: 0; }
+.tech-zone-delete-form { margin-top: .75rem; padding-top: .75rem; border-top: 1px solid var(--color-line); }
+.tech-zone-empty-state { display: grid; gap: .35rem; padding: 1.25rem; color: var(--color-muted); }
+.tech-zone-empty-state strong { color: var(--color-body); }
+.tech-zone-challenge-detail label { min-width: 0; overflow-wrap: anywhere; }
+.tech-zone-challenge-detail .input { width: 100%; max-width: 100%; box-sizing: border-box; }
+.tech-zone-challenge-detail textarea { overflow-wrap: anywhere; word-break: break-word; resize: vertical; }
+
+@media (max-width: 767px) {
+  .tech-zone-detail-title-row { align-items: stretch; flex-direction: column; }
+  .tech-zone-detail-meta { justify-content: flex-start; }
+  .tech-zone-section-heading, .tech-zone-question-bank-heading { flex-direction: column; gap: .5rem; }
+  .tech-zone-section-note, .tech-zone-question-count { padding-top: 0; }
+  .tech-zone-question-summary { grid-template-columns: 1.9rem minmax(0, 1fr) 1.6rem; padding: .9rem; gap: .6rem; }
+  .tech-zone-question-editor { padding: .95rem; }
+  .tech-zone-form-actions .btn, .tech-zone-admin-actions .btn { width: 100%; justify-content: center; }
+  .tech-zone-admin-actions { width: 100%; }
+  .tech-zone-checkboxes { flex-direction: column; gap: .75rem; }
+}
+
+@media (max-width: 575px) {
+  .tech-zone-detail-meta { gap: .4rem; }
+  .tech-zone-meta-text, .tech-zone-detail-meta .status-pill { font-size: .7rem; min-height: 28px; }
+  .tech-zone-question-summary { grid-template-columns: 1.75rem minmax(0, 1fr) 1.5rem; padding: .8rem; }
+  .tech-zone-question-number { width: 1.75rem; height: 1.75rem; }
+  .tech-zone-question-editor { padding: .8rem; }
+  .tech-zone-delete-form .btn { width: 100%; justify-content: center; }
+}
