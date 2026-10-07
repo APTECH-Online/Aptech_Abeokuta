@@ -8,6 +8,7 @@ import { logAudit } from '../../../../lib/audit'
 import { uploadCourseImage, deleteCourseImageByUrl } from '../../../../lib/supabase/course-storage'
 import { isCourseSlugTaken } from '../../../../lib/crm/courses'
 import { slugify } from '../../../../lib/validation'
+import { RESERVED_COURSE_SLUGS } from '../../../../lib/seo'
 import { recordSlugChange } from '../../../../lib/seo-redirects'
 import { parseCurriculum } from '../../../../lib/curriculum'
 import type { AdmissionStatus } from '../../../../types/db'
@@ -176,6 +177,7 @@ export async function createCourse(_prev: ActionResult, formData: FormData): Pro
     const seo = resolveSeoFields('course', { title: raw.title, summary: raw.summary }, raw)
     const slug = slugify(raw.slugInput || raw.title)
     if (!slug) return { ok: false, message: 'Could not generate a valid slug from that title.' }
+    if (RESERVED_COURSE_SLUGS.includes(slug)) return { ok: false, message: 'That slug is reserved for a site page.', fieldErrors: { slug: 'Reserved — try another' } }
     if (await isCourseSlugTaken(slug)) {
       return { ok: false, message: 'That slug is already in use.', fieldErrors: { slug: 'Already in use — try another' } }
     }
@@ -257,6 +259,7 @@ export async function updateCourse(_prev: ActionResult, formData: FormData): Pro
     const seo = resolveSeoFields('course', { title: raw.title, summary: raw.summary }, raw)
     const slug = slugify(raw.slugInput || raw.title)
     if (!slug) return { ok: false, message: 'Could not generate a valid slug from that title.' }
+    if (RESERVED_COURSE_SLUGS.includes(slug)) return { ok: false, message: 'That slug is reserved for a site page.', fieldErrors: { slug: 'Reserved — try another' } }
     if (slug !== existing.slug && (await isCourseSlugTaken(slug, courseId))) {
       return { ok: false, message: 'That slug is already in use.', fieldErrors: { slug: 'Already in use — try another' } }
     }

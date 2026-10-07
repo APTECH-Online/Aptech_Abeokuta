@@ -22,7 +22,7 @@ export default function NotFound() {
           The page may have moved or the link may be out of date. Try the homepage, or jump
           straight to the course catalogue.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-center gap-3">
           <Link href="/" className="btn btn-primary">Go to homepage</Link>
           <Link href="/courses" className="btn btn-secondary">Browse courses</Link>
         </div>

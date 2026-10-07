@@ -7,10 +7,13 @@ import { ArrowRight, Check, ChevronDown, GitCompareArrows, MessageCircle, X } fr
 import type { Course } from '../../data/courses'
 import { admissionUi } from '../../lib/admission'
 import { trackConversionEvent } from '../../lib/conversion-events'
+import { COMPARE_MAX, getCompareSlugs, setCompareSlugs } from '../../lib/compare-store'
 
 type Props = {
   courses: Course[]
   initialSlugs: string[]
+  /** Legacy `?add=<slug>` link: merged into the saved shortlist instead of replacing it. */
+  addSlug?: string
 }
 
 function safeInitial(slugs: string[], courses: Course[]) {
@@ -18,9 +21,12 @@ function safeInitial(slugs: string[], courses: Course[]) {
   return unique.slice(0, 3)
 }
 
-export default function CourseComparison({ courses, initialSlugs }: Props) {
+export default function CourseComparison({ courses, initialSlugs, addSlug }: Props) {
   const router = useRouter()
-  const [selected, setSelected] = useState(() => safeInitial(initialSlugs, courses))
+  const [selected, setSelected] = useState(() => safeInitial(addSlug ? [...initialSlugs, addSlug] : initialSlugs, courses))
+  // Becomes true after the saved shortlist (localStorage) has been merged in on
+  // the client; until then we must not write back, or we would overwrite it.
+  const [ready, setReady] = useState(false)
   const [openCategory, setOpenCategory] = useState<string | null>('overview')
   const trackedAdds = useRef(new Set<string>())
   const trackedRemoves = useRef(new Set<string>())
@@ -34,6 +40,23 @@ export default function CourseComparison({ courses, initialSlugs }: Props) {
   useEffect(() => {
     trackConversionEvent('comparison_started', { programmeSlugs: selected })
   }, []) // page-entry event only
+
+  // Load the cross-page shortlist. An explicit ?programmes= list (a shared or
+  // tray link) wins; otherwise use what the visitor saved on other pages.
+  useEffect(() => {
+    const fromUrl = safeInitial(initialSlugs, courses)
+    let next = fromUrl.length ? fromUrl : safeInitial(getCompareSlugs(), courses)
+    if (addSlug && courses.some((c) => c.slug === addSlug) && !next.includes(addSlug) && next.length < COMPARE_MAX) next = [...next, addSlug]
+    setSelected(next)
+    setCompareSlugs(next)
+    setReady(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // once, on entry
+
+  // Persist changes so the selection survives refresh, new tabs and navigation.
+  useEffect(() => {
+    if (ready) setCompareSlugs(selected)
+  }, [selected, ready])
 
   useEffect(() => {
     const params = new URLSearchParams()
@@ -60,7 +83,7 @@ export default function CourseComparison({ courses, initialSlugs }: Props) {
       }
       return
     }
-    if (selected.length >= 3) return
+    if (selected.length >= COMPARE_MAX) return
     setSelected((current) => [...current, slug])
     if (!trackedAdds.current.has(slug)) {
       trackedAdds.current.add(slug)
@@ -130,6 +153,7 @@ export default function CourseComparison({ courses, initialSlugs }: Props) {
           <span className="text-sm" style={{ color: 'var(--color-muted)' }}>{selected.length}/3 selected</span>
           {selected.length > 0 && <button type="button" className="btn btn-ghost btn-sm" onClick={clear}>Clear</button>}
           {selected.length === 1 && <p className="text-sm" style={{ color: 'var(--color-muted)' }}>Select one more programme to start the comparison.</p>}
+          <Link href="/courses" className="btn btn-ghost btn-sm">Browse courses</Link>
         </div>
 
         <div className="mt-10 card p-6 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">

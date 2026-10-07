@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { getSiteUrl, RESERVED_INSIGHT_SLUGS, STATIC_INDEXABLE_PATHS } from '../lib/seo'
+import { getSiteUrl, RESERVED_COURSE_SLUGS, RESERVED_INSIGHT_SLUGS, STATIC_INDEXABLE_PATHS } from '../lib/seo'
 import { getSitemapCourses } from '../lib/courses-public'
 import { getSitemapInsights } from '../lib/insights-public'
 import { getPublicChallenges } from '../lib/tech-zone'
@@ -45,7 +45,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...(listingLastModified[path] ? { lastModified: listingLastModified[path] } : {})
   }))
 
-  const courseEntries: MetadataRoute.Sitemap = courses.map((c) => ({
+  const courseEntries: MetadataRoute.Sitemap = courses
+    .filter((c) => !RESERVED_COURSE_SLUGS.includes(c.slug))
+    .map((c) => ({
     url: `${base}/courses/${c.slug}`,
     ...(c.updatedAt ? { lastModified: new Date(c.updatedAt) } : {})
   }))

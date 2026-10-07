@@ -406,6 +406,15 @@ export function openingHoursSpecification(hours: { day: string; time: string }[]
 export const RESERVED_INSIGHT_SLUGS = ['news', 'blog', 'events', 'announcements']
 
 /**
+ * /courses/[slug] shares its namespace with static routes under /courses.
+ * proxy.ts answers every one-segment /courses/<x> request with a 404 unless
+ * <x> is a published course slug, so a static route listed here must be
+ * skipped there (otherwise it 404s before the page renders), and the CRM
+ * rejects these as course slugs because the static route would shadow them.
+ */
+export const RESERVED_COURSE_SLUGS = ['compare']
+
+/**
  * Every static, indexable public page. The sitemap is built from this list
  * plus the CMS-driven course and insight URLs — CRM, auth and API routes are
  * never listed. Keep in sync when adding a public page.
@@ -455,7 +464,9 @@ export function staticNotFoundHtml(homeUrl: string, coursesUrl: string): string 
   .card { max-width:32rem; }
   h1 { font-size:1.5rem; margin:0 0 .75rem; }
   p { color:rgba(255,255,255,0.75); line-height:1.6; margin:0 0 1.5rem; }
-  a { display:inline-block; margin:0 .4rem; padding:.65rem 1.25rem; border-radius:.5rem; text-decoration:none; font-weight:600; }
+  .actions { display:flex; flex-wrap:wrap; justify-content:center; gap:.75rem; }
+  .actions a { display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; min-height:44px; padding:.65rem 1.25rem; border-radius:.5rem; text-decoration:none; font-weight:600; text-align:center; }
+  @media (max-width:480px) { .actions { flex-direction:column; align-items:stretch; } }
   .primary { background:#EFC077; color:#0B1747; }
   .secondary { border:1px solid rgba(255,255,255,0.3); color:#fff; }
 </style>
@@ -464,8 +475,10 @@ export function staticNotFoundHtml(homeUrl: string, coursesUrl: string): string 
   <div class="card">
     <h1>We couldn't find that page</h1>
     <p>The page may have moved or the link may be out of date. Try the homepage, or browse the course catalogue.</p>
-    <a class="primary" href="${homeUrl}">Go to homepage</a>
-    <a class="secondary" href="${coursesUrl}">Browse courses</a>
+    <div class="actions">
+      <a class="primary" href="${homeUrl}">Go to homepage</a>
+      <a class="secondary" href="${coursesUrl}">Browse courses</a>
+    </div>
   </div>
 </body>
 </html>`

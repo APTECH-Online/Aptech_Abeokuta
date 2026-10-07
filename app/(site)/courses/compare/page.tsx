@@ -8,7 +8,10 @@ import { buildMetadata } from '../../../../lib/seo'
 export const metadata: Metadata = buildMetadata({
   title: 'Compare IT Programmes in Abeokuta | APTECH Abeokuta',
   description: 'Compare APTECH Abeokuta programmes by duration, learning format, skills, entry requirements, career direction and certification.',
-  path: '/courses/compare'
+  path: '/courses/compare',
+  // Query-driven selection tool with no standalone content: keep it out of
+  // search results (and the sitemap) but let crawlers follow its links.
+  noindex: true
 })
 
 type Props = { searchParams: Promise<{ programmes?: string; add?: string }> }
@@ -17,7 +20,7 @@ export default async function CompareCoursesPage({ searchParams }: Props) {
   const params = await searchParams
   const courses = await getPublishedCourses()
   const fromProgrammes = params.programmes?.split(',').map((value) => value.trim()).filter(Boolean) ?? []
-  const initialSlugs = params.add ? [...fromProgrammes, params.add] : fromProgrammes
+  const initialSlugs = fromProgrammes
 
   return (
     <>
@@ -30,7 +33,7 @@ export default async function CompareCoursesPage({ searchParams }: Props) {
       <section className="section">
         <Container>
           {courses.length >= 2 ? (
-            <CourseComparison courses={courses} initialSlugs={initialSlugs} />
+            <CourseComparison courses={courses} initialSlugs={initialSlugs} addSlug={params.add} />
           ) : (
             <div className="card p-8 text-center">
               <p className="font-semibold text-[var(--color-ink)]">Programme comparison is temporarily unavailable.</p>

@@ -4,7 +4,7 @@ import { getSupabaseConfig } from './lib/supabase/config'
 import { publishedCourseSlugExists } from './lib/courses-public'
 import { publishedInsightSlugExists } from './lib/insights-public'
 import { findSlugRedirect } from './lib/seo-redirects'
-import { RESERVED_INSIGHT_SLUGS, staticNotFoundHtml } from './lib/seo'
+import { RESERVED_COURSE_SLUGS, RESERVED_INSIGHT_SLUGS, staticNotFoundHtml } from './lib/seo'
 import { LEGACY_REDIRECTS } from './lib/legacy-redirects'
 
 /**
@@ -81,6 +81,10 @@ export async function proxy(request: NextRequest) {
   const insightMatch = /^\/insights\/([^/]+)\/?$/.exec(pathname)
 
   if (courseMatch) {
+    // Static routes that live under /courses (e.g. /courses/compare) share the
+    // one-segment URL shape of a course slug but are not CMS courses; skip the
+    // slug lookup or they would be answered with a 404 before rendering.
+    if (RESERVED_COURSE_SLUGS.includes(decodeURIComponent(courseMatch[1]))) return NextResponse.next()
     const result = await handleSlugRequest(request, '/courses', decodeURIComponent(courseMatch[1]))
     // A course/insight path is never an admin route, so once the slug check
     // has cleared it (or there was nothing to check), there is nothing
