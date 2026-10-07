@@ -8,7 +8,18 @@ const ALLOWED = new Set([
   'career_quiz_recommendation_viewed',
   'career_quiz_completed',
   'tech_challenge_started',
-  'tech_challenge_completed'
+  'tech_challenge_completed',
+  'comparison_started',
+  'comparison_programme_added',
+  'comparison_programme_removed',
+  'comparison_completed',
+  'comparison_cta_clicked',
+  'career_pathway_viewed',
+  'student_story_viewed',
+  'student_project_viewed',
+  'advisor_cta_clicked',
+  'enquiry_cta_clicked',
+  'application_cta_clicked'
 ])
 
 export async function POST(request: Request) {

@@ -121,7 +121,7 @@ export async function getAdmissionsAnalytics(range: AnalyticsRange): Promise<Ana
   const supabase = await createClient()
   const raw = await loadPeriod(supabase, range)
   const scopedLeadIds = staff.role === 'admissions_officer' ? new Set(raw.leads.filter(l => l.assigned_to === staff.id).map(l => l.id)) : null
-  const current = { ...raw, leads: scopedLeadIds ? raw.leads.filter(l => scopedLeadIds.has(l.id)), apps: scopedLeadIds ? raw.apps.filter(a => scopedLeadIds.has(a.lead_id) || a.assigned_to === staff.id) : raw.apps, followups: scopedLeadIds ? raw.followups.filter(f => scopedLeadIds.has(f.lead_id) || f.assigned_to === staff.id) : raw.followups }
+  const current = { ...raw, leads: scopedLeadIds ? raw.leads.filter(l => scopedLeadIds.has(l.id)) : raw.leads, apps: scopedLeadIds ? raw.apps.filter(a => scopedLeadIds.has(a.lead_id) || a.assigned_to === staff.id) : raw.apps, followups: scopedLeadIds ? raw.followups.filter(f => scopedLeadIds.has(f.lead_id) || f.assigned_to === staff.id) : raw.followups }
   const leadIds = current.leads.map(x => x.id)
   const aux = await loadLeadAux(supabase, range, leadIds)
   const programmeMap = new Map(current.programmes.map(p => [p.id, p.name]))
@@ -185,7 +185,8 @@ export async function getAdmissionsAnalytics(range: AnalyticsRange): Promise<Ana
 
   const eventGroups = [
     ['Career Quiz','career_quiz_started','career_quiz_completed','career_quiz'],
-    ['Tech IQ Challenge','tech_challenge_started','tech_challenge_completed','tech_challenge']
+    ['Tech IQ Challenge','tech_challenge_started','tech_challenge_completed','tech_challenge'],
+    ['Programme Comparison','comparison_started','comparison_completed','programme_comparison']
   ] as const
   const interactive = eventGroups.map(([experience,startEvent,completeEvent,source]) => {
     const starts = current.events.filter(e=>e.event_name===startEvent).length; const completions = current.events.filter(e=>e.event_name===completeEvent).length

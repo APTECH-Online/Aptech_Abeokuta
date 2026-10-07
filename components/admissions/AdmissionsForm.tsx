@@ -28,7 +28,8 @@ const SOURCE_OPTIONS = [
   { value: 'other', label: 'Other' },
   { value: 'career_quiz', label: 'Career Quiz' },
   { value: 'tech_challenge', label: 'Tech Challenge' },
-  { value: 'advisor_request', label: 'Advisor Request' }
+  { value: 'advisor_request', label: 'Advisor Request' },
+  { value: 'programme_comparison', label: 'Programme Comparison' }
 ]
 
 const STUDY_MODE_OPTIONS = [
@@ -61,8 +62,11 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
   const [hasSubmittedOnce, setHasSubmittedOnce] = useState(false)
   const [landingPage, setLandingPage] = useState('')
   const [referrer, setReferrer] = useState('')
+  const [comparisonContext, setComparisonContext] = useState('')
 
   useEffect(() => {
+    setComparisonContext(searchParams.get('programmes') || '')
+
     setLandingPage(window.location.pathname)
     setReferrer(document.referrer)
   }, [])
@@ -91,6 +95,7 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
       <input type="hidden" name="utm_campaign" value={searchParams.get('utm_campaign') || ''} />
       <input type="hidden" name="utm_content" value={searchParams.get('utm_content') || ''} />
       <input type="hidden" name="utm_term" value={searchParams.get('utm_term') || ''} />
+      <input type="hidden" name="comparisonContext" value={comparisonContext} />
       {/* Honeypot — hidden from real visitors via CSS, not display:none, so simple bots that skip hidden fields still get caught less reliably; kept minimal and off-screen */}
       <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden' }}>
         <label htmlFor="companyWebsite">Leave this field empty</label>

@@ -212,7 +212,7 @@ export async function submitEnquiry(
       user_id: null,
       type: 'website',
       subject: isDuplicate ? 'Repeat enquiry submitted' : 'Enquiry submitted',
-      description: `Submitted the admissions enquiry form for ${programme.name}.`
+      description: `Submitted the admissions enquiry form for ${programme.name}.${comparisonContext.length ? ` Compared programmes: ${comparisonContext.join(', ')}.` : ''}`
     })
     if (interactionError) {
       console.error('[admissions] failed to log enquiry interaction', interactionError, { leadId })
@@ -222,7 +222,7 @@ export async function submitEnquiry(
       action: isDuplicate ? 'lead.resubmitted' : 'lead.created',
       entity: 'lead',
       entityId: leadId,
-      metadata: { source: values.source, programme: programme.name }
+      metadata: { source: values.source, programme: programme.name, comparedProgrammes: comparisonContext }
     })
 
     // --- Notifications (best-effort; never block the success response) ---------

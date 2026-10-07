@@ -3,6 +3,7 @@ import { admissionUi } from '../../lib/admission'
 import Image from 'next/image'
 import { Course } from '../../data/courses'
 import CourseIcon from '../ui/CourseIcon'
+import CompareCourseButton from './CompareCourseButton'
 
 const coverStyles: Record<string, { bg: string; fg: string }> = {
   'Advanced Diploma': { bg: 'var(--color-navy-900)', fg: 'rgba(239,192,119,0.9)' },
@@ -65,7 +66,7 @@ export default function CourseCard({ course }: { course: Course }) {
           </div>
         </dl>
 
-        <div className="mt-5 pt-4 flex items-center justify-between" style={{ borderTop: '1px solid var(--color-line)' }}>
+        <div className="mt-5 pt-4 flex items-center justify-between gap-4" style={{ borderTop: '1px solid var(--color-line)' }}>
           <Link
             href={`/courses/${course.slug}`}
             className="text-sm font-semibold inline-flex items-center gap-1.5 transition-transform duration-150 group-hover:translate-x-0.5"
@@ -75,6 +76,7 @@ export default function CourseCard({ course }: { course: Course }) {
             <span className="sr-only">: {course.title}</span>
             <span aria-hidden="true">→</span>
           </Link>
+          <CompareCourseButton slug={course.slug} />
         </div>
       </div>
     </article>

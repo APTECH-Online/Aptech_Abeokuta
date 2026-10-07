@@ -26,6 +26,10 @@ import { getInsightsBySlugs } from '../../../../lib/insights-public'
 import { COURSE_TOPICS } from '../../../../lib/topics'
 import { siteConfig } from '../../../../data/site'
 import JsonLd from '../../../../components/shared/JsonLd'
+import CompareCourseButton from '../../../../components/courses/CompareCourseButton'
+import CareerPathways from '../../../../components/courses/CareerPathways'
+import CourseConversionLink from '../../../../components/courses/CourseConversionLink'
+import { getPublishedTestimonials } from '../../../../lib/testimonials-public'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -66,6 +70,17 @@ export default async function CoursePage({ params }: Props) {
 
   const allCourses = await getPublishedCourses()
   const related = getRelatedCourses(allCourses, course)
+  const studentStories = await getPublishedTestimonials()
+  const storyProgramme = course.category === 'Advanced Diploma'
+    ? 'adse'
+    : course.category === 'Smart Pro'
+      ? 'smart'
+      : course.category === 'Aptech Certified Network Specialist'
+        ? 'acns'
+        : null
+  const courseStory = storyProgramme
+    ? studentStories.filter((story) => story.program.toLowerCase().includes(storyProgramme))
+    : []
   // Hand-picked guides (lib/topics.ts); only published, indexable ones come back.
   const CHOOSER_SLUG = 'choosing-between-short-course-and-diploma'
   // CRM-chosen guides once migration 0023 is in place; the in-code map only before it.
@@ -137,11 +152,12 @@ export default async function CoursePage({ params }: Props) {
               <dd className="mt-1" style={{ color: '#fff' }}>{course.mode}</dd>
             </div>
           </dl>
-          <div className="mt-5 flex flex-wrap gap-3 lg:hidden">
-            <Link href={admission.href} className="btn btn-accent">{admission.mobileLabel}</Link>
+          <div className="mt-5 flex flex-wrap items-center gap-3 lg:hidden">
+            <CourseConversionLink href={admission.href} event={admission.canApply ? "application_cta_clicked" : "enquiry_cta_clicked"} metadata={{ programmeSlug: course.slug, admissionStatus: course.admissionStatus }}>{admission.mobileLabel}</CourseConversionLink>
             {admission.canApply && (
               <Link href="/contact" className="btn" style={{ color: '#dbe4f3', border: '1px solid rgba(255,255,255,0.25)' }}>Ask a question</Link>
             )}
+            <CompareCourseButton slug={course.slug} label="Compare programme" />
           </div>
         </div>
       </section>
@@ -527,9 +543,9 @@ export default async function CoursePage({ params }: Props) {
                     <p className="console-line"><span className="console-key">level    </span><span className="console-val">{course.level}</span></p>
                     <p className="console-line"><span className="console-key">format   </span><span className="console-val">{course.mode}</span></p>
                   </div>
-                  <Link href={admission.href} className="btn btn-accent btn-block mt-5">
+                  <CourseConversionLink href={admission.href} event={admission.canApply ? "application_cta_clicked" : "enquiry_cta_clicked"} metadata={{ programmeSlug: course.slug, admissionStatus: course.admissionStatus }} className="btn-block mt-5">
                     {admission.primaryLabel}
-                  </Link>
+                  </CourseConversionLink>
                   <Link href="/contact" className="btn btn-block mt-2" style={{ color: '#dbe4f3', border: '1px solid rgba(255,255,255,0.15)' }}>
                     Ask a question
                   </Link>
@@ -556,6 +572,47 @@ export default async function CoursePage({ params }: Props) {
                 </li>
               ))}
             </ul>
+          </Container>
+        </section>
+      )}
+
+      <section className="section">
+        <Container>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow">Career pathways</p>
+              <h2 className="h-section mt-2">Where these skills can take you</h2>
+              <p className="mt-3 max-w-2xl lede">
+                Explore the skills published for this programme and the areas of work they may support. These are potential directions, not employment or placement guarantees.
+              </p>
+            </div>
+            <CompareCourseButton slug={course.slug} label="Compare with another programme" />
+          </div>
+          <div className="mt-8">
+            <CareerPathways course={course} />
+          </div>
+        </Container>
+      </section>
+
+      {courseStory.length > 0 && (
+        <section className="section-tight" style={{ background: 'var(--color-paper-alt)', borderTop: '1px solid var(--color-line)', borderBottom: '1px solid var(--color-line)' }}>
+          <Container>
+            <p className="eyebrow">Student stories</p>
+            <h2 className="h-section mt-2">What learners say about this programme</h2>
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+              {courseStory.slice(0, 3).map((story) => (
+                <blockquote key={story.id} className="card p-6">
+                  <p className="text-sm leading-relaxed text-[var(--color-body)]">“{story.quote}”</p>
+                  <footer className="mt-5 pt-4 border-t" style={{ borderColor: 'var(--color-line)' }}>
+                    <p className="text-sm font-semibold text-[var(--color-ink)]">{story.name}</p>
+                    <p className="text-xs text-[var(--color-muted)]">{story.program}</p>
+                  </footer>
+                </blockquote>
+              ))}
+            </div>
+            <Link href="/testimonials" className="mt-6 inline-flex text-sm font-semibold underline" style={{ color: 'var(--color-teal-700)' }}>
+              View more student stories
+            </Link>
           </Container>
         </section>
       )}

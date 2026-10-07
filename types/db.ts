@@ -40,6 +40,7 @@ export type LeadSource =
   | 'career_quiz'
   | 'tech_challenge'
   | 'advisor_request'
+  | 'programme_comparison'
 
 export type StudyMode = 'full_time' | 'part_time' | 'weekend' | 'online' | 'hybrid'
 
@@ -466,7 +467,8 @@ export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
   other: 'Other',
   career_quiz: 'Career Quiz',
   tech_challenge: 'Tech Challenge',
-  advisor_request: 'Advisor Request'
+  advisor_request: 'Advisor Request',
+  programme_comparison: 'Programme Comparison'
 }
 
 export const STUDY_MODE_LABELS: Record<StudyMode, string> = {

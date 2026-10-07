@@ -1,8 +1,9 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react'
+import { trackConversionEvent } from '../../lib/conversion-events'
 import type { PublicTestimonial } from '../../lib/testimonials-public'
 
 function initials(name: string) {
@@ -13,6 +14,13 @@ export default function TestimonialsPage({ testimonials }: { testimonials: Publi
   const [active, setActive] = useState(0)
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const item = testimonials[active]
+  const viewedStories = useRef(new Set<string>())
+
+  useEffect(() => {
+    if (!item || viewedStories.current.has(item.id)) return
+    viewedStories.current.add(item.id)
+    trackConversionEvent('student_story_viewed', { testimonialId: item.id, programme: item.program })
+  }, [item])
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
