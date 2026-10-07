@@ -211,6 +211,18 @@ export default async function LeadProfilePage({ params }: { params: Promise<{ id
                   {[lead.utm_source, lead.utm_medium].filter(Boolean).join(' / ') || '—'}
                 </dd>
               </div>
+              <div>
+                <dt style={{ color: 'var(--color-muted)' }}>First touch</dt>
+                <dd className="font-medium" style={{ color: 'var(--color-ink)' }}>{[lead.first_touch_source, lead.first_touch_medium, lead.first_touch_campaign].filter(Boolean).join(' / ') || '—'}</dd>
+              </div>
+              <div>
+                <dt style={{ color: 'var(--color-muted)' }}>Last touch</dt>
+                <dd className="font-medium" style={{ color: 'var(--color-ink)' }}>{[lead.last_touch_source, lead.last_touch_medium, lead.last_touch_campaign].filter(Boolean).join(' / ') || '—'}</dd>
+              </div>
+              <div>
+                <dt style={{ color: 'var(--color-muted)' }}>Conversion point</dt>
+                <dd className="font-medium" style={{ color: 'var(--color-ink)' }}>{lead.conversion_point || '—'}</dd>
+              </div>
             </dl>
           </section>
 

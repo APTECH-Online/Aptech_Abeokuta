@@ -55,6 +55,10 @@ export async function submitEnquiry(
   }
 
   const values = parsed.data
+  const comparisonContext = String(raw.comparisonContext || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
 
   let admin: ReturnType<typeof createAdminClient>
   let programme: { id: string; name: string; status: string } | null
@@ -105,6 +109,28 @@ export async function submitEnquiry(
       whatsapp: values.whatsapp || null
     })
 
+    // Phase 6 attribution: first-touch is immutable; last-touch is refreshed
+    // at the point of conversion. Campaign IDs are resolved server-side from
+    // the existing campaign management table rather than trusting arbitrary IDs.
+    const firstCampaignId = String(raw.first_touch_campaign_id || '')
+    const lastCampaignId = String(raw.last_touch_campaign_id || '')
+    const campaignIds = [...new Set([firstCampaignId, lastCampaignId].filter(Boolean))]
+    let campaignRows: any[] = []
+    if (campaignIds.length) {
+      const { data: rows } = await admin.from('campaigns').select('id,campaign_identifier,name').in('id', campaignIds)
+      campaignRows = rows ?? []
+    }
+    const campaignById = new Map(campaignRows.map((row: any) => [row.id, row]))
+    const firstCampaign = campaignById.get(firstCampaignId)
+    const lastCampaign = campaignById.get(lastCampaignId)
+    const firstSource = String(raw.first_touch_source || raw.utm_source || values.source || 'unknown')
+    const firstMedium = String(raw.first_touch_medium || raw.utm_medium || '')
+    const firstCampaignName = String(raw.first_touch_campaign || firstCampaign?.campaign_identifier || '')
+    const lastSource = String(raw.last_touch_source || raw.utm_source || values.source || 'unknown')
+    const lastMedium = String(raw.last_touch_medium || raw.utm_medium || '')
+    const lastCampaignName = String(raw.last_touch_campaign || lastCampaign?.campaign_identifier || '')
+    const conversionPoint = String(raw.conversionPoint || 'enquiry_form')
+
     let leadId: string
     let leadReference: string
     let isDuplicate = false
@@ -129,7 +155,23 @@ export async function submitEnquiry(
           address: values.address || existingLead.address,
           city: values.city || existingLead.city,
           state: values.state || existingLead.state,
-          country: values.country || existingLead.country || 'Nigeria'
+          country: values.country || existingLead.country || 'Nigeria',
+          first_touch_source: existingLead.first_touch_source || firstSource,
+          first_touch_medium: existingLead.first_touch_medium || firstMedium || null,
+          first_touch_campaign: existingLead.first_touch_campaign || firstCampaignName || null,
+          first_touch_campaign_id: existingLead.first_touch_campaign_id || firstCampaign?.id || null,
+          last_touch_source: lastSource,
+          last_touch_medium: lastMedium || null,
+          last_touch_campaign: lastCampaignName || null,
+          last_touch_campaign_id: lastCampaign?.id || null,
+          conversion_point: conversionPoint,
+          attribution_landing_page: String(raw.landingPage || existingLead.landing_page || '/admissions'),
+          attribution_referrer: String(raw.referrer || existingLead.referrer || '') || null,
+          utm_source: String(raw.utm_source || existingLead.utm_source || '') || null,
+          utm_medium: String(raw.utm_medium || existingLead.utm_medium || '') || null,
+          utm_campaign: String(raw.utm_campaign || existingLead.utm_campaign || '') || null,
+          utm_content: String(raw.utm_content || existingLead.utm_content || '') || null,
+          utm_term: String(raw.utm_term || existingLead.utm_term || '') || null
         })
         .eq('id', leadId)
     } else {
@@ -161,7 +203,18 @@ export async function submitEnquiry(
           utm_medium: (raw.utm_medium as string) || null,
           utm_campaign: (raw.utm_campaign as string) || null,
           utm_content: (raw.utm_content as string) || null,
-          utm_term: (raw.utm_term as string) || null
+          utm_term: (raw.utm_term as string) || null,
+          first_touch_source: firstSource,
+          first_touch_medium: firstMedium || null,
+          first_touch_campaign: firstCampaignName || null,
+          first_touch_campaign_id: firstCampaign?.id || null,
+          last_touch_source: lastSource,
+          last_touch_medium: lastMedium || null,
+          last_touch_campaign: lastCampaignName || null,
+          last_touch_campaign_id: lastCampaign?.id || null,
+          conversion_point: conversionPoint,
+          attribution_landing_page: landingPage,
+          attribution_referrer: referrer || null
         })
         .select('id')
         .single()

@@ -7,12 +7,12 @@ import { LEAD_SOURCE_LABELS, LEAD_STATUS_LABELS, type LeadSource, type LeadStatu
 export type AnalyticsRangeKey = 'today' | '7d' | '30d' | 'this_month' | 'last_month' | 'this_quarter' | 'this_year' | 'custom'
 export type AnalyticsRange = { key: AnalyticsRangeKey; start: Date; end: Date; label: string }
 
-type LeadRow = { id: string; source: LeadSource; status: LeadStatus; created_at: string; assigned_to: string | null }
+type LeadRow = { id: string; source: LeadSource; status: LeadStatus; created_at: string; assigned_to: string | null; utm_source?: string | null; utm_medium?: string | null; utm_campaign?: string | null; first_touch_source?: string | null; first_touch_medium?: string | null; first_touch_campaign?: string | null; first_touch_campaign_id?: string | null; last_touch_source?: string | null; last_touch_medium?: string | null; last_touch_campaign?: string | null; last_touch_campaign_id?: string | null }
 type ApplicationRow = { id: string; lead_id: string; programme_id: string | null; status: string; assigned_to: string | null; created_at: string; enrolled_at: string | null }
 type FollowUpRow = { id: string; lead_id: string; assigned_to: string | null; due_date: string; status: string; completed_at: string | null }
 type ProgrammeRow = { id: string; name: string }
 type StaffRow = { id: string; full_name: string }
-type EventRow = { event_name: string; lead_id: string | null; created_at: string }
+type EventRow = { event_name: string; lead_id: string | null; session_id: string | null; created_at: string }
 
 function startOfDay(d: Date) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x }
 function endOfDay(d: Date) { const x = new Date(d); x.setHours(23, 59, 59, 999); return x }
@@ -85,25 +85,29 @@ export interface AnalyticsData {
   trends: { label: string; leads: number; applications: number; enrolled: number }[]
   interactive: { experience: string; starts: number; completions: number; completionRate: number | null; leads: number; applications: number; enrolled: number; leadConversionRate: number | null }[]
   sourceProgramme: { source: string; programme: string; leads: number }[]
+  campaigns: { id: string; name: string; identifier: string; source: string; medium: string; status: string; programme: string; leads: number; applications: number; enrolled: number; conversion: number | null; leadToApplication: number | null; leadToEnrollment: number | null }[]
+  sourcePerformance: { source: string; leads: number; applications: number; enrolled: number; conversion: number | null }[]
+  marketingFunnel: { label: string; count: number | null; note: string }[]
 }
 
 async function loadPeriod(supabase: any, range: AnalyticsRange) {
   const start = range.start.toISOString(); const end = range.end.toISOString()
-  const [leads, createdApps, enrolledApps, dueFollowups, completedFollowups, events, programmes, staff] = await Promise.all([
-    paged<LeadRow>((from, to) => supabase.from('leads').select('id,source,status,created_at,assigned_to').gte('created_at', start).lte('created_at', end).range(from, to)),
+  const [leads, createdApps, enrolledApps, dueFollowups, completedFollowups, events, programmes, staff, campaigns] = await Promise.all([
+    paged<LeadRow>((from, to) => supabase.from('leads').select('id,source,status,created_at,assigned_to,utm_source,utm_medium,utm_campaign,first_touch_source,first_touch_medium,first_touch_campaign,first_touch_campaign_id,last_touch_source,last_touch_medium,last_touch_campaign,last_touch_campaign_id').gte('created_at', start).lte('created_at', end).range(from, to)),
     paged<ApplicationRow>((from, to) => supabase.from('applications').select('id,lead_id,programme_id,status,assigned_to,created_at,enrolled_at').gte('created_at', start).lte('created_at', end).range(from, to)),
     paged<ApplicationRow>((from, to) => supabase.from('applications').select('id,lead_id,programme_id,status,assigned_to,created_at,enrolled_at').gte('enrolled_at', start).lte('enrolled_at', end).range(from, to)),
     paged<FollowUpRow>((from, to) => supabase.from('follow_ups').select('id,lead_id,assigned_to,due_date,status,completed_at').gte('due_date', start).lte('due_date', end).range(from, to)),
     paged<FollowUpRow>((from, to) => supabase.from('follow_ups').select('id,lead_id,assigned_to,due_date,status,completed_at').gte('completed_at', start).lte('completed_at', end).range(from, to)),
-    paged<EventRow>((from, to) => supabase.from('conversion_events').select('event_name,lead_id,created_at').gte('created_at', start).lte('created_at', end).range(from, to)),
+    paged<EventRow>((from, to) => supabase.from('conversion_events').select('event_name,lead_id,session_id,created_at').gte('created_at', start).lte('created_at', end).range(from, to)),
     supabase.from('programmes').select('id,name').order('display_order').then((r: any) => { if (r.error) throw r.error; return r.data ?? [] }),
-    supabase.from('staff').select('id,full_name').eq('is_active', true).order('full_name').then((r: any) => { if (r.error) throw r.error; return r.data ?? [] })
+    supabase.from('staff').select('id,full_name').eq('is_active', true).order('full_name').then((r: any) => { if (r.error) throw r.error; return r.data ?? [] }),
+    supabase.from('campaigns').select('id,name,campaign_identifier,source,medium,status,programme_id').order('created_at', { ascending: false }).then((r: any) => { if (r.error) throw r.error; return r.data ?? [] })
   ])
   const appMap = new Map<string, ApplicationRow>()
   for (const row of [...createdApps, ...enrolledApps]) appMap.set(row.id, row)
   const followUpMap = new Map<string, FollowUpRow>()
   for (const row of [...dueFollowups, ...completedFollowups]) followUpMap.set(row.id, row)
-  return { leads, apps: [...appMap.values()], followups: [...followUpMap.values()], events, programmes: programmes as ProgrammeRow[], staff: staff as StaffRow[] }
+  return { leads, apps: [...appMap.values()], followups: [...followUpMap.values()], events, programmes: programmes as ProgrammeRow[], staff: staff as StaffRow[], campaigns }
 }
 
 async function loadLeadAux(supabase: any, range: AnalyticsRange, leadIds: string[]) {
@@ -112,7 +116,7 @@ async function loadLeadAux(supabase: any, range: AnalyticsRange, leadIds: string
   const relevantIds = [...new Set([...leadIds, ...interests.map((x: any) => x.lead_id).filter(Boolean)])]
   const lost = relevantIds.length ? await paged<any>((from, to) => supabase.from('leads').select('id,lost_reason,status').in('id', relevantIds).eq('status', 'lost').range(from, to)) : []
   const interactions = leadIds.length ? await paged<any>((from, to) => supabase.from('interactions').select('lead_id').in('lead_id', leadIds).gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString()).range(from, to)) : []
-  const attributionLeads = relevantIds.length ? await paged<LeadRow>((from, to) => supabase.from('leads').select('id,source,status,created_at,assigned_to').in('id', relevantIds).range(from, to)) : []
+  const attributionLeads = relevantIds.length ? await paged<LeadRow>((from, to) => supabase.from('leads').select('id,source,status,created_at,assigned_to,utm_source,utm_medium,utm_campaign,first_touch_source,first_touch_medium,first_touch_campaign,first_touch_campaign_id,last_touch_source,last_touch_medium,last_touch_campaign,last_touch_campaign_id').in('id', relevantIds).range(from, to)) : []
   return { interests, lost, activityLeadIds: new Set(interactions.map((x: any) => x.lead_id)), attributionLeads }
 }
 
@@ -198,6 +202,40 @@ export async function getAdmissionsAnalytics(range: AnalyticsRange): Promise<Ana
   for (const i of aux.interests) { const lead = leadsById.get(i.lead_id); if (!lead || !i.programme_id) continue; const key = `${lead.source}|${i.programme_id}`; sourceProgrammeMap.set(key, (sourceProgrammeMap.get(key) ?? 0) + 1) }
   const sourceProgramme = [...sourceProgrammeMap.entries()].map(([key, leads]) => { const [source, programmeId] = key.split('|'); return { source: LEAD_SOURCE_LABELS[source as LeadSource] ?? source, programme: programmeMap.get(programmeId) ?? 'Unspecified', leads } }).sort((a,b)=>b.leads-a.leads)
 
+  // Phase 6 campaign performance uses the existing lead/application/enrollment
+  // relationships. A lead attributed through either touch is counted once.
+  const campaignRows = (current.campaigns ?? []).map((campaign: any) => {
+    const campaignLeads = current.leads.filter((l: any) => l.first_touch_campaign_id === campaign.id || l.last_touch_campaign_id === campaign.id)
+    const campaignLeadIds = new Set(campaignLeads.map(l => l.id))
+    const campaignApps = appsInRange.filter(a => campaignLeadIds.has(a.lead_id))
+    const campaignEnrolled = enrolledInRange.filter(a => campaignLeadIds.has(a.lead_id))
+    return {
+      id: campaign.id, name: campaign.name, identifier: campaign.campaign_identifier, source: campaign.source || 'Unknown', medium: campaign.medium || 'Unknown',
+      status: campaign.status, programme: programmeMap.get(campaign.programme_id) || 'All programmes', leads: campaignLeads.length,
+      applications: campaignApps.length, enrolled: campaignEnrolled.length, conversion: pct(campaignEnrolled.length, campaignLeads.length),
+      leadToApplication: pct(campaignApps.length, campaignLeads.length), leadToEnrollment: pct(campaignEnrolled.length, campaignLeads.length)
+    }
+  }).filter((x: any) => x.leads || x.applications || x.enrolled)
+
+  const channelMap = new Map<string, { leads: number; applications: number; enrolled: number }>()
+  const channelFor = (l: any) => l.utm_source || l.last_touch_source || l.first_touch_source || l.source || 'unknown'
+  for (const l of current.leads) { const key = channelFor(l); const r = channelMap.get(key) || { leads: 0, applications: 0, enrolled: 0 }; r.leads++; channelMap.set(key, r) }
+  for (const a of appsInRange) { const l = leadsById.get(a.lead_id); if (!l) continue; const key = channelFor(l); const r = channelMap.get(key) || { leads: 0, applications: 0, enrolled: 0 }; r.applications++; channelMap.set(key, r) }
+  for (const a of enrolledInRange) { const l = leadsById.get(a.lead_id); if (!l) continue; const key = channelFor(l); const r = channelMap.get(key) || { leads: 0, applications: 0, enrolled: 0 }; r.enrolled++; channelMap.set(key, r) }
+  const sourcePerformance = [...channelMap.entries()].map(([source,r]) => ({ source: source === 'unknown' ? 'Unknown' : source, ...r, conversion: pct(r.enrolled,r.leads) })).sort((a,b)=>b.leads-a.leads)
+
+  const trackedSessions = new Set(current.events.map(e => e.session_id).filter(Boolean)).size
+  const engagedSessions = new Set(current.events.filter(e => ['career_quiz_started','tech_challenge_started','comparison_started','career_quiz_completed','tech_challenge_completed','comparison_completed'].includes(e.event_name)).map(e => e.session_id).filter(Boolean)).size
+  const programmeInterestLeads = new Set(aux.interests.map((i:any) => i.lead_id).filter(Boolean)).size
+  const marketingFunnel = [
+    { label: 'Tracked visitors', count: trackedSessions || null, note: trackedSessions ? 'Unique anonymous analytics sessions' : 'Visitor totals are not available yet' },
+    { label: 'Engaged visitors', count: engagedSessions || null, note: 'Sessions with a tracked interactive engagement' },
+    { label: 'Programme interest', count: programmeInterestLeads || null, note: 'Leads with a recorded programme interest' },
+    { label: 'Enquiries / leads', count: total, note: 'Existing CRM leads' },
+    { label: 'Applications', count: applications, note: 'Existing CRM applications' },
+    { label: 'Enrollments', count: enrolled, note: 'Existing enrollment events' }
+  ]
+
   const comparisonDays = daysBetween(range.start, range.end); const comparisonEnd = new Date(range.start.getTime()-1); const comparisonStart = addPeriod(comparisonEnd, -comparisonDays+1)
   const comparisonRange: AnalyticsRange = { key: 'custom', start: comparisonStart, end: comparisonEnd, label: 'Previous period' }
   const prev = await loadPeriod(supabase, comparisonRange)
@@ -219,6 +257,9 @@ export async function getAdmissionsAnalytics(range: AnalyticsRange): Promise<Ana
     lostReasons: [...lostReasons.entries()].map(([reason,count])=>({reason,count})).sort((a,b)=>b.count-a.count),
     trends,
     interactive,
-    sourceProgramme
+    sourceProgramme,
+    campaigns: campaignRows,
+    sourcePerformance,
+    marketingFunnel
   }
 }

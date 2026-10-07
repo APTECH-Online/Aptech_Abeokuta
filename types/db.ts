@@ -59,6 +59,37 @@ export type ApplicationStatus =
 
 export type ProgrammeStatus = 'active' | 'inactive'
 
+export type CampaignStatus = 'draft' | 'scheduled' | 'active' | 'paused' | 'completed' | 'archived'
+export type CampaignType = 'google_search' | 'meta_facebook' | 'instagram' | 'whatsapp' | 'organic_search' | 'email' | 'referral' | 'offline' | 'event' | 'school_outreach' | 'programme_specific' | 'general_admissions' | 'seasonal' | 'custom'
+export type CampaignConversionGoal = 'enquiry' | 'advisor_request' | 'application' | 'enrollment'
+
+export interface Campaign {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  status: CampaignStatus
+  campaign_type: CampaignType
+  start_date: string | null
+  end_date: string | null
+  programme_id: string | null
+  target_audience: string | null
+  target_location: string | null
+  landing_page: string | null
+  primary_cta: string | null
+  conversion_goal: CampaignConversionGoal
+  source: string | null
+  medium: string | null
+  campaign_identifier: string
+  headline: string | null
+  opportunity: string | null
+  notes: string | null
+  created_by: string | null
+  updated_by: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Staff {
   id: string
   full_name: string
@@ -124,6 +155,17 @@ export interface Lead {
   utm_campaign: string | null
   utm_content: string | null
   utm_term: string | null
+  first_touch_source: string | null
+  first_touch_medium: string | null
+  first_touch_campaign: string | null
+  first_touch_campaign_id: string | null
+  last_touch_source: string | null
+  last_touch_medium: string | null
+  last_touch_campaign: string | null
+  last_touch_campaign_id: string | null
+  conversion_point: string | null
+  attribution_landing_page: string | null
+  attribution_referrer: string | null
   assigned_to: string | null
   created_at: string
   updated_at: string

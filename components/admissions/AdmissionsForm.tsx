@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import { useActionFeedback } from '../admin/AdminFeedbackProvider'
 import FormAlert from '../shared/FormAlert'
 import WhatsAppButton from '../shared/WhatsAppButton'
+import { captureAttribution, getAttributionSnapshot } from '../../lib/attribution'
 import { submitEnquiry, type SubmitEnquiryState } from '../../app/(site)/admissions/actions'
 
 type ProgrammeOption = {
@@ -63,9 +64,11 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
   const [landingPage, setLandingPage] = useState('')
   const [referrer, setReferrer] = useState('')
   const [comparisonContext, setComparisonContext] = useState('')
+  const [attribution, setAttribution] = useState<ReturnType<typeof getAttributionSnapshot>>({})
 
   useEffect(() => {
     setComparisonContext(searchParams.get('programmes') || '')
+    setAttribution(captureAttribution(window.location.search))
 
     setLandingPage(window.location.pathname)
     setReferrer(document.referrer)
@@ -90,11 +93,20 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
       {/* Hidden tracking fields */}
       <input type="hidden" name="landingPage" value={landingPage || '/admissions'} />
       <input type="hidden" name="referrer" value={referrer} />
-      <input type="hidden" name="utm_source" value={searchParams.get('utm_source') || ''} />
-      <input type="hidden" name="utm_medium" value={searchParams.get('utm_medium') || ''} />
-      <input type="hidden" name="utm_campaign" value={searchParams.get('utm_campaign') || ''} />
-      <input type="hidden" name="utm_content" value={searchParams.get('utm_content') || ''} />
-      <input type="hidden" name="utm_term" value={searchParams.get('utm_term') || ''} />
+      <input type="hidden" name="utm_source" value={attribution.lastSource || searchParams.get('utm_source') || ''} />
+      <input type="hidden" name="utm_medium" value={attribution.lastMedium || searchParams.get('utm_medium') || ''} />
+      <input type="hidden" name="utm_campaign" value={attribution.lastCampaign || searchParams.get('utm_campaign') || ''} />
+      <input type="hidden" name="utm_content" value={attribution.lastContent || searchParams.get('utm_content') || ''} />
+      <input type="hidden" name="utm_term" value={attribution.lastTerm || searchParams.get('utm_term') || ''} />
+      <input type="hidden" name="first_touch_source" value={attribution.firstSource || ''} />
+      <input type="hidden" name="first_touch_medium" value={attribution.firstMedium || ''} />
+      <input type="hidden" name="first_touch_campaign" value={attribution.firstCampaign || ''} />
+      <input type="hidden" name="first_touch_campaign_id" value={attribution.firstCampaignId || ''} />
+      <input type="hidden" name="last_touch_source" value={attribution.lastSource || ''} />
+      <input type="hidden" name="last_touch_medium" value={attribution.lastMedium || ''} />
+      <input type="hidden" name="last_touch_campaign" value={attribution.lastCampaign || ''} />
+      <input type="hidden" name="last_touch_campaign_id" value={attribution.lastCampaignId || ''} />
+      <input type="hidden" name="conversionPoint" value="enquiry_form" />
       <input type="hidden" name="comparisonContext" value={comparisonContext} />
       {/* Honeypot — hidden from real visitors via CSS, not display:none, so simple bots that skip hidden fields still get caught less reliably; kept minimal and off-screen */}
       <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden' }}>

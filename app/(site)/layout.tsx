@@ -6,6 +6,7 @@ import JsonLd from '../../components/shared/JsonLd'
 import { getPublicContactInfo } from '../../lib/contact-info-public'
 import { siteGraphJsonLd } from '../../lib/structured-data'
 import { getSiteUrl } from '../../lib/seo'
+import AttributionCapture from '../../components/shared/AttributionCapture'
 
 /**
  * Layout for the public marketing website only (everything under the
@@ -31,7 +32,8 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       <a href="#main-content" className="skip-link">Skip to main content</a>
       <div className="min-h-screen flex flex-col">
         <Header whatsapp={whatsapp} />
-        <main id="main-content" className="flex-1">{children}</main>
+        <AttributionCapture />
+      <main id="main-content" className="flex-1">{children}</main>
         <Footer />
         {/* Spacer so the sticky mobile bar never overlaps footer links or a
             form's own submit button on small screens. */}
