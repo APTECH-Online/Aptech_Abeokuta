@@ -5,7 +5,9 @@ import { Mail, MapPin, Phone, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { breadcrumbJsonLd, webPageJsonLd } from '../../../lib/structured-data'
 import { getPublicContactInfo } from '../../../lib/contact-info-public'
-import { buildMetadata, getSiteUrl, telHref, mapsUrl } from '../../../lib/seo'
+import { buildMetadata, getSiteUrl, telHref } from '../../../lib/seo'
+import { OFFICE_NAME, officeDirectionsUrl } from '../../../lib/office-map'
+import OfficeMap from '../../../components/contact/OfficeMap'
 import JsonLd from '../../../components/shared/JsonLd'
 
 export const metadata = buildMetadata({
@@ -42,15 +44,17 @@ export default async function Contact() {
                   <MapPin aria-hidden="true" className="w-5 h-5 mt-0.5 shrink-0" style={{ color: 'var(--color-teal-700)' }} />
                   <div>
                     <p className="font-semibold text-[var(--color-ink)] text-sm">Campus address</p>
-                    <p className="mt-1 text-sm" style={{ color: 'var(--color-body)' }}>{contactInfo.address}</p>
+                    <p className="mt-1 text-sm font-medium" style={{ color: 'var(--color-ink)' }}>{OFFICE_NAME}</p>
+                    <p className="text-sm" style={{ color: 'var(--color-body)' }}>{contactInfo.address}</p>
                     <a
-                      href={mapsUrl(contactInfo.address)}
+                      href={officeDirectionsUrl(contactInfo.address)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-1.5 inline-block text-sm font-semibold underline"
                       style={{ color: 'var(--color-teal-700)' }}
+                      aria-label={`Get directions to ${OFFICE_NAME} in Google Maps (opens in a new tab)`}
                     >
-                      Get directions
+                      Get Directions <span aria-hidden="true">→</span>
                     </a>
                   </div>
                 </div>
@@ -92,18 +96,7 @@ export default async function Contact() {
                 </div>
               </div>
 
-              <div
-                className="mt-4 w-full h-56 rounded-2xl overflow-hidden"
-                style={{ border: '1px solid var(--color-line)' }}
-              >
-                <iframe
-                  title="Map showing the APTECH Abeokuta campus address"
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(contactInfo.address + ', Abeokuta, Nigeria')}&output=embed`}
-                  className="w-full h-full border-0"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
+              <OfficeMap address={contactInfo.address} />
             </div>
 
             <div className="card p-6 sm:p-8">

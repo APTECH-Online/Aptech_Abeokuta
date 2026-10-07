@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { siteConfig } from '../data/site'
+import { officePlaceUrl } from './office-map'
 
 /**
  * Single source of truth for everything SEO-related that is not page copy:
@@ -317,9 +318,9 @@ export function telHref(raw: string | null | undefined): string | null {
   return e164 ? `tel:${e164}` : null
 }
 
-/** Google Maps directions/search deep link built from the real CRM address. */
+/** Google Maps link to the Aptech Abeokuta office, built from the real CRM address (see lib/office-map.ts). */
 export function mapsUrl(address: string): string {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${address}, Abeokuta, Nigeria`)}`
+  return officePlaceUrl(address)
 }
 
 const DAY_INDEX: Record<string, number> = {
