@@ -2451,3 +2451,282 @@ button, input, select, textarea { font: inherit; }
   background: #15803d;
   border-color: #15803d;
 }
+
+
+/* Tech Zone responsive hardening — scoped to avoid changing unrelated CRM/public UI. */
+.tech-zone-admin-page,
+.tech-zone-admin-page > *,
+.tech-zone-admin-page .card,
+.tech-zone-admin-page form,
+.tech-zone-admin-page section {
+  min-width: 0;
+}
+
+.tech-zone-admin-page textarea,
+.tech-zone-admin-page input,
+.tech-zone-admin-page select {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.tech-zone-admin-page .tech-zone-admin-actions {
+  align-items: center;
+}
+
+.tech-challenge,
+.tech-challenge > * {
+  min-width: 0;
+}
+
+.tech-challenge__question-card h1,
+.tech-challenge__question-card h2,
+.tech-challenge__answer,
+.tech-challenge__answer .program-finder__option-copy,
+.tech-challenge__result-label,
+.tech-challenge__result-step,
+.tech-challenge__intro-copy,
+.tech-challenge__intro-side {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.tech-challenge__answer .program-finder__option-copy {
+  flex: 1 1 auto;
+  word-break: break-word;
+}
+
+.tech-challenge__gamebar > *,
+.tech-challenge__result-top > * {
+  min-width: 0;
+}
+
+.tech-challenge__gamebar .eyebrow {
+  overflow-wrap: anywhere;
+}
+
+.tech-challenge__intro-actions,
+.tech-challenge__intro-actions .btn,
+.tech-challenge--result .btn {
+  max-width: 100%;
+}
+
+@media (max-width: 639px) {
+  .tech-challenge {
+    padding: 1rem;
+    border-radius: 18px;
+  }
+
+  .tech-challenge--intro {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .tech-challenge--intro .tech-challenge__intro-copy h2,
+  .tech-challenge--intro .h-display {
+    font-size: clamp(1.85rem, 9vw, 2.55rem);
+    line-height: 1.02;
+    letter-spacing: -.035em;
+  }
+
+  .tech-challenge__intro-copy .lede {
+    font-size: .9rem;
+    line-height: 1.55;
+  }
+
+  .tech-challenge__meta {
+    gap: .45rem;
+  }
+
+  .tech-challenge__meta span {
+    flex: 1 1 7rem;
+    min-width: 0;
+    font-size: .64rem;
+  }
+
+  .tech-challenge__intro-window,
+  .tech-challenge__intro-actions {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .tech-challenge__window-body {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .tech-challenge__window-body strong {
+    overflow-wrap: anywhere;
+  }
+
+  .tech-challenge__intro-actions {
+    padding: .85rem;
+  }
+
+  .tech-challenge__intro-actions .btn,
+  .tech-challenge--result .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .tech-challenge__game-path {
+    grid-template-columns: auto minmax(10px, 1fr) auto minmax(10px, 1fr) auto;
+    gap: .25rem;
+    font-size: .5rem;
+  }
+
+  .tech-challenge__game-path span {
+    min-width: 0;
+  }
+
+  .tech-challenge__gamebar {
+    align-items: flex-start;
+    gap: .65rem;
+  }
+
+  .tech-challenge__question-count {
+    font-size: .7rem;
+  }
+
+  .tech-challenge__timer {
+    flex: 0 0 auto;
+    padding: .4rem .55rem;
+    font-size: .68rem;
+  }
+
+  .tech-challenge__question-card {
+    padding: 1rem;
+    border-radius: 15px;
+  }
+
+  .tech-challenge__question-number {
+    right: .75rem;
+    top: .65rem;
+    font-size: 2.65rem;
+  }
+
+  .tech-challenge__question-card h2,
+  .tech-challenge__question-card .h-section {
+    padding-right: 2rem;
+    font-size: clamp(1.3rem, 6.4vw, 1.75rem);
+    line-height: 1.18;
+  }
+
+  .tech-challenge__question-kicker {
+    flex-wrap: wrap;
+    row-gap: .3rem;
+  }
+
+  .tech-challenge__answers {
+    grid-template-columns: minmax(0, 1fr);
+    gap: .6rem;
+  }
+
+  .tech-challenge__answer {
+    min-height: 62px;
+    padding: .72rem;
+    gap: .6rem;
+    border-radius: 13px;
+  }
+
+  .tech-challenge__answer-key {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+  }
+
+  .tech-challenge__answer .program-finder__option-arrow {
+    flex: 0 0 auto;
+  }
+
+  .tech-challenge__game-foot {
+    font-size: .61rem;
+    line-height: 1.45;
+  }
+
+  .tech-challenge__result-path {
+    gap: .3rem;
+  }
+
+  .tech-challenge__result-path i {
+    width: 16px;
+  }
+
+  .tech-challenge__result-top {
+    align-items: flex-start;
+  }
+
+  .tech-challenge__score-wrap {
+    gap: 1rem;
+  }
+
+  .tech-challenge__score-ring {
+    width: 128px;
+  }
+
+  .tech-challenge__result-journey {
+    grid-template-columns: 1fr;
+    gap: .8rem;
+    padding-top: .4rem;
+  }
+
+  .tech-challenge__result-journey-line {
+    display: none;
+  }
+
+  .tech-challenge__result-step {
+    grid-template-columns: 34px minmax(0, 1fr);
+    column-gap: .65rem;
+    text-align: left;
+    align-items: center;
+  }
+
+  .tech-challenge__result-step span {
+    grid-row: span 2;
+    margin: 0;
+  }
+
+  .tech-challenge__result-step strong,
+  .tech-challenge__result-step small {
+    grid-column: 2;
+  }
+
+  .tech-challenge__result-step small {
+    font-size: .57rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .tech-challenge {
+    padding: .85rem;
+  }
+
+  .tech-challenge--intro {
+    padding: .85rem;
+  }
+
+  .tech-challenge__meta span {
+    flex-basis: 100%;
+  }
+
+  .tech-challenge__game-path {
+    grid-template-columns: repeat(5, minmax(0, auto));
+    justify-content: space-between;
+  }
+
+  .tech-challenge__game-path i {
+    min-width: 10px;
+  }
+
+  .tech-challenge__gamebar {
+    gap: .45rem;
+  }
+
+  .tech-challenge__timer {
+    font-size: .64rem;
+  }
+
+  .tech-challenge__question-card h2,
+  .tech-challenge__question-card .h-section {
+    font-size: 1.25rem;
+  }
+}
