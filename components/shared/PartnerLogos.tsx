@@ -19,7 +19,7 @@ export default async function PartnerLogos({ showLabel = true }: { showLabel?: b
   if (universities.length === 0) return null
 
   return (
-    <div>
+    <div className={showLabel ? 'mt-10 sm:mt-12' : undefined}>
       {showLabel && <p className="eyebrow">Affiliated universities</p>}
       <div className={`grid grid-cols-2 sm:grid-cols-4 gap-6 items-center ${showLabel ? 'mt-4' : 'mt-8'}`}>
         {universities.map((uni) => {

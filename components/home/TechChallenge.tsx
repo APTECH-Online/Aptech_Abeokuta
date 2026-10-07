@@ -49,13 +49,12 @@ const QUESTION_BANK = [
   { id: 'digital-footprint', q: 'What is a digital footprint?', options: ['The trail of information created by your online activity', 'A physical mark left by a laptop', 'A type of computer virus', 'A database index'], answer: 0 },
 ] as const
 
-type TechIqQuestion = (typeof QUESTION_BANK)[number]
 type TechIqAttemptQuestion = { id: string; q: string; options: string[]; answer: number }
 const QUESTIONS_PER_ATTEMPT = 5
 const RECENT_QUESTION_STORAGE_KEY = 'aptech-tech-iq-recent-questions'
 const RECENT_QUESTION_LIMIT = 15
 
-function randomQuestions(): TechIqQuestion[] {
+function randomQuestions(): TechIqAttemptQuestion[] {
   let recentList: string[] = []
   try {
     const raw = window.localStorage.getItem(RECENT_QUESTION_STORAGE_KEY)
