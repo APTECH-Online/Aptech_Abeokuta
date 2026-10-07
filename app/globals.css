@@ -3063,3 +3063,33 @@ button, input, select, textarea { font: inherit; }
 @media (min-width: 900px) { .cmp-advisor { flex-direction: row; align-items: center; justify-content: space-between; padding: 1.75rem; } .cmp-advisor__actions { flex: 0 0 auto; } }
 @media (max-width: 479px) { .cmp-advisor__actions .btn { width: 100%; justify-content: center; min-height: 44px; } .cmp-toolbar__actions .btn { flex: 1 1 auto; justify-content: center; min-height: 44px; } }
 @media (max-width: 639px) { .cmp-picker__bar .btn { min-height: 44px; } }
+
+/* ── Compare: mobile hardening (shortlist card, slots, sticky legend) ───────── */
+.cmp-shortlist__head > .min-w-0 { flex: 1 1 14rem; min-width: 0; }
+.cmp-title, .cmp-sub { overflow-wrap: anywhere; }
+@media (max-width: 639px) {
+  .cmp-shortlist { padding: 1rem; }
+  .cmp-shortlist__head { flex-wrap: wrap; gap: .6rem; }
+  .cmp-clear { order: -1; margin-left: auto; min-height: 36px; }
+  .cmp-slots { margin-top: .9rem; gap: .5rem; }
+  /* Show the full programme name instead of a one-line ellipsis */
+  .cmp-slot { align-items: flex-start; min-height: 48px; padding: .55rem .4rem .55rem .65rem; }
+  .cmp-slot .cmp-badge { margin-top: .1rem; }
+  .cmp-slot__name { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.35; overflow-wrap: anywhere; align-self: center; }
+  .cmp-slot .cmp-icon-btn { width: 36px; height: 36px; margin: -.2rem 0; }
+  .cmp-slot__add { min-height: 44px; }
+  .cmp-toolbar__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cmp-toolbar__actions .cmp-switch { grid-column: 1 / -1; }
+  .cmp-toolbar__actions .btn { width: 100%; justify-content: center; min-height: 44px; }
+}
+@media (max-width: 479px) {
+  /* Sticky legend: badge above name so three programmes fit a 320–390px screen */
+  .cmp-legend { padding: .4rem; gap: .3rem; }
+  .cmp-legend__item { flex-direction: column; align-items: flex-start; gap: .25rem; }
+  .cmp-legend__name { font-size: .68rem; -webkit-line-clamp: 3; }
+  .cmp-head__title { font-size: .98rem; }
+}
+@media (max-width: 359px) {
+  .cmp-shortlist { padding: .85rem; }
+  .cmp-block { padding-inline: .9rem; }
+}

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getLeadDetail } from '../../../../../lib/crm/lead-detail'
 import { getCurrentStaff } from '../../../../../lib/auth'
@@ -73,9 +74,10 @@ export default async function LeadProfilePage({ params }: { params: Promise<{ id
 
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-6 min-w-0">
+      <Link href="/admin/leads" className="text-sm underline w-fit" style={{ color: 'var(--color-muted)' }}>← All leads</Link>
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <p className="eyebrow">Lead profile</p>
           <h1 className="h-section mt-1">{lead.first_name} {lead.last_name}</h1>
           <p className="font-mono text-xs mt-1" style={{ color: 'var(--color-muted)' }}>{lead.lead_reference}</p>
@@ -97,11 +99,11 @@ export default async function LeadProfilePage({ params }: { params: Promise<{ id
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <dt style={{ color: 'var(--color-muted)' }}>Email</dt>
-                <dd className="font-medium" style={{ color: 'var(--color-ink)' }}>{lead.email}</dd>
+                <dd className="font-medium break-all" style={{ color: 'var(--color-ink)' }}>{lead.email || '—'}</dd>
               </div>
               <div>
                 <dt style={{ color: 'var(--color-muted)' }}>Phone</dt>
-                <dd className="font-medium" style={{ color: 'var(--color-ink)' }}>{lead.phone}</dd>
+                <dd className="font-medium" style={{ color: 'var(--color-ink)' }}>{lead.phone || '—'}</dd>
               </div>
               <div>
                 <dt style={{ color: 'var(--color-muted)' }}>WhatsApp</dt>
@@ -199,7 +201,7 @@ export default async function LeadProfilePage({ params }: { params: Promise<{ id
               </div>
               <div>
                 <dt style={{ color: 'var(--color-muted)' }}>Landing page</dt>
-                <dd className="font-medium truncate" style={{ color: 'var(--color-ink)' }}>{lead.landing_page || '—'}</dd>
+                <dd className="font-medium break-all" style={{ color: 'var(--color-ink)' }}>{lead.landing_page || '—'}</dd>
               </div>
               <div>
                 <dt style={{ color: 'var(--color-muted)' }}>Campaign</dt>
