@@ -2437,3 +2437,17 @@ button, input, select, textarea { font: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .tech-challenge__journey-stage, .tech-challenge__answer { transition: none; }
 }
+
+/* Tech IQ Challenge intro: white heading + green start button */
+.tech-challenge--intro .tech-challenge__intro-copy h2,
+.tech-challenge--intro .h-display { color: #fff; }
+.tech-challenge--intro .tech-challenge__intro-actions .btn-primary {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #fff;
+}
+.tech-challenge--intro .tech-challenge__intro-actions .btn-primary:hover,
+.tech-challenge--intro .tech-challenge__intro-actions .btn-primary:focus-visible {
+  background: #15803d;
+  border-color: #15803d;
+}
