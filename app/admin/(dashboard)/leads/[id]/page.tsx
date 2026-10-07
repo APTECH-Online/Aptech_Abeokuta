@@ -80,7 +80,7 @@ export default async function LeadProfilePage({ params }: { params: Promise<{ id
           <h1 className="h-section mt-1">{lead.first_name} {lead.last_name}</h1>
           <p className="font-mono text-xs mt-1" style={{ color: 'var(--color-muted)' }}>{lead.lead_reference}</p>
         </div>
-        <div className="flex items-center gap-2"><StatusBadge status={lead.priority} label={LEAD_PRIORITY_LABELS[lead.priority]} /><StatusBadge status={lead.status} label={LEAD_STATUS_LABELS[lead.status as keyof typeof LEAD_STATUS_LABELS]} /></div>
+        <div className="flex items-center gap-2"><StatusBadge status={lead.priority} label={LEAD_PRIORITY_LABELS[lead.priority as keyof typeof LEAD_PRIORITY_LABELS]} /><StatusBadge status={lead.status} label={LEAD_STATUS_LABELS[lead.status as keyof typeof LEAD_STATUS_LABELS]} /></div>
       </div>
 
       <div className="flex flex-wrap gap-2">
