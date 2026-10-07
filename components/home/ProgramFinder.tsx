@@ -26,7 +26,7 @@ export default function ProgramFinder({ courses, whatsapp }: Props) {
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<Partial<DiscoveryAnswers>>({})
   const [submittedAnswers, setSubmittedAnswers] = useState<DiscoveryAnswers | null>(null)
-  const [state, formAction] = useState<QuizLeadState>(initialState)
+  const [state, setState] = useState<QuizLeadState>(initialState)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
