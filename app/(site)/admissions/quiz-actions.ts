@@ -4,6 +4,7 @@ import { headers } from 'next/headers'
 import { createAdminClient } from '../../../lib/supabase/admin'
 import { checkRateLimit } from '../../../lib/rate-limit'
 import { generateLeadReference } from '../../../lib/reference'
+import { findExistingLead } from '../../../lib/duplicate'
 import { createNotification } from '../../../lib/notifications'
 import { DiscoveryAnswers, rankRecommendations } from '../../../lib/program-recommendation'
 import type { Course } from '../../../data/courses'
@@ -47,13 +48,9 @@ export async function submitCareerQuizLead(_prev: QuizLeadState, formData: FormD
     const normalPhone = phone || 'Not provided'
     let lead: { id: string; lead_reference: string } | null = null
 
-    if (email) {
-      const { data } = await admin.from('leads').select('id, lead_reference').eq('email', email.toLowerCase()).order('created_at', { ascending: false }).limit(1).maybeSingle()
-      lead = data
-    }
-    if (!lead && phone) {
-      const { data } = await admin.from('leads').select('id, lead_reference').eq('phone', phone).order('created_at', { ascending: false }).limit(1).maybeSingle()
-      lead = data
+    if (email || phone) {
+      const existing = await findExistingLead(admin, { email: normalEmail, phone: normalPhone })
+      if (existing) lead = { id: existing.id, lead_reference: existing.lead_reference }
     }
 
     const parts = name.split(/\s+/)

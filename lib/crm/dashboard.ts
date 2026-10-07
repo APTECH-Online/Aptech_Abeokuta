@@ -30,6 +30,9 @@ export interface DashboardData {
   applicationsCount: number
   enrolledCount: number
   followUpsDueCount: number
+  followUpsTodayCount: number
+  upcomingFollowUpsCount: number
+  uncontactedCount: number
   pipeline: { status: LeadStatus; label: string; count: number }[]
   leadsByMonth: { month: string; count: number }[]
   leadsByProgramme: { programme: string; count: number }[]
@@ -55,6 +58,10 @@ export async function getDashboardData(): Promise<DashboardData> {
   const zeroCount = Promise.resolve({ count: 0 })
   const emptyRows = Promise.resolve({ data: [] as any[], error: null })
 
+  const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0)
+  const dayEnd = new Date(dayStart); dayEnd.setDate(dayEnd.getDate() + 1)
+  const upcomingEnd = new Date(dayStart); upcomingEnd.setDate(upcomingEnd.getDate() + 8)
+
   const [
     { count: totalLeads },
     { count: newLeads },
@@ -62,6 +69,10 @@ export async function getDashboardData(): Promise<DashboardData> {
     { count: interested },
     { count: applicationsCount },
     { count: enrolledCount },
+    { count: followUpsDueCount },
+    { count: followUpsTodayCount },
+    { count: upcomingFollowUpsCount },
+    { count: uncontactedCount },
     { data: leadsRaw },
     { data: overdueRaw },
     { data: websiteEnquiriesRaw },
@@ -73,33 +84,14 @@ export async function getDashboardData(): Promise<DashboardData> {
     showEnquiries ? supabase.from('leads').select('id', { count: 'exact', head: true }).eq('status', 'interested') : zeroCount,
     showApplications ? supabase.from('applications').select('id', { count: 'exact', head: true }) : zeroCount,
     showEnquiries ? supabase.from('leads').select('id', { count: 'exact', head: true }).eq('status', 'enrolled') : zeroCount,
-    showEnquiries
-      ? supabase
-          .from('leads')
-          .select('id, status, source, created_at')
-          .order('created_at', { ascending: false })
-          .limit(2000)
-      : emptyRows,
-    showFollowUps
-      ? supabase
-          .from('follow_ups')
-          .select('id, due_date, lead_id, leads(first_name, last_name)')
-          .eq('status', 'pending')
-          .lt('due_date', new Date().toISOString())
-          .order('due_date', { ascending: true })
-          .limit(20)
-      : emptyRows,
-    showEnquiries
-      ? supabase
-          .from('interactions')
-          .select('id, lead_id, subject, description, created_at, leads(first_name, last_name, email)')
-          .eq('type', 'website')
-          .order('created_at', { ascending: false })
-          .limit(8)
-      : emptyRows,
-    showEnquiries
-      ? supabase.from('programmes').select('id, name').order('display_order', { ascending: true })
-      : emptyRows
+    showFollowUps ? supabase.from('follow_ups').select('id', { count: 'exact', head: true }).eq('status', 'pending').lt('due_date', dayStart.toISOString()) : zeroCount,
+    showFollowUps ? supabase.from('follow_ups').select('id', { count: 'exact', head: true }).eq('status', 'pending').gte('due_date', dayStart.toISOString()).lt('due_date', dayEnd.toISOString()) : zeroCount,
+    showFollowUps ? supabase.from('follow_ups').select('id', { count: 'exact', head: true }).eq('status', 'pending').gte('due_date', dayEnd.toISOString()).lt('due_date', upcomingEnd.toISOString()) : zeroCount,
+    showEnquiries ? supabase.from('leads').select('id', { count: 'exact', head: true }).eq('status', 'new') : zeroCount,
+    showEnquiries ? supabase.from('leads').select('id, status, source, created_at, priority').order('created_at', { ascending: false }).limit(2000) : emptyRows,
+    showFollowUps ? supabase.from('follow_ups').select('id, due_date, lead_id, leads(first_name, last_name)').eq('status', 'pending').lt('due_date', dayStart.toISOString()).order('due_date', { ascending: true }).limit(20) : emptyRows,
+    showEnquiries ? supabase.from('interactions').select('id, lead_id, subject, description, created_at, leads(first_name, last_name, email)').eq('type', 'website').order('created_at', { ascending: false }).limit(8) : emptyRows,
+    showEnquiries ? supabase.from('programmes').select('id, name').order('display_order', { ascending: true }) : emptyRows
   ])
 
   if (programmesError) {
@@ -257,7 +249,10 @@ export async function getDashboardData(): Promise<DashboardData> {
     interested: interested ?? 0,
     applicationsCount: applicationsCount ?? 0,
     enrolledCount: enrolledCount ?? 0,
-    followUpsDueCount: overdueFollowUps.length,
+    followUpsDueCount: followUpsDueCount ?? overdueFollowUps.length,
+    followUpsTodayCount: followUpsTodayCount ?? 0,
+    upcomingFollowUpsCount: upcomingFollowUpsCount ?? 0,
+    uncontactedCount: uncontactedCount ?? 0,
     pipeline,
     leadsByMonth,
     leadsByProgramme,

@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import { guardAdminPage } from '../../../../lib/auth'
 import { hasAnyModulePermission, hasPermission } from '../../../../lib/permissions'
-import { getFollowUps } from '../../../../lib/crm/follow-ups'
+import { getFollowUps, getFollowUpDashboard } from '../../../../lib/crm/follow-ups'
+import { getLeadFilterOptions } from '../../../../lib/crm/leads'
+import KpiCard from '../../../../components/admin/KpiCard'
+import { Clock3, UserPlus, AlertTriangle } from 'lucide-react'
 import { FOLLOW_UP_STATUS_LABELS, INTERACTION_TYPE_LABELS } from '../../../../types/db'
 import StatusBadge from '../../../../components/admin/StatusBadge'
 import FollowUpStatusForm from '../../../../components/admin/FollowUpStatusForm'
@@ -24,12 +27,15 @@ export default async function FollowUpsPage({
   const sp = await searchParams
   const page = Number(sp.page) || 1
 
-  const [{ followUps, total, pageSize }] = await Promise.all([
+  const [{ followUps, total, pageSize }, summary, filterOptions] = await Promise.all([
     getFollowUps({
-    status: (sp.status as any) || '',
-    page,
-    pageSize: 25
-  })
+      status: (sp.status as any) || '',
+      assignedTo: sp.assignedTo,
+      page,
+      pageSize: 25
+    }),
+    getFollowUpDashboard(),
+    getLeadFilterOptions()
   ])
   const canDelete = currentStaff.role === 'super_admin' || hasPermission(currentStaff, 'follow_ups.delete')
 
@@ -40,7 +46,21 @@ export default async function FollowUpsPage({
         <h1 className="h-section mt-1">Follow-ups</h1>
       </div>
 
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard label="Overdue" value={summary.overdue.length} icon={AlertTriangle} tone={summary.overdue.length ? 'warning' : 'success'} />
+        <KpiCard label="Due today" value={summary.today.length} icon={Clock3} tone={summary.today.length ? 'warning' : 'success'} />
+        <KpiCard label="Upcoming" value={summary.upcoming.length} sub="Next 7 days" icon={Clock3} />
+        <KpiCard label="Uncontacted" value={summary.uncontacted} sub="New leads" icon={UserPlus} tone={summary.uncontacted ? 'warning' : 'success'} />
+      </div>
+
       <form className="card p-4 sm:p-5 admin-filters">
+        <div className="admin-filter">
+          <label htmlFor="assignedTo" className="field-label">Assigned staff</label>
+          <select id="assignedTo" name="assignedTo" defaultValue={sp.assignedTo || ''} className="admin-select">
+            <option value="">Anyone</option>
+            {filterOptions.staff.map((s: any) => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+          </select>
+        </div>
         <div className="admin-filter">
           <label htmlFor="status" className="field-label">Status</label>
           <select id="status" name="status" defaultValue={sp.status || ''} className="admin-select">

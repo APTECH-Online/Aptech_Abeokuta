@@ -12,6 +12,7 @@ import {
   formatZodErrors
 } from '../../../../../lib/validation'
 import { LEAD_STATUS_LABELS, type LeadStatus } from '../../../../../types/db'
+import { createNotification } from '../../../../../lib/notifications'
 
 export type ActionResult = { ok: true } | { ok: false; message: string; fieldErrors?: Record<string, string> }
 
@@ -122,12 +123,12 @@ export async function assignLead(_prev: ActionResult, formData: FormData): Promi
     }
 
     await admin.from('interactions').insert({
-      lead_id: leadId,
-      user_id: staff.id,
-      type: 'note',
-      subject: 'Lead assigned',
+      lead_id: leadId, user_id: staff.id, type: 'note', subject: 'Lead assigned',
       description: `Lead assigned to ${assignedName}.`
     })
+    if (assignedTo && assignedTo !== staff.id) {
+      await createNotification(admin, { type: 'lead.created', title: 'Lead assigned to you', body: `You have been assigned ${assignedName ? 'a lead' : 'a new lead'}.`, link: `/admin/leads/${leadId}`, entity: 'lead', entityId: leadId, recipientId: assignedTo })
+    }
 
     await logAudit(admin, {
       userId: staff.id,
@@ -184,6 +185,7 @@ export async function scheduleFollowUp(_prev: ActionResult, formData: FormData):
       entityId: parsed.data.leadId
     })
 
+    await createNotification(admin, { type: 'followup.due', title: 'Follow-up scheduled', body: `A ${parsed.data.type} follow-up has been scheduled.`, link: `/admin/leads/${parsed.data.leadId}`, entity: 'follow_up', entityId: parsed.data.leadId, recipientId: parsed.data.assignedTo || staff.id })
     revalidatePath(`/admin/leads/${parsed.data.leadId}`)
     revalidatePath('/admin/follow-ups')
     return { ok: true }
@@ -208,6 +210,13 @@ export async function updateFollowUpStatus(_prev: ActionResult, formData: FormDa
       .eq('id', followUpId)
 
     if (error) return { ok: false, message: 'Could not update follow-up.' }
+
+    if (leadId) {
+      await admin.from('interactions').insert({
+        lead_id: leadId, user_id: staff.id, type: 'note', subject: `Follow-up ${status}`,
+        description: `Follow-up marked ${status}.`
+      })
+    }
 
     await logAudit(admin, {
       userId: staff.id,
@@ -396,7 +405,7 @@ export async function startApplication(_prev: ActionResult, formData: FormData):
       application_reference: reference,
       lead_id: leadId,
       programme_id: programmeId,
-      status: 'submitted',
+      status: 'draft',
       assigned_to: staff.id
     })
 
@@ -410,14 +419,14 @@ export async function startApplication(_prev: ActionResult, formData: FormData):
       return { ok: false, message: 'Could not create the application.' }
     }
 
-    await admin.from('leads').update({ status: 'application_submitted' }).eq('id', leadId)
+    await admin.from('leads').update({ status: 'application_started' }).eq('id', leadId)
 
     await admin.from('interactions').insert({
       lead_id: leadId,
       user_id: staff.id,
       type: 'note',
       subject: 'Application started',
-      description: `Application ${reference} created.`
+      description: `Application ${reference} started.`
     })
 
     await logAudit(admin, {
@@ -430,6 +439,7 @@ export async function startApplication(_prev: ActionResult, formData: FormData):
 
     revalidatePath(`/admin/leads/${leadId}`)
     revalidatePath('/admin/applications')
+    revalidatePath('/admin')
     return { ok: true }
   } catch (err) {
     return friendlyAuthError(err)

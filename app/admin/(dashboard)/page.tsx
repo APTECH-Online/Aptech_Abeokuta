@@ -55,7 +55,9 @@ export default async function AdminDashboardPage() {
         <KpiCard label="Interested" value={data.interested} icon={HeartHandshake} tone="success" />
         <KpiCard label="Applications" value={data.applicationsCount} icon={FileText} />
         <KpiCard label="Enrolled" value={data.enrolledCount} sub={`${data.conversionRate}% conversion`} icon={GraduationCap} tone="success" accent progress={data.conversionRate} />
-        <KpiCard label="Follow-ups due" value={data.followUpsDueCount} sub="Overdue, pending action" icon={Clock3} tone={data.followUpsDueCount > 0 ? "warning" : "success"} />
+        <KpiCard label="Uncontacted" value={data.uncontactedCount} sub="New leads" icon={UserPlus} tone={data.uncontactedCount > 0 ? "warning" : "success"} />
+        <KpiCard label="Follow-ups today" value={data.followUpsTodayCount} sub={`${data.upcomingFollowUpsCount} upcoming`} icon={Clock3} tone={data.followUpsTodayCount > 0 ? "warning" : "success"} />
+        <KpiCard label="Overdue" value={data.followUpsDueCount} sub="Pending follow-ups" icon={Clock3} tone={data.followUpsDueCount > 0 ? "warning" : "success"} />
         <KpiCard label="Sources tracked" value={data.leadsBySource.length} icon={Globe2} />
         <KpiCard label="Website enquiries" value={data.recentWebsiteEnquiries.length} sub="Latest 8 shown below" icon={MessageSquare} />
       </div>

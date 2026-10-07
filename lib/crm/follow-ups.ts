@@ -46,3 +46,21 @@ export async function getFollowUps(filter: FollowUpsFilter) {
 
   return { followUps: rows, total: count ?? 0, page, pageSize }
 }
+
+
+export async function getFollowUpDashboard() {
+  await requireCrmAction('follow_ups', 'view')
+  const supabase = await createClient()
+  const now = new Date()
+  const start = new Date(now); start.setHours(0,0,0,0)
+  const end = new Date(start); end.setDate(end.getDate()+1)
+  const upcomingEnd = new Date(start); upcomingEnd.setDate(upcomingEnd.getDate()+8)
+
+  const [{ data: overdue }, { data: today }, { data: upcoming }, { count: uncontacted }] = await Promise.all([
+    supabase.from('follow_ups').select('id, due_date, lead_id, type, notes, leads(first_name,last_name,lead_reference)').eq('status','pending').lt('due_date', start.toISOString()).order('due_date').limit(20),
+    supabase.from('follow_ups').select('id, due_date, lead_id, type, notes, leads(first_name,last_name,lead_reference)').eq('status','pending').gte('due_date', start.toISOString()).lt('due_date', end.toISOString()).order('due_date').limit(20),
+    supabase.from('follow_ups').select('id, due_date, lead_id, type, notes, leads(first_name,last_name,lead_reference)').eq('status','pending').gte('due_date', end.toISOString()).lt('due_date', upcomingEnd.toISOString()).order('due_date').limit(30),
+    supabase.from('leads').select('id',{count:'exact',head:true}).eq('status','new')
+  ])
+  return { overdue: overdue ?? [], today: today ?? [], upcoming: upcoming ?? [], uncontacted: uncontacted ?? 0 }
+}

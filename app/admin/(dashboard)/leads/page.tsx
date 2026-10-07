@@ -4,7 +4,7 @@ import { guardAdminPage } from '../../../../lib/auth'
 import { hasAnyModulePermission, hasPermission } from '../../../../lib/permissions'
 import { DeleteLeadButton } from '../../../../components/admin/CrmDeleteActions'
 import { getLeads, getLeadFilterOptions } from '../../../../lib/crm/leads'
-import { LEAD_STATUS_ORDER, LEAD_STATUS_LABELS, LEAD_SOURCE_LABELS } from '../../../../types/db'
+import { LEAD_STATUS_ORDER, LEAD_STATUS_LABELS, LEAD_SOURCE_LABELS, LEAD_PRIORITY_LABELS, LEAD_PRIORITY_ORDER } from '../../../../types/db'
 import StatusBadge from '../../../../components/admin/StatusBadge'
 import Pagination from '../../../../components/admin/Pagination'
 
@@ -25,6 +25,7 @@ export default async function LeadsPage({
     status: (sp.status as any) || '',
     programmeId: sp.programmeId,
     source: (sp.source as any) || '',
+    priority: (sp.priority as any) || '',
     assignedTo: sp.assignedTo,
     dateFrom: sp.dateFrom,
     dateTo: sp.dateTo,
@@ -63,7 +64,7 @@ export default async function LeadsPage({
             id="search"
             name="search"
             defaultValue={sp.search}
-            placeholder="Name, email, phone, reference"
+            placeholder="Name, phone, email, lead ID/reference"
             className="admin-input w-full"
           />
         </div>
@@ -83,6 +84,13 @@ export default async function LeadsPage({
             {programmes.map((p: any) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
+          </select>
+        </div>
+        <div className="admin-filter">
+          <label htmlFor="priority" className="field-label">Priority</label>
+          <select id="priority" name="priority" defaultValue={sp.priority || ''} className="admin-select w-full">
+            <option value="">All priorities</option>
+            {LEAD_PRIORITY_ORDER.map((p) => <option key={p} value={p}>{LEAD_PRIORITY_LABELS[p]}</option>)}
           </select>
         </div>
         <div className="admin-filter">
@@ -127,6 +135,7 @@ export default async function LeadsPage({
               <th>Email</th>
               <th>Programme</th>
               <th>Status</th>
+              <th>Priority</th>
               <th>Source</th>
               <th>Assigned</th>
               <th>Created</th>
@@ -137,7 +146,7 @@ export default async function LeadsPage({
           <tbody>
             {leads.length === 0 ? (
               <tr>
-                <td colSpan={canDelete ? 11 : 10} className="text-center py-10" style={{ color: 'var(--color-muted)' }}>
+                <td colSpan={canDelete ? 12 : 11} className="text-center py-10" style={{ color: 'var(--color-muted)' }}>
                   No leads match these filters yet.
                 </td>
               </tr>
@@ -156,6 +165,7 @@ export default async function LeadsPage({
                   <td data-label="Email" className="truncate max-w-[180px]">{lead.email}</td>
                   <td data-label="Programme">{lead.programmeName || '—'}</td>
                   <td data-label="Status"><StatusBadge status={lead.status} label={LEAD_STATUS_LABELS[lead.status]} /></td>
+                  <td data-label="Priority"><StatusBadge status={lead.priority} label={LEAD_PRIORITY_LABELS[lead.priority]} /></td>
                   <td data-label="Source">{LEAD_SOURCE_LABELS[lead.source]}</td>
                   <td data-label="Assigned">{lead.assignedName || 'Unassigned'}</td>
                   <td data-label="Created">{new Date(lead.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>

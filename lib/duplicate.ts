@@ -28,23 +28,25 @@ export async function findExistingLead(
 
   if (byEmail) return byEmail as Lead
 
-  if (normalizedPhone) {
-    const { data: allLeads } = await admin
-      .from('leads')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(500)
+  if (normalizedPhone || normalizedWhatsapp) {
+    const candidates = new Set<string>()
+    if (phone.trim()) candidates.add(phone.trim())
+    if (whatsapp?.trim()) candidates.add(whatsapp.trim())
 
-    const byPhone = (allLeads ?? []).find((l: Lead) => {
-      return (
-        normalizePhone(l.phone) === normalizedPhone ||
-        (l.whatsapp && normalizePhone(l.whatsapp) === normalizedPhone) ||
-        (normalizedWhatsapp && normalizePhone(l.phone) === normalizedWhatsapp) ||
-        (normalizedWhatsapp && l.whatsapp && normalizePhone(l.whatsapp) === normalizedWhatsapp)
-      )
-    })
+    const [{ data: byPhone }, { data: byWhatsapp }] = await Promise.all([
+      candidates.size ? admin.from('leads').select('*').in('phone', Array.from(candidates)).order('created_at', { ascending: false }).limit(5) : Promise.resolve({ data: [] as Lead[] }),
+      candidates.size ? admin.from('leads').select('*').in('whatsapp', Array.from(candidates)).order('created_at', { ascending: false }).limit(5) : Promise.resolve({ data: [] as Lead[] })
+    ])
+    const exact = [...(byPhone ?? []), ...(byWhatsapp ?? [])][0]
+    if (exact) return exact as Lead
 
-    if (byPhone) return byPhone as Lead
+    // Fallback for common Nigeria formatting differences (0803… vs +234803…).
+    const { data: recentLeads } = await admin.from('leads').select('*').order('created_at', { ascending: false }).limit(1000)
+    const match = (recentLeads ?? []).find((l: Lead) =>
+      (normalizedPhone && (normalizePhone(l.phone) === normalizedPhone || (l.whatsapp && normalizePhone(l.whatsapp) === normalizedPhone))) ||
+      (normalizedWhatsapp && (normalizePhone(l.phone) === normalizedWhatsapp || (l.whatsapp && normalizePhone(l.whatsapp) === normalizedWhatsapp)))
+    )
+    if (match) return match as Lead
   }
 
   return null

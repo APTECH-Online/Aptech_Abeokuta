@@ -13,6 +13,7 @@ import {
 import {
   LEAD_STATUS_LABELS,
   LEAD_SOURCE_LABELS,
+  LEAD_PRIORITY_LABELS,
   STUDY_MODE_LABELS,
   INTERACTION_TYPE_LABELS,
   APPLICATION_STATUS_LABELS
@@ -46,15 +47,30 @@ export default async function LeadProfilePage({ params }: { params: Promise<{ id
   const activeProgrammeOptions = programmeOptions.filter((p: any) => p.status === 'active')
   const latestInterest = interests[0]
 
-  // Build a single, chronologically-sorted timeline from interactions +
-  // follow-up creation, all real interaction rows created by actions above.
-  const timelineEntries = interactions.map((i: any) => ({
-    id: i.id,
-    date: i.created_at,
-    title: i.subject || INTERACTION_TYPE_LABELS[i.type as keyof typeof INTERACTION_TYPE_LABELS],
-    description: i.description,
-    actor: i.staff?.full_name || (i.type === 'website' ? 'Applicant (website)' : 'System')
-  }))
+  // Build a single, chronologically-sorted timeline from all meaningful CRM events.
+  const timelineEntries = [
+    ...interactions.map((i: any) => ({
+      id: `interaction-${i.id}`, date: i.created_at,
+      title: i.subject || INTERACTION_TYPE_LABELS[i.type as keyof typeof INTERACTION_TYPE_LABELS],
+      description: i.description, actor: i.staff?.full_name || (i.type === 'website' ? 'Website' : 'System')
+    })),
+    ...followUps.map((f: any) => ({
+      id: `followup-${f.id}`, date: f.created_at, title: 'Follow-up scheduled',
+      description: `${INTERACTION_TYPE_LABELS[f.type as keyof typeof INTERACTION_TYPE_LABELS] || 'Follow-up'} · due ${formatDateTime(f.due_date)}${f.notes ? ` · ${f.notes}` : ''}`,
+      actor: f.staff?.full_name || 'System'
+    })),
+    ...applications.map((a: any) => ({
+      id: `application-${a.id}`, date: a.updated_at || a.created_at,
+      title: `Application ${APPLICATION_STATUS_LABELS[a.status as keyof typeof APPLICATION_STATUS_LABELS] || a.status}`,
+      description: `${a.application_reference}${a.programmes?.name ? ` · ${a.programmes.name}` : ''}`,
+      actor: a.staff?.full_name || 'System'
+    })),
+    ...quizResults.map((q: any) => ({
+      id: `quiz-${q.id}`, date: q.completed_at, title: 'Career discovery quiz completed',
+      description: q.result_summary, actor: 'Website'
+    }))
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
 
   return (
     <div className="grid gap-6">
@@ -64,7 +80,13 @@ export default async function LeadProfilePage({ params }: { params: Promise<{ id
           <h1 className="h-section mt-1">{lead.first_name} {lead.last_name}</h1>
           <p className="font-mono text-xs mt-1" style={{ color: 'var(--color-muted)' }}>{lead.lead_reference}</p>
         </div>
-        <StatusBadge status={lead.status} label={LEAD_STATUS_LABELS[lead.status as keyof typeof LEAD_STATUS_LABELS]} />
+        <div className="flex items-center gap-2"><StatusBadge status={lead.priority} label={LEAD_PRIORITY_LABELS[lead.priority]} /><StatusBadge status={lead.status} label={LEAD_STATUS_LABELS[lead.status as keyof typeof LEAD_STATUS_LABELS]} /></div>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {lead.phone && <a className="btn btn-secondary btn-sm" href={`tel:${lead.phone}`}>Call</a>}
+        {(lead.whatsapp || lead.phone) && <a className="btn btn-secondary btn-sm" target="_blank" rel="noreferrer" href={`https://wa.me/${String(lead.whatsapp || lead.phone).replace(/\D/g, '')}`}>WhatsApp</a>}
+        {lead.email && <a className="btn btn-secondary btn-sm" href={`mailto:${lead.email}`}>Email</a>}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

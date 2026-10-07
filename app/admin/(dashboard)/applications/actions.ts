@@ -31,11 +31,17 @@ export async function updateApplicationStatus(_prev: ActionResult, formData: For
 
     if (error) return { ok: false, message: 'Could not update the application.' }
 
-    if (status === 'enrolled' && leadId) {
-      await admin.from('leads').update({ status: 'enrolled' }).eq('id', leadId)
-    }
-    if (status === 'accepted' && leadId) {
-      await admin.from('leads').update({ status: 'admission_offered' }).eq('id', leadId)
+    if (leadId) {
+      const leadStatus = status === 'draft'
+        ? 'application_started'
+        : status === 'submitted' || status === 'under_review'
+          ? 'application_submitted'
+          : status === 'accepted'
+            ? 'admission_offered'
+            : status === 'enrolled'
+              ? 'enrolled'
+              : null
+      if (leadStatus) await admin.from('leads').update({ status: leadStatus }).eq('id', leadId)
     }
 
     if (leadId) {

@@ -1,4 +1,4 @@
-// Hand-authored types mirroring supabase/migrations/0001_init.sql.
+// Hand-authored types mirroring the Supabase schema and migrations.
 // If the schema changes, update this file to match.
 
 export type StaffRole =
@@ -10,6 +10,8 @@ export type StaffRole =
   | 'admissions_manager'
   | 'counsellor'
   | 'viewer'
+
+export type LeadPriority = 'high' | 'medium' | 'low'
 
 export type LeadStatus =
   | 'new'
@@ -111,6 +113,7 @@ export interface Lead {
   state: string | null
   country: string | null
   status: LeadStatus
+  priority: LeadPriority
   source: LeadSource
   landing_page: string | null
   referrer: string | null
@@ -413,11 +416,15 @@ export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
   application_submitted: 'Application Submitted',
   admission_offered: 'Admission Offered',
   enrolled: 'Enrolled',
-  follow_up_later: 'Follow Up Later',
+  follow_up_later: 'Follow-up',
   not_interested: 'Not Interested',
   unreachable: 'Unreachable',
   lost: 'Lost'
 }
+
+export const LEAD_PRIORITY_LABELS: Record<LeadPriority, string> = { high: 'High Priority', medium: 'Medium', low: 'Low' }
+
+export const LEAD_PRIORITY_ORDER: LeadPriority[] = ['high', 'medium', 'low']
 
 export const LEAD_STATUS_ORDER: LeadStatus[] = [
   'new',
@@ -438,9 +445,11 @@ export const PIPELINE_STAGES: LeadStatus[] = [
   'new',
   'contacted',
   'interested',
-  'counselling',
+  'follow_up_later',
+  'application_started',
   'application_submitted',
-  'enrolled'
+  'enrolled',
+  'lost'
 ]
 
 export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
