@@ -115,6 +115,7 @@ export interface Lead {
   status: LeadStatus
   priority: LeadPriority
   source: LeadSource
+  lost_reason: string | null
   landing_page: string | null
   referrer: string | null
   utm_source: string | null
@@ -159,6 +160,7 @@ export interface Application {
   reviewed_at: string | null
   created_at: string
   updated_at: string
+  enrolled_at: string | null
 }
 
 export interface Interaction {

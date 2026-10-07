@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, Check, RotateCcw, Timer } from 'lucide-react'
 import AdvisorGuide from './AdvisorGuide'
+import { trackConversionEvent } from '../../lib/conversion-events'
 
 const QUESTIONS = [
   { q: 'Which technology is primarily used to structure a webpage?', options: ['HTML', 'SQL', 'Python', 'Excel'], answer: 0 },
@@ -26,6 +27,7 @@ export default function TechChallenge({ whatsapp }: { whatsapp: string }) {
       setTimeLeft((current) => {
         if (current <= 1) {
           window.clearInterval(timer)
+          trackConversionEvent('tech_challenge_completed', { score })
           setFinished(true)
           return 0
         }
@@ -37,13 +39,13 @@ export default function TechChallenge({ whatsapp }: { whatsapp: string }) {
 
   function choose(choice: number) {
     const nextScore = score + (choice === QUESTIONS[index].answer ? 1 : 0)
-    if (index === QUESTIONS.length - 1) { setScore(nextScore); setFinished(true); window.dispatchEvent(new CustomEvent('aptech:conversion', { detail: { event: 'tech_challenge_completed', score: nextScore } })); return }
+    if (index === QUESTIONS.length - 1) { setScore(nextScore); setFinished(true); trackConversionEvent('tech_challenge_completed', { score: nextScore }); window.dispatchEvent(new CustomEvent('aptech:conversion', { detail: { event: 'tech_challenge_completed', score: nextScore } })); return }
     setScore(nextScore); setIndex(index + 1)
   }
 
   function reset() { setActive(false); setIndex(0); setScore(0); setFinished(false); setTimeLeft(60) }
 
-  if (!active) return <div className="tech-challenge"><div><p className="eyebrow">Tech IQ Challenge</p><h2 className="h-section mt-2">Can you beat the tech challenge?</h2><p className="mt-2 lede" style={{ fontSize: '.96rem' }}>Five quick questions. Test your technology instincts and see your score at the end.</p></div><button type="button" className="btn btn-primary inline-flex items-center gap-2" onClick={() => { setTimeLeft(60); setActive(true); window.dispatchEvent(new CustomEvent('aptech:conversion', { detail: { event: 'tech_challenge_started' } })) }}>Start the challenge <ArrowRight size={15} /></button></div>
+  if (!active) return <div className="tech-challenge"><div><p className="eyebrow">Tech IQ Challenge</p><h2 className="h-section mt-2">Can you beat the tech challenge?</h2><p className="mt-2 lede" style={{ fontSize: '.96rem' }}>Five quick questions. Test your technology instincts and see your score at the end.</p></div><button type="button" className="btn btn-primary inline-flex items-center gap-2" onClick={() => { setTimeLeft(60); setActive(true); trackConversionEvent('tech_challenge_started'); window.dispatchEvent(new CustomEvent('aptech:conversion', { detail: { event: 'tech_challenge_started' } })) }}>Start the challenge <ArrowRight size={15} /></button></div>
 
   if (finished) {
     const message = score >= 4 ? 'Nice! You’ve got strong technology instincts.' : score >= 3 ? 'Good start — you’ve got a solid technology foundation.' : 'Curious minds improve quickly. Keep exploring.'

@@ -70,13 +70,14 @@ export async function changeLeadStatus(_prev: ActionResult, formData: FormData):
 
     const leadId = String(formData.get('leadId') || '')
     const newStatus = String(formData.get('status') || '') as LeadStatus
+    const lostReason = String(formData.get('lostReason') || '').trim() || null
     if (!leadId || !newStatus) return { ok: false, message: 'Missing lead or status.' }
 
     const admin = createAdminClient()
-    const { data: existing } = await admin.from('leads').select('status').eq('id', leadId).maybeSingle()
+    const { data: existing } = await admin.from('leads').select('status, lost_reason').eq('id', leadId).maybeSingle()
     if (!existing) return { ok: false, message: 'Lead not found.' }
 
-    const { error } = await admin.from('leads').update({ status: newStatus }).eq('id', leadId)
+    const { error } = await admin.from('leads').update({ status: newStatus, lost_reason: newStatus === 'lost' ? lostReason : null }).eq('id', leadId)
     if (error) return { ok: false, message: 'Could not update status.' }
 
     await admin.from('interactions').insert({

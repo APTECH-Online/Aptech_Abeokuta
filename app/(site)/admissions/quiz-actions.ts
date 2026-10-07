@@ -101,6 +101,12 @@ export async function submitCareerQuizLead(_prev: QuizLeadState, formData: FormD
     })
     if (resultError) throw resultError
 
+    await admin.from('conversion_events').insert({
+      event_name: 'career_quiz_completed',
+      lead_id: lead.id,
+      metadata: { programme: recommended.slug, careerInterest: answers.interest, goal: answers.goal }
+    })
+
     await admin.from('interactions').insert({
       lead_id: lead.id,
       user_id: null,

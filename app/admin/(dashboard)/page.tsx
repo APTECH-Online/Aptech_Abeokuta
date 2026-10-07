@@ -4,6 +4,7 @@ import { getCurrentStaff, getLandingPath } from '../../../lib/auth'
 import { hasPermission } from '../../../lib/permissions'
 import { getDashboardData } from '../../../lib/crm/dashboard'
 import { getInsightsDashboardStats } from '../../../lib/crm/insights'
+import { getAdmissionsAnalytics, resolveAnalyticsRange } from '../../../lib/crm/analytics'
 import KpiCard from '../../../components/admin/KpiCard'
 import { BarChart, LineChart, DonutChart } from '../../../components/admin/charts'
 import { Users, UserPlus, PhoneCall, HeartHandshake, FileText, GraduationCap, Clock3, Globe2, MessageSquare, Newspaper, CalendarDays } from 'lucide-react'
@@ -24,10 +25,12 @@ export default async function AdminDashboardPage() {
   const isSuperAdmin = staff.role === 'super_admin'
   const showCrmStats = isSuperAdmin || staff.role === 'admissions_officer' || hasPermission(staff, 'dashboard_view_crm_stats')
   const showContentStats = isSuperAdmin || hasPermission(staff, 'dashboard_view_content_stats')
+  const showAdmissionsStats = isSuperAdmin || staff.role === 'admissions_officer' || hasPermission(staff, 'dashboard_view_admissions_stats')
 
-  const [data, insightsStats] = await Promise.all([
+  const [data, insightsStats, analytics] = await Promise.all([
     showCrmStats ? getDashboardData() : null,
-    showContentStats ? getInsightsDashboardStats() : null
+    showContentStats ? getInsightsDashboardStats() : null,
+    showAdmissionsStats ? getAdmissionsAnalytics(resolveAnalyticsRange('this_month')) : null
   ])
 
   return (
@@ -39,6 +42,28 @@ export default async function AdminDashboardPage() {
           A live view of enquiries, applications, and follow-ups across every intake.
         </p>
       </div>
+
+      {analytics && (
+        <section className="card p-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+            <div><p className="eyebrow">Admissions &amp; Sales</p><p className="mt-1 text-sm" style={{color:'var(--color-muted)'}}>This month’s decision-ready funnel overview.</p></div>
+            <Link href="/admin/reports" className="btn btn-secondary btn-sm">Open full analytics →</Link>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <KpiCard label="Leads" value={analytics.totals.leads} />
+            <KpiCard label="Contacted" value={analytics.totals.contacted} />
+            <KpiCard label="Interested" value={analytics.totals.interested} />
+            <KpiCard label="Applications" value={analytics.totals.applications} />
+            <KpiCard label="Enrolled" value={analytics.totals.enrolled} sub={`${analytics.totals.conversion ?? 0}% lead conversion`} tone="success" />
+          </div>
+          <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+            <div className="rounded-xl border p-3" style={{borderColor:'var(--color-border)'}}><strong>{analytics.followUps.dueToday}</strong><span className="block text-xs mt-1" style={{color:'var(--color-muted)'}}>Follow-ups today</span></div>
+            <div className="rounded-xl border p-3" style={{borderColor:'var(--color-border)'}}><strong>{analytics.followUps.overdue}</strong><span className="block text-xs mt-1" style={{color:'var(--color-muted)'}}>Overdue</span></div>
+            <div className="rounded-xl border p-3" style={{borderColor:'var(--color-border)'}}><strong>{analytics.totals.leadToApplication ?? '—'}%</strong><span className="block text-xs mt-1" style={{color:'var(--color-muted)'}}>Lead → application</span></div>
+            <div className="rounded-xl border p-3" style={{borderColor:'var(--color-border)'}}><strong>{analytics.totals.applicationToEnrollment ?? '—'}%</strong><span className="block text-xs mt-1" style={{color:'var(--color-muted)'}}>Application → enrollment</span></div>
+          </div>
+        </section>
+      )}
 
       {!data && !insightsStats && (
         <div className="card p-6 text-sm" style={{ color: 'var(--color-muted)' }}>

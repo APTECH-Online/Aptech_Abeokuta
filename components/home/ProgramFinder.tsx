@@ -8,6 +8,7 @@ import type { Course } from '../../data/courses'
 import { rankRecommendations, type DiscoveryAnswers, getCareerDirection } from '../../lib/program-recommendation'
 import { submitCareerQuizLead, type QuizLeadState } from '../../app/(site)/admissions/quiz-actions'
 import AdvisorGuide from './AdvisorGuide'
+import { trackConversionEvent } from '../../lib/conversion-events'
 
 const QUESTIONS = [
   { key: 'interest', title: 'What interests you most?', options: [['websites', 'Building websites and applications'], ['data', 'Working with data and insights'], ['experiences', 'Creating digital experiences'], ['technology', 'Understanding how technology works'], ['business', 'Business and productivity technology'], ['exploring', 'I’m not sure yet']] },
@@ -46,8 +47,9 @@ export default function ProgramFinder({ courses, whatsapp }: Props) {
     const next = { ...answers, [question.key]: value } as Partial<DiscoveryAnswers>
     setAnswers(next)
     window.dispatchEvent(new CustomEvent('aptech:conversion', { detail: { event: step === 0 ? 'quiz_started' : 'quiz_step_completed', step: step + 1 } }))
+    if (step === 0) trackConversionEvent('career_quiz_started')
     if (step < QUESTIONS.length - 1) setStep(step + 1)
-    else setSubmittedAnswers(next as DiscoveryAnswers)
+    else { setSubmittedAnswers(next as DiscoveryAnswers); trackConversionEvent('career_quiz_recommendation_viewed') }
   }
 
   function reset() {

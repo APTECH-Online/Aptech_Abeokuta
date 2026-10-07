@@ -50,6 +50,18 @@ export function StatusChangeForm({ leadId, currentStatus }: { leadId: string; cu
         </select>
         <TinyButton>Update</TinyButton>
       </div>
+      <label htmlFor="lostReason" className="field-label">Lost reason <span className="font-normal opacity-70">(optional)</span></label>
+      <select id="lostReason" name="lostReason" className="admin-select w-full" defaultValue="">
+        <option value="">Select only when marking Lost</option>
+        <option value="Not interested">Not interested</option>
+        <option value="Fees">Fees</option>
+        <option value="Timing">Timing</option>
+        <option value="Chose another institution">Chose another institution</option>
+        <option value="Could not be reached">Could not be reached</option>
+        <option value="Programme mismatch">Programme mismatch</option>
+        <option value="Delayed decision">Delayed decision</option>
+        <option value="Other">Other</option>
+      </select>
       <Feedback state={state} />
     </form>
   )

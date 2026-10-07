@@ -174,7 +174,34 @@ export function DonutChart({ data, size = 180 }: { data: { label: string; value:
 function EmptyState() {
   return (
     <div className="h-[160px] flex items-center justify-center text-sm" style={{ color: 'var(--color-muted)' }}>
-      No data yet
+      Not enough data yet
     </div>
   )
+}
+
+export function MultiLineChart({
+  data,
+  height = 220
+}: {
+  data: { label: string; leads: number; applications: number; enrolled: number }[]
+  height?: number
+}) {
+  if (data.length === 0) return <EmptyState />
+  const series = [
+    { key: 'leads' as const, label: 'Leads', stroke: 'var(--color-navy-700)' },
+    { key: 'applications' as const, label: 'Applications', stroke: 'var(--color-teal-600)' },
+    { key: 'enrolled' as const, label: 'Enrolled', stroke: 'var(--color-amber-600)' }
+  ]
+  const max = Math.max(1, ...data.flatMap(d => [d.leads, d.applications, d.enrolled]))
+  const width = 100
+  const stepX = data.length > 1 ? width / (data.length - 1) : 0
+  const pointsFor = (key: 'leads'|'applications'|'enrolled') => data.map((d, i) => ({ x: data.length > 1 ? i * stepX : width / 2, y: height - 20 - (d[key] / max) * (height - 34), value: d[key], label: d.label }))
+  return <div>
+    <div className="flex flex-wrap gap-4 mb-2">{series.map(s => <span key={s.key} className="inline-flex items-center gap-1.5 text-xs" style={{color:'var(--color-muted)'}}><span className="w-2 h-2 rounded-full" style={{background:s.stroke}} />{s.label}</span>)}</div>
+    <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} preserveAspectRatio="none" role="img" aria-label="Conversion trend chart">
+      {series.map(s => { const pts = pointsFor(s.key); const path = pts.map((p,i)=>`${i===0?'M':'L'} ${p.x} ${p.y}`).join(' '); return <path key={s.key} d={path} fill="none" stroke={s.stroke} strokeWidth={1.4} vectorEffect="non-scaling-stroke" /> })}
+      {series.map(s => pointsFor(s.key).map((p,i)=><circle key={`${s.key}-${i}`} cx={p.x} cy={p.y} r={1.5} fill={s.stroke}><title>{`${s.label}: ${formatMetricNumber(p.value)} (${p.label})`}</title></circle>))}
+    </svg>
+    <div className="flex mt-1">{data.map(d=><div key={d.label} style={{flex:1}} className="text-center text-[0.65rem] truncate px-0.5" title={d.label}><span style={{color:'var(--color-muted)'}}>{d.label}</span></div>)}</div>
+  </div>
 }

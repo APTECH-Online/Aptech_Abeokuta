@@ -67,7 +67,7 @@ function canSeeNavItem(staff: Staff, access: string): boolean {
   // Admissions Officers work the admissions pipeline (the same paths canAccessPath
   // allows them). Without this branch they fell through to `false` and had an empty menu.
   if (staff.role === 'admissions_officer') {
-    return access === 'dashboard' || access === 'enquiries' || access === 'applications' || access === 'follow_ups'
+    return access === 'dashboard' || access === 'enquiries' || access === 'applications' || access === 'follow_ups' || access === 'reports'
   }
   if (staff.role !== 'content_manager') return false
   switch (access) {
@@ -76,7 +76,7 @@ function canSeeNavItem(staff: Staff, access: string): boolean {
     case 'dashboard':
       return hasPermission(staff, 'dashboard_access')
     case 'reports':
-      return hasPermission(staff, 'dashboard_access') && hasPermission(staff, 'dashboard_view_reports')
+      return hasPermission(staff, 'dashboard_access') && hasPermission(staff, 'dashboard_view_reports') && hasPermission(staff, 'dashboard_view_admissions_stats') && hasPermission(staff, 'enquiries.view') && hasPermission(staff, 'applications.view') && hasPermission(staff, 'follow_ups.view')
     case 'seo':
       return hasPermission(staff, 'dashboard_access') && hasPermission(staff, 'dashboard_view_seo_metrics')
     case 'insights':
