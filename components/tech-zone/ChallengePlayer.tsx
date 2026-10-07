@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition, type CSSProperties } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, ArrowRight, Check, Clock3, RotateCcw, Sparkles, Trophy } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BarChart3, Check, Clock3, Code2, RotateCcw, Sparkles, Target, Trophy } from 'lucide-react'
 import { trackConversionEvent } from '../../lib/conversion-events'
 import { captureAttribution, getAttributionSnapshot } from '../../lib/attribution'
 import { startChallenge, submitChallenge, captureChallengeLead } from '../../app/(site)/tech-zone/actions'
