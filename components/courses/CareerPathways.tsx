@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { BriefcaseBusiness, CheckCircle2, Code2, GraduationCap } from 'lucide-react'
+import { BriefcaseBusiness, Check, Code2, GraduationCap, Info } from 'lucide-react'
 import { trackConversionEvent } from '../../lib/conversion-events'
 import type { Course } from '../../data/courses'
 
@@ -24,36 +24,64 @@ export default function CareerPathways({ course }: { course: Course }) {
   const tools = course.tools.slice(0, 4)
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-      <PathwayCard icon={<GraduationCap size={19} aria-hidden="true" />} title="What you'll learn">
-        {course.highlights.slice(0, 4).map((item) => <Item key={item}>{item}</Item>)}
+    <div className="pathway-grid">
+      <PathwayCard icon={<GraduationCap size={20} aria-hidden="true" />} title="What you'll learn">
+        {course.highlights.length > 0 && (
+          <ul className="pathway-list">
+            {course.highlights.slice(0, 4).map((item) => (
+              <li key={item} className="pathway-item">
+                <span className="pathway-check" aria-hidden="true"><Check size={13} strokeWidth={3} /></span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        )}
         {!course.highlights.length && <Muted>Learning highlights have not been added yet.</Muted>}
       </PathwayCard>
-      <PathwayCard icon={<Code2 size={19} aria-hidden="true" />} title="Skills you'll build">
-        {skills.map((item) => <Item key={item}>{item}</Item>)}
-        {tools.map((item) => <Item key={`tool-${item}`}>{item}</Item>)}
+
+      <PathwayCard icon={<Code2 size={20} aria-hidden="true" />} title="Skills you'll build">
+        {skills.length > 0 && (
+          <ul className="pathway-list">
+            {skills.map((item) => (
+              <li key={item} className="pathway-item">
+                <span className="node-mark pathway-node" aria-hidden="true" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {tools.length > 0 && (
+          <div className="pathway-tools">
+            <p className="pathway-subhead">Tools you'll use</p>
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              {tools.map((item) => <span key={`tool-${item}`} className="badge badge-navy">{item}</span>)}
+            </div>
+          </div>
+        )}
         {!skills.length && !tools.length && <Muted>Skills information has not been added yet.</Muted>}
       </PathwayCard>
-      <PathwayCard icon={<BriefcaseBusiness size={19} aria-hidden="true" />} title="Career directions to explore">
-        <Item>{careerDirection(course)}</Item>
-        <Muted>Based on the programme information currently published. It is not a guarantee of employment, salary or placement.</Muted>
+
+      <PathwayCard tone="dark" icon={<BriefcaseBusiness size={20} aria-hidden="true" />} title="Career directions to explore">
+        <p className="pathway-direction">{careerDirection(course)}</p>
+        <p className="pathway-disclaimer">
+          <Info size={15} className="shrink-0 mt-0.5" aria-hidden="true" />
+          <span>Based on the programme information currently published. It is not a guarantee of employment, salary or placement.</span>
+        </p>
       </PathwayCard>
     </div>
   )
 }
 
-function PathwayCard({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+function PathwayCard({ icon, title, children, tone = 'light' }: { icon: React.ReactNode; title: string; children: React.ReactNode; tone?: 'light' | 'dark' }) {
   return (
-    <article className="card p-6">
-      <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'var(--color-teal-50)', color: 'var(--color-teal-700)' }}>{icon}</div>
-      <h3 className="mt-4 font-display font-semibold text-[var(--color-ink)]">{title}</h3>
-      <div className="mt-4 space-y-2.5">{children}</div>
+    <article className={`pathway-card ${tone === 'dark' ? 'pathway-card-dark pattern-adire' : ''}`}>
+      <header className="pathway-head">
+        <span className="pathway-icon">{icon}</span>
+        <h3 className="pathway-title">{title}</h3>
+      </header>
+      <div className="pathway-body">{children}</div>
     </article>
   )
-}
-
-function Item({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm leading-relaxed flex gap-2" style={{ color: 'var(--color-body)' }}><CheckCircle2 size={15} className="mt-0.5 shrink-0" style={{ color: 'var(--color-teal-700)' }} aria-hidden="true" />{children}</p>
 }
 
 function Muted({ children }: { children: React.ReactNode }) {
