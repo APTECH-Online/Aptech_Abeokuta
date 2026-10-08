@@ -155,23 +155,39 @@ a { color: inherit; }
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  letter-spacing: 0.09em;
+  line-height: 1.2;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-navy-700);
-  font-weight: 600;
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
-  gap: 0.5em;
+  gap: 0.7em;
 }
+/* Marker: a small filled gold diamond with a soft halo, followed by a short
+   navy→gold rule (the rule is drawn by ::after so the label reads as one unit).
+   Decorative only; sized in em so it scales with the label. */
 .eyebrow::before {
   content: "";
-  width: 0.85em;
-  height: 0.85em;
-  border: 1.5px solid currentColor;
+  width: 0.5em;
+  height: 0.5em;
+  background: var(--color-amber-500);
   transform: rotate(45deg);
+  box-shadow: 0 0 0 0.28em rgba(226, 163, 61, 0.2);
+  flex-shrink: 0;
+  margin-inline: 0.3em;
+}
+.eyebrow::after {
+  content: "";
+  order: -1;
+  width: 1.6em;
+  height: 1.5px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(23, 48, 126, 0), var(--color-navy-700));
   flex-shrink: 0;
 }
 .eyebrow-inverse { color: var(--color-amber-400); }
+.eyebrow-inverse::after { background: linear-gradient(90deg, rgba(239, 192, 119, 0), var(--color-amber-400)); }
 
 .h-display {
   font-size: clamp(2.25rem, 4.6vw, 3.25rem);
@@ -3860,3 +3876,63 @@ button, input, select, textarea { font: inherit; }
   .pf-option:hover { transform: none; }
   .pf-option.is-selected .pf-option__check { animation: none; }
 }
+
+/* ==========================================================================
+   Courses — search field + programme filter buttons
+   Scoped classes (the shared .chip / .field-input used elsewhere are untouched).
+   ========================================================================== */
+.course-toolbar { display: grid; gap: 1rem; padding: clamp(1rem, 2.5vw, 1.4rem); border: 1px solid var(--color-line); border-radius: 20px; background: linear-gradient(180deg, #fff, #fbfcff); box-shadow: 0 2px 8px rgba(11,23,71,.055); }
+.course-search { position: relative; display: flex; align-items: center; width: 100%; max-width: 40rem; }
+.course-search__icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-navy-700); pointer-events: none; transition: color .15s ease; }
+.course-search__input { width: 100%; min-height: 52px; padding: .8rem 3rem .8rem 2.9rem; border: 1px solid var(--color-line-strong); border-radius: 14px; background: #fff; font-size: 1rem; color: var(--color-ink); box-shadow: inset 0 1px 2px rgba(11,23,71,.04); transition: border-color .15s ease, box-shadow .15s ease; -webkit-appearance: none; appearance: none; }
+.course-search__input::placeholder { color: #8a8299; }
+.course-search__input::-webkit-search-cancel-button { display: none; }
+.course-search__input:hover { border-color: var(--color-navy-200); }
+.course-search__input:focus { outline: none; border-color: var(--color-navy-700); box-shadow: 0 0 0 4px rgba(31,50,139,.12); }
+.course-search:focus-within .course-search__icon { color: var(--color-navy-900); }
+.course-search__clear { position: absolute; right: .55rem; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--color-navy-50); color: var(--color-navy-700); cursor: pointer; transition: background .15s ease; }
+.course-search__clear:hover { background: var(--color-navy-100); }
+.course-search__clear:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(226,163,61,.5); }
+
+.course-filters { display: flex; flex-wrap: wrap; gap: .5rem; }
+.course-filter { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; padding: .45rem .5rem .45rem 1rem; border: 1px solid var(--color-line-strong); border-radius: 999px; background: #fff; color: var(--color-body); font-size: .88rem; font-weight: 650; line-height: 1.2; cursor: pointer; text-align: left; transition: transform .18s ease, border-color .18s ease, background-color .18s ease, color .18s ease, box-shadow .18s ease; -webkit-tap-highlight-color: transparent; }
+.course-filter:hover:not([aria-pressed="true"]) { transform: translateY(-1px); border-color: var(--color-navy-700); color: var(--color-navy-900); box-shadow: 0 6px 16px rgba(11,23,71,.08); }
+.course-filter:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(226,163,61,.5); }
+.course-filter__count { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 .45rem; border-radius: 999px; background: var(--color-navy-50); color: var(--color-navy-700); font: 700 .72rem/1 var(--font-mono); transition: background-color .18s ease, color .18s ease; }
+.course-filter[aria-pressed="true"] { border-color: var(--color-navy-900); background: linear-gradient(135deg, var(--color-navy-700), var(--color-navy-900)); color: #fff; box-shadow: 0 8px 18px rgba(11,23,71,.22); padding-left: .85rem; }
+.course-filter[aria-pressed="true"] svg { color: var(--color-amber-400); }
+.course-filter[aria-pressed="true"] .course-filter__count { background: rgba(255,255,255,.18); color: #fff; }
+
+@media (max-width: 639px) {
+  .course-filters { flex-wrap: nowrap; overflow-x: auto; margin-inline: calc(-1 * clamp(1rem, 2.5vw, 1.4rem)); padding: .15rem clamp(1rem, 2.5vw, 1.4rem) .45rem; scroll-snap-type: x proximity; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .course-filters::-webkit-scrollbar { display: none; }
+  .course-filter { flex: 0 0 auto; scroll-snap-align: start; white-space: nowrap; }
+}
+@media (prefers-reduced-motion: reduce) { .course-filter, .course-filter__count, .course-search__input, .course-search__icon { transition: none; } .course-filter:hover:not([aria-pressed="true"]) { transform: none; } }
+
+/* ==========================================================================
+   Courses — "Not sure which course to choose?" guide cards
+   ========================================================================== */
+.guide-section { background: linear-gradient(180deg, var(--color-paper-alt), #f7f9fe); border-top: 1px solid var(--color-line); }
+.guide-head__link { font-weight: 700; color: var(--color-navy-700); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+.guide-head__link:hover { color: var(--color-navy-900); }
+.guide-grid { display: grid; grid-template-columns: 1fr; gap: 1.1rem; margin: 2rem 0 0; padding: 0; list-style: none; }
+.guide-card { position: relative; display: flex; flex-direction: column; gap: .75rem; padding: 1.25rem; overflow: hidden; border: 1px solid var(--color-line); border-radius: 16px; background: #fff; box-shadow: 0 2px 8px rgba(11,23,71,.055); transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
+.guide-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: linear-gradient(90deg, var(--color-navy-700), var(--color-amber-500)); transform: scaleX(0); transform-origin: left; transition: transform .28s ease; }
+.guide-card::after { content: ""; position: absolute; width: 140px; height: 140px; right: -70px; bottom: -70px; border-radius: 50%; background: rgba(31,50,139,.05); pointer-events: none; }
+.guide-card:hover, .guide-card:focus-within { transform: translateY(-3px); border-color: var(--color-navy-200); box-shadow: 0 16px 36px rgba(11,23,71,.11); }
+.guide-card:hover::before, .guide-card:focus-within::before { transform: scaleX(1); }
+.guide-card__top { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.guide-card__tag { padding: .3rem .65rem; border-radius: 999px; background: var(--color-navy-50); color: var(--color-navy-700); font: 700 .66rem/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+.guide-card__title { margin: .25rem 0 0; font-family: var(--font-display); font-size: 1.05rem; font-weight: 650; line-height: 1.3; letter-spacing: -.01em; color: var(--color-ink); }
+.guide-card__link { color: inherit; text-decoration: none; }
+.guide-card__link::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+.guide-card__link:focus-visible { outline: none; }
+.guide-card__link:focus-visible::after { box-shadow: 0 0 0 3px rgba(226,163,61,.55); }
+.guide-card__desc { margin: 0; font-size: .9rem; line-height: 1.6; color: var(--color-body); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.guide-card__cta { display: inline-flex; align-items: center; gap: .4rem; margin-top: auto; padding-top: .35rem; font-size: .86rem; font-weight: 700; color: var(--color-navy-700); }
+.guide-card__cta svg { transition: transform .2s ease; }
+.guide-card:hover .guide-card__cta svg, .guide-card:focus-within .guide-card__cta svg { transform: translateX(4px); }
+@media (min-width: 640px) { .guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .guide-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.4rem; } }
+@media (prefers-reduced-motion: reduce) { .guide-card, .guide-card::before, .guide-card__cta svg { transition: none; } .guide-card:hover, .guide-card:focus-within { transform: none; } }

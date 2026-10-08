@@ -1,12 +1,21 @@
 'use client'
 import { useMemo, useState } from 'react'
-import { Search } from 'lucide-react'
+import { Check, Search, X } from 'lucide-react'
 import { categories, Course } from '../../data/courses'
 import CourseCard from './CourseCard'
 
 export default function CourseSearch({ initialCourses }: { initialCourses: Course[] }) {
   const [query, setQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
+
+  const counts = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    const matchesQuery = (c: Course) => !q || c.title.toLowerCase().includes(q) || c.category.toLowerCase().includes(q) || c.summary.toLowerCase().includes(q)
+    const base = initialCourses.filter(matchesQuery)
+    const byCat: Record<string, number> = {}
+    for (const c of base) byCat[c.category] = (byCat[c.category] ?? 0) + 1
+    return { all: base.length, byCat }
+  }, [initialCourses, query])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -23,44 +32,53 @@ export default function CourseSearch({ initialCourses }: { initialCourses: Cours
 
   return (
     <div>
-      <div className="relative max-w-xl">
-        <label htmlFor="course-search" className="sr-only">Search courses</label>
-        <Search
-          aria-hidden="true"
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4"
-          style={{ color: 'var(--color-muted)' }}
-        />
-        <input
-          id="course-search"
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by title, category, or keyword"
-          className="field-input"
-          style={{ paddingLeft: '2.4rem' }}
-        />
-      </div>
+      <div className="course-toolbar">
+        <div className="course-search">
+          <label htmlFor="course-search" className="sr-only">Search courses</label>
+          <Search aria-hidden="true" className="course-search__icon" size={18} />
+          <input
+            id="course-search"
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Escape' && query) setQuery('') }}
+            placeholder="Search by title, category, or keyword"
+            className="course-search__input"
+            autoComplete="off"
+            enterKeyHint="search"
+          />
+          {query && (
+            <button type="button" className="course-search__clear" onClick={() => { setQuery(''); document.getElementById('course-search')?.focus() }} aria-label="Clear search">
+              <X size={15} aria-hidden="true" />
+            </button>
+          )}
+        </div>
 
-      <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Filter by category">
-        <button
-          type="button"
-          className="chip"
-          aria-pressed={activeCategory === null}
-          onClick={() => setActiveCategory(null)}
-        >
-          All programmes
-        </button>
-        {categories.map((cat) => (
+        <div className="course-filters" role="group" aria-label="Filter by category">
           <button
-            key={cat}
             type="button"
-            className="chip"
-            aria-pressed={activeCategory === cat}
-            onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+            className="course-filter"
+            aria-pressed={activeCategory === null}
+            onClick={() => setActiveCategory(null)}
           >
-            {cat}
+            {activeCategory === null && <Check size={14} strokeWidth={3} aria-hidden="true" />}
+            <span>All programmes</span>
+            <span className="course-filter__count" aria-label={`${counts.all} programmes`}>{counts.all}</span>
           </button>
-        ))}
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              className="course-filter"
+              aria-pressed={activeCategory === cat}
+              onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+            >
+              {activeCategory === cat && <Check size={14} strokeWidth={3} aria-hidden="true" />}
+              <span>{cat}</span>
+              <span className="course-filter__count" aria-label={`${counts.byCat[cat] ?? 0} programmes`}>{counts.byCat[cat] ?? 0}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <p className="mt-5 text-sm" style={{ color: 'var(--color-muted)' }} aria-live="polite">
