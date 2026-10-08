@@ -86,9 +86,10 @@ export default async function Home() {
         </Container>
       </section>
 
-      <section className="section-tight faq-section">
-        <Container className="max-w-6xl">
-          <FAQSection faqs={faqs} whatsapp={whatsapp} />
+      <section className="section-tight" style={{ background: 'var(--color-paper-alt)', borderTop: '1px solid var(--color-line)', borderBottom: '1px solid var(--color-line)' }}>
+        <Container>
+          <SectionHeading eyebrow="Why APTECH" title="Why choose APTECH Abeokuta" />
+          <WhyChoose />
         </Container>
       </section>
 
@@ -131,12 +132,9 @@ export default async function Home() {
 
       <LatestUpdates />
 
-      <section className="section-tight" style={{ background: 'var(--color-paper-alt)', borderTop: '1px solid var(--color-line)' }}>
-        <Container className="max-w-3xl">
-          <SectionHeading eyebrow="FAQ" title="Frequently asked questions" />
-          <div className="mt-8">
-            <FAQSection faqs={faqs} />
-          </div>
+      <section className="section-tight faq-section">
+        <Container className="max-w-6xl">
+          <FAQSection faqs={faqs} whatsapp={whatsapp} />
         </Container>
       </section>
 
