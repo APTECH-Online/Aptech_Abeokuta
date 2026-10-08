@@ -4437,20 +4437,24 @@ a.td-card:focus-visible { outline: 3px solid var(--color-amber-500); outline-off
 .course-block { margin-top: 2.75rem; }
 .course-block-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 650; color: var(--color-ink); }
 
-.learn-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin-top: 1.1rem; list-style: none; padding: 0; }
-.learn-item {
-  display: flex; align-items: flex-start; gap: 0.75rem;
-  padding: 0.9rem 1rem;
+.learn-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.85rem; margin-top: 1.1rem; list-style: none; padding: 0; }
+.learn-card {
+  display: flex; align-items: flex-start; gap: 0.95rem;
+  padding: 1.05rem 1.15rem 1.1rem;
   background: var(--color-paper-alt);
   border: 1px solid var(--color-line);
-  border-radius: 10px;
-  font-size: 0.9rem; line-height: 1.55; color: var(--color-body);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
 }
-.learn-check {
-  flex-shrink: 0; display: grid; place-items: center;
-  width: 1.4rem; height: 1.4rem; margin-top: 0.05rem;
-  border-radius: 9999px; background: var(--color-teal-50); color: var(--color-teal-700);
-  box-shadow: inset 0 0 0 1px var(--color-teal-100);
+.learn-card .icon-tile { box-shadow: inset 0 0 0 1px var(--color-navy-100); }
+.learn-body { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+.learn-lead { font-family: var(--font-display); font-size: 0.95rem; font-weight: 650; line-height: 1.35; color: var(--color-ink); padding-top: 0.1rem; }
+.learn-plain { font-size: 0.92rem; font-weight: 560; line-height: 1.5; color: var(--color-ink); padding-top: 0.1rem; }
+.learn-detail { margin-top: 0.3rem; font-size: 0.86rem; line-height: 1.6; color: var(--color-body); }
+.learn-tag { margin-top: 0.7rem; font-family: var(--font-sans); letter-spacing: 0; font-size: 0.76rem; line-height: 1.35; border-radius: 8px; white-space: normal; }
+/* An odd final card spans the row so the grid never ends on a lone half-width tile. */
+@media (min-width: 640px) {
+  .learn-grid > .learn-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
 
 .outcomes-panel {

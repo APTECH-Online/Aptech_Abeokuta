@@ -6,6 +6,7 @@ import { admissionUi } from '../../../../lib/admission'
 import { parseCurriculum } from '../../../../lib/curriculum'
 import Container from '../../../../components/ui/Container'
 import Breadcrumbs from '../../../../components/shared/Breadcrumbs'
+import LearnCards from '../../../../components/courses/LearnCards'
 import CourseCard from '../../../../components/courses/CourseCard'
 import CourseIcon from '../../../../components/ui/CourseIcon'
 import AdseRoadmap from '../../../../components/courses/AdseRoadmap'
@@ -19,7 +20,7 @@ import { smartProFoundation, smartProTracks } from '../../../../data/smartpro'
 import AcnsTermCard from '../../../../components/courses/AcnsTermCard'
 import { acnsTerms } from '../../../../data/acns'
 import Image from 'next/image'
-import { Award, BookOpen, Check, ClipboardCheck, Clock, Gauge, Laptop, Users } from 'lucide-react'
+import { Award, BookOpen, ClipboardCheck, Clock, Gauge, Laptop, Users } from 'lucide-react'
 import TermSteps from '../../../../components/courses/TermSteps'
 import StoryCard from '../../../../components/testimonials/StoryCard'
 import { courseJsonLd, breadcrumbJsonLd } from '../../../../lib/structured-data'
@@ -409,14 +410,7 @@ export default async function CoursePage({ params }: Props) {
 
               <div className="course-block">
                 <h3 className="course-block-title">What you'll learn</h3>
-                <ul className="learn-grid">
-                  {course.highlights.map((h) => (
-                    <li key={h} className="learn-item">
-                      <span aria-hidden="true" className="learn-check"><Check size={14} strokeWidth={3} /></span>
-                      <span>{h}</span>
-                    </li>
-                  ))}
-                </ul>
+                <LearnCards items={course.highlights} />
               </div>
 
               <div className="course-block">
