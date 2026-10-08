@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react'
 import { trackConversionEvent } from '../../lib/conversion-events'
 import type { PublicTestimonial } from '../../lib/testimonials-public'
+import StoryCard from './StoryCard'
 
 function initials(name: string) {
   return name.slice(0, 2).toUpperCase()
@@ -82,24 +83,9 @@ export default function TestimonialsPage({ testimonials }: { testimonials: Publi
         </div>
       </div>
 
-      <div className="testimonial-editorial-grid mt-10">
+      <div className="story-masonry mt-10">
         {testimonials.map((t, index) => (
-          <article key={t.id} className={`card p-6 sm:p-7 ${index === active ? 'testimonial-card-active' : ''}`}>
-            <p className="font-display text-lg font-semibold leading-relaxed text-[var(--color-ink)]">“{t.quote}”</p>
-            <div className="mt-6 pt-5 border-t border-[var(--color-line)] flex items-center gap-3">
-              <span className="relative shrink-0 rounded-full overflow-hidden flex items-center justify-center" style={{ width: 44, height: 44, background: 'var(--color-navy-100)' }}>
-                {t.image_url ? (
-                  <Image src={t.image_url} alt={t.name} fill sizes="44px" className="object-cover" />
-                ) : (
-                  <span className="text-xs font-semibold" style={{ color: 'var(--color-navy-700)' }}>{initials(t.name)}</span>
-                )}
-              </span>
-              <span>
-                <span className="block text-sm font-semibold text-[var(--color-ink)]">{t.name}</span>
-                <span className="block text-xs text-[var(--color-muted)]">{t.program}</span>
-              </span>
-            </div>
-          </article>
+          <StoryCard key={t.id} item={t} size="lg" active={index === active} />
         ))}
       </div>
 
