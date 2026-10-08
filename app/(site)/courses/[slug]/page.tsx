@@ -19,6 +19,9 @@ import { smartProFoundation, smartProTracks } from '../../../../data/smartpro'
 import AcnsTermCard from '../../../../components/courses/AcnsTermCard'
 import { acnsTerms } from '../../../../data/acns'
 import Image from 'next/image'
+import { Award, BookOpen, Check, ClipboardCheck, Clock, Gauge, Laptop, Users } from 'lucide-react'
+import TermSteps from '../../../../components/courses/TermSteps'
+import StoryCard from '../../../../components/testimonials/StoryCard'
 import { courseJsonLd, breadcrumbJsonLd } from '../../../../lib/structured-data'
 import { buildMetadata, getSiteUrl, pickTitle, truncate } from '../../../../lib/seo'
 import { findSlugRedirect } from '../../../../lib/seo-redirects'
@@ -174,19 +177,16 @@ export default async function CoursePage({ params }: Props) {
                   with progressive programming, web, application development, data, AI, IoT and
                   project-focused learning.
                 </p>
-                <div className="mt-6 grid grid-cols-2 gap-3">
-                  {[
-                    ['01', 'Term 1', 'Programming & web foundations'],
-                    ['02', 'Term 2', 'Markup, programming & Java'],
-                    ['03', 'Term 3', 'Java application development'],
-                    ['04', 'Term 4', 'Specialisations & projects']
-                  ].map(([n, term, label]) => (
-                    <div key={n} className="card p-4">
-                      <span className="eyebrow">{n}</span>
-                      <h3 className="mt-1 font-display font-semibold text-sm text-[var(--color-ink)]">{term}</h3>
-                      <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">{label}</p>
-                    </div>
-                  ))}
+                <div className="mt-6">
+                  <TermSteps
+                    columns={2}
+                    items={[
+                      { tag: 'Term 1', title: 'Programming & web foundations', note: 'Year 1' },
+                      { tag: 'Term 2', title: 'Markup, programming & Java', note: 'Year 1' },
+                      { tag: 'Term 3', title: 'Java application development', note: 'Year 2' },
+                      { tag: 'Term 4', title: 'Specialisations & projects', note: 'Year 2' }
+                    ]}
+                  />
                 </div>
               </div>
               <div className="card overflow-hidden">
@@ -310,21 +310,18 @@ export default async function CoursePage({ params }: Props) {
               shared Foundation, then branches into Data Science, AI &amp; Machine Learning, or
               Software Testing — each ending in a Professional Diploma.
             </p>
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="card p-4">
-                <span className="eyebrow">Start</span>
-                <h3 className="mt-1 font-display font-semibold text-sm text-[var(--color-ink)]">Foundation</h3>
-                <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">146 hours · Excel, Python, R, large data management</p>
-              </div>
-              {smartProTracks.map((t) => (
-                <div key={t.id} className="card p-4">
-                  <span className="eyebrow">Specialise</span>
-                  <h3 className="mt-1 font-display font-semibold text-sm text-[var(--color-ink)]">{t.label}</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
-                    {t.hours} · {t.diploma?.name} ({t.diploma?.hours})
-                  </p>
-                </div>
-              ))}
+            <div className="mt-8">
+              <TermSteps
+                items={[
+                  { tag: 'Start', tone: 'amber', title: 'Foundation', note: '146 hours · Excel, Python, R, large data management' },
+                  ...smartProTracks.map((t) => ({
+                    tag: 'Specialise',
+                    tone: 'teal' as const,
+                    title: t.label,
+                    note: `${t.hours} · ${t.diploma?.name} (${t.diploma?.hours})`
+                  }))
+                ]}
+              />
             </div>
           </Container>
         </section>
@@ -372,14 +369,14 @@ export default async function CoursePage({ params }: Props) {
               Each term pairs theory and hands-on lab work with self-study, and maps directly to
               industry certification exams.
             </p>
-            <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-3">
-              {acnsTerms.map((t, i) => (
-                <div key={t.id} className="card p-4">
-                  <span className="eyebrow">{String(i + 1).padStart(2, '0')}</span>
-                  <h3 className="mt-1 font-display font-semibold text-sm text-[var(--color-ink)]">{t.label}</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">{t.totalHours} hrs · {t.exitProfile}</p>
-                </div>
-              ))}
+            <div className="mt-6">
+              <TermSteps
+                items={acnsTerms.map((t, i) => ({
+                  tag: `Term ${i + 1}`,
+                  title: t.label,
+                  note: `${t.totalHours} hrs · ${t.exitProfile}`
+                }))}
+              />
             </div>
           </Container>
         </section>
@@ -410,56 +407,56 @@ export default async function CoursePage({ params }: Props) {
               <h2 className="h-section">Overview</h2>
               <p className="lede mt-3">{course.description}</p>
 
-              <h3 className="mt-8 font-display font-semibold text-[1.15rem] text-[var(--color-ink)]">What you'll learn</h3>
-              <ul className="mt-4 space-y-3">
-                {course.highlights.map((h) => (
-                  <li key={h} className="flex items-start gap-3 text-sm" style={{ color: 'var(--color-body)' }}>
-                    <span
-                      aria-hidden="true"
-                      className="mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs shrink-0"
-                      style={{ background: 'var(--color-teal-50)', color: 'var(--color-teal-700)' }}
-                    >
-                      ✓
-                    </span>
-                    {h}
-                  </li>
-                ))}
-              </ul>
-
-              <h3 className="mt-8 font-display font-semibold text-[1.15rem] text-[var(--color-ink)]">Tools &amp; technologies</h3>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {course.tools.map((t) => (
-                  <span key={t} className="badge badge-navy">{t}</span>
-                ))}
+              <div className="course-block">
+                <h3 className="course-block-title">What you'll learn</h3>
+                <ul className="learn-grid">
+                  {course.highlights.map((h) => (
+                    <li key={h} className="learn-item">
+                      <span aria-hidden="true" className="learn-check"><Check size={14} strokeWidth={3} /></span>
+                      <span>{h}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
-              <h3 className="mt-8 font-display font-semibold text-[1.15rem] text-[var(--color-ink)]">Programme outcomes</h3>
-              <ul className="mt-4 space-y-3">
-                {course.outcomes.map((o) => (
-                  <li key={o} className="flex items-start gap-3 text-sm" style={{ color: 'var(--color-body)' }}>
-                    <span aria-hidden="true" className="mt-1 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: 'var(--color-amber-500)' }} />
-                    {o}
-                  </li>
-                ))}
-              </ul>
+              <div className="course-block">
+                <h3 className="course-block-title">Tools &amp; technologies</h3>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {course.tools.map((t) => (
+                    <span key={t} className="badge badge-navy">{t}</span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="course-block outcomes-panel">
+                <h3 className="course-block-title">Programme outcomes</h3>
+                <ul className="mt-4 space-y-3">
+                  {course.outcomes.map((o) => (
+                    <li key={o} className="flex items-start gap-3 text-[0.95rem] leading-relaxed" style={{ color: 'var(--color-body)' }}>
+                      <span aria-hidden="true" className="node-mark mt-[0.55rem]" />
+                      {o}
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
               {curriculum.length > 0 && (
-                <div className="mt-12">
+                <div className="course-block">
                   <h2 className="h-section" style={{ fontSize: '1.35rem' }}>{course.title} curriculum</h2>
-                  <div className="mt-4 space-y-6">
+                  <div className="mt-5 space-y-5">
                     {curriculum.map((b) => (
-                      <section key={b.title} className="card p-5">
-                        <h3 className="font-display font-semibold text-[1.02rem] text-[var(--color-ink)]">
+                      <section key={b.title} className="curriculum-block">
+                        <h3 className="font-display font-semibold text-[1.05rem] text-[var(--color-ink)]">
                           {b.title}
-                          {b.subtitle && <span className="ml-2 text-xs font-medium" style={{ color: 'var(--color-muted)' }}>{b.subtitle}</span>}
                         </h3>
-                        {b.description && <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>{b.description}</p>}
+                        {b.subtitle && <p className="mt-1 text-xs font-medium" style={{ color: 'var(--color-muted)' }}>{b.subtitle}</p>}
+                        {b.description && <p className="mt-3 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>{b.description}</p>}
                         {b.modules.length > 0 && (
-                          <ul className="mt-3 space-y-2">
+                          <ul className="module-list">
                             {b.modules.map((m) => (
-                              <li key={m.name} className="text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>
-                                <span className="font-semibold text-[var(--color-ink)]">{m.name}</span>
-                                {m.detail && <span> &mdash; {m.detail}</span>}
+                              <li key={m.name} className="module-item">
+                                <span className="module-name">{m.name}</span>
+                                {m.detail && <span className="module-detail">{m.detail}</span>}
                               </li>
                             ))}
                           </ul>
@@ -471,41 +468,50 @@ export default async function CoursePage({ params }: Props) {
               )}
 
               {(course.audience || course.prerequisites || course.certification) && (
-                <div className="mt-12 space-y-8">
+                <div className="course-block space-y-4">
                   {course.audience && (
-                    <div>
-                      <h2 className="h-section" style={{ fontSize: '1.35rem' }}>Who is {course.title} for?</h2>
-                      <p className="mt-3 text-[0.95rem] leading-relaxed whitespace-pre-line" style={{ color: 'var(--color-body)' }}>{course.audience}</p>
+                    <div className="fit-card">
+                      <span className="fit-icon" aria-hidden="true"><Users size={20} /></span>
+                      <div>
+                        <h2 className="fit-title">Who is {course.title} for?</h2>
+                        <p className="fit-text">{course.audience}</p>
+                      </div>
                     </div>
                   )}
                   {course.prerequisites && (
-                    <div>
-                      <h2 className="h-section" style={{ fontSize: '1.35rem' }}>Entry requirements</h2>
-                      <p className="mt-3 text-[0.95rem] leading-relaxed whitespace-pre-line" style={{ color: 'var(--color-body)' }}>{course.prerequisites}</p>
+                    <div className="fit-card">
+                      <span className="fit-icon" aria-hidden="true"><ClipboardCheck size={20} /></span>
+                      <div>
+                        <h2 className="fit-title">Entry requirements</h2>
+                        <p className="fit-text">{course.prerequisites}</p>
+                      </div>
                     </div>
                   )}
                   {course.certification && (
-                    <div>
-                      <h2 className="h-section" style={{ fontSize: '1.35rem' }}>Certification</h2>
-                      <p className="mt-3 text-[0.95rem] leading-relaxed whitespace-pre-line" style={{ color: 'var(--color-body)' }}>{course.certification}</p>
+                    <div className="fit-card">
+                      <span className="fit-icon" aria-hidden="true"><Award size={20} /></span>
+                      <div>
+                        <h2 className="fit-title">Certification</h2>
+                        <p className="fit-text">{course.certification}</p>
+                      </div>
                     </div>
                   )}
                 </div>
               )}
 
-              <h2 className="mt-12 h-section" style={{ fontSize: '1.35rem' }}>{course.title}: duration, level and format</h2>
-              <dl className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="card p-4">
-                  <dt className="eyebrow">How long is it?</dt>
-                  <dd className="mt-1.5 text-sm" style={{ color: 'var(--color-body)' }}>{course.duration}</dd>
+              <h2 className="course-block h-section" style={{ fontSize: '1.35rem' }}>{course.title}: duration, level and format</h2>
+              <dl className="fact-grid">
+                <div className="fact-item">
+                  <dt><Clock size={16} aria-hidden="true" /> How long is it?</dt>
+                  <dd>{course.duration}</dd>
                 </div>
-                <div className="card p-4">
-                  <dt className="eyebrow">Who is it pitched at?</dt>
-                  <dd className="mt-1.5 text-sm" style={{ color: 'var(--color-body)' }}>{course.level} level</dd>
+                <div className="fact-item">
+                  <dt><Gauge size={16} aria-hidden="true" /> Who is it pitched at?</dt>
+                  <dd>{course.level} level</dd>
                 </div>
-                <div className="card p-4">
-                  <dt className="eyebrow">How is it taught?</dt>
-                  <dd className="mt-1.5 text-sm" style={{ color: 'var(--color-body)' }}>{course.mode}</dd>
+                <div className="fact-item">
+                  <dt><Laptop size={16} aria-hidden="true" /> How is it taught?</dt>
+                  <dd>{course.mode}</dd>
                 </div>
               </dl>
               <p className="mt-5 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>
@@ -562,12 +568,13 @@ export default async function CoursePage({ params }: Props) {
             <h2 className="h-section">Guides related to {course.title}</h2>
             <ul className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
               {relatedGuides.map((g) => (
-                <li key={g.slug} className="card p-5 flex flex-col">
-                  <h3 className="font-display font-semibold text-sm text-[var(--color-ink)] leading-snug">
-                    <Link href={`/insights/${g.slug}`} className="hover:underline">{g.title}</Link>
+                <li key={g.slug} className="guide-card">
+                  <span className="fit-icon" aria-hidden="true"><BookOpen size={18} /></span>
+                  <h3 className="font-display font-semibold text-[0.95rem] text-[var(--color-ink)] leading-snug mt-4">
+                    <Link href={`/insights/${g.slug}`}>{g.title}</Link>
                   </h3>
                   {g.short_description && (
-                    <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--color-muted)' }}>{g.short_description}</p>
+                    <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-muted)' }}>{g.short_description}</p>
                   )}
                 </li>
               ))}
@@ -599,18 +606,12 @@ export default async function CoursePage({ params }: Props) {
           <Container>
             <p className="eyebrow">Student stories</p>
             <h2 className="h-section mt-2">What learners say about this programme</h2>
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="story-grid mt-8">
               {courseStory.slice(0, 3).map((story) => (
-                <blockquote key={story.id} className="card p-6">
-                  <p className="text-sm leading-relaxed text-[var(--color-body)]">“{story.quote}”</p>
-                  <footer className="mt-5 pt-4 border-t" style={{ borderColor: 'var(--color-line)' }}>
-                    <p className="text-sm font-semibold text-[var(--color-ink)]">{story.name}</p>
-                    <p className="text-xs text-[var(--color-muted)]">{story.program}</p>
-                  </footer>
-                </blockquote>
+                <StoryCard key={story.id} item={story} />
               ))}
             </div>
-            <Link href="/testimonials" className="mt-6 inline-flex text-sm font-semibold underline" style={{ color: 'var(--color-teal-700)' }}>
+            <Link href="/testimonials" className="btn btn-secondary btn-sm mt-8">
               View more student stories
             </Link>
           </Container>

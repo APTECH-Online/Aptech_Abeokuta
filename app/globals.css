@@ -4364,26 +4364,25 @@ a.td-card:focus-visible { outline: 3px solid var(--color-amber-500); outline-off
   flex-direction: column;
   height: 100%;
   margin: 0;
-  padding: 2.25rem 1.5rem 1.5rem;
+  padding: 1.5rem;
   background: var(--color-paper-alt);
   border: 1px solid var(--color-line);
   border-top: 3px solid var(--color-amber-500);
   border-radius: 12px;
   box-shadow: var(--shadow-card);
 }
-.story-card-lg { padding: 2.5rem 1.75rem 1.75rem; }
+.story-card-lg { padding: 1.75rem; }
 .story-card-mark {
-  position: absolute;
-  top: -1.1rem;
-  left: 1.5rem;
+  flex-shrink: 0;
+  align-self: flex-start;
   display: grid;
   place-items: center;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-bottom: 1.1rem;
   border-radius: 10px;
   background: var(--color-navy-900);
   color: var(--color-amber-400);
-  box-shadow: 0 0 0 4px var(--color-paper);
 }
 .story-card-quote {
   margin: 0;
@@ -4429,4 +4428,105 @@ a.td-card:focus-visible { outline: 3px solid var(--color-amber-500); outline-off
 @media (max-width: 639px) {
   .story-grid { grid-template-columns: 1fr; gap: 1.75rem; }
   .story-masonry { column-count: 1; }
+}
+
+
+/* ==========================================================================
+   Course detail page body (app/(site)/courses/[slug]/page.tsx)
+   ========================================================================== */
+.course-block { margin-top: 2.75rem; }
+.course-block-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 650; color: var(--color-ink); }
+
+.learn-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin-top: 1.1rem; list-style: none; padding: 0; }
+.learn-item {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  background: var(--color-paper-alt);
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  font-size: 0.9rem; line-height: 1.55; color: var(--color-body);
+}
+.learn-check {
+  flex-shrink: 0; display: grid; place-items: center;
+  width: 1.4rem; height: 1.4rem; margin-top: 0.05rem;
+  border-radius: 9999px; background: var(--color-teal-50); color: var(--color-teal-700);
+  box-shadow: inset 0 0 0 1px var(--color-teal-100);
+}
+
+.outcomes-panel {
+  padding: 1.5rem 1.5rem 1.6rem;
+  background: var(--color-navy-50);
+  border: 1px solid var(--color-navy-100);
+  border-left: 4px solid var(--color-navy-700);
+  border-radius: 12px;
+}
+
+.curriculum-block {
+  padding: 1.35rem 1.5rem 1.5rem;
+  background: var(--color-paper-alt);
+  border: 1px solid var(--color-line);
+  border-left: 4px solid var(--color-amber-500);
+  border-radius: 12px;
+}
+.module-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 1.75rem; margin-top: 1rem; list-style: none; padding: 0; }
+.module-item { padding: 0.75rem 0; border-top: 1px dashed var(--color-line-strong); }
+.module-name { display: block; font-size: 0.9rem; font-weight: 650; color: var(--color-ink); line-height: 1.4; }
+.module-detail { display: block; margin-top: 0.2rem; font-size: 0.82rem; line-height: 1.55; color: var(--color-muted); }
+
+.fit-card {
+  display: flex; gap: 1rem; align-items: flex-start;
+  padding: 1.25rem 1.35rem;
+  background: var(--color-paper-alt);
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+}
+.fit-icon {
+  flex-shrink: 0; display: grid; place-items: center;
+  width: 2.5rem; height: 2.5rem; border-radius: 10px;
+  background: var(--color-navy-900); color: var(--color-amber-400);
+}
+.fit-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 650; color: var(--color-ink); line-height: 1.3; }
+.fit-text { margin-top: 0.45rem; font-size: 0.93rem; line-height: 1.7; color: var(--color-body); white-space: pre-line; max-width: 62ch; }
+
+.fact-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; margin-top: 1.1rem; }
+.fact-item { padding: 1rem 1.1rem; background: var(--color-paper-alt); border: 1px solid var(--color-line); border-radius: 10px; }
+.fact-item dt { display: flex; align-items: center; gap: 0.45rem; font-size: 0.78rem; font-weight: 600; color: var(--color-muted); }
+.fact-item dt svg { color: var(--color-amber-500); }
+.fact-item dd { margin: 0.5rem 0 0; font-family: var(--font-display); font-size: 1rem; font-weight: 650; color: var(--color-ink); line-height: 1.35; }
+
+/* Programme overview cards (TermSteps) */
+.term-steps { display: grid; gap: 0.75rem; list-style: none; padding: 0; margin: 0; }
+.term-steps-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.term-steps-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.term-step {
+  padding: 1rem 1.1rem 1.1rem;
+  background: var(--color-paper-alt);
+  border: 1px solid var(--color-line);
+  border-top: 3px solid var(--color-navy-700);
+  border-radius: 12px;
+}
+.term-step-title { margin-top: 0.7rem; font-family: var(--font-display); font-size: 0.95rem; font-weight: 650; line-height: 1.3; color: var(--color-ink); }
+.term-step-note { margin-top: 0.35rem; font-size: 0.8rem; line-height: 1.55; color: var(--color-muted); }
+
+/* Related guides */
+.guide-card {
+  position: relative; display: flex; flex-direction: column;
+  padding: 1.25rem 1.35rem 1.4rem;
+  background: var(--color-paper-alt);
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.guide-card a::after { content: ""; position: absolute; inset: 0; border-radius: 12px; }
+.guide-card:hover { border-color: var(--color-navy-600); box-shadow: var(--shadow-card-hover); }
+.guide-card:hover h3 a { text-decoration: underline; text-underline-offset: 3px; }
+.guide-card:focus-within { outline: 2px solid var(--color-amber-500); outline-offset: 2px; }
+
+@media (max-width: 1023px) {
+  .term-steps-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 639px) {
+  .learn-grid, .module-list, .fact-grid, .term-steps-2, .term-steps-4 { grid-template-columns: 1fr; }
+  .fit-card { padding: 1.1rem; }
+  .curriculum-block, .outcomes-panel { padding: 1.15rem; }
 }
