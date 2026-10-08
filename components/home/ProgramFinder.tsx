@@ -2,15 +2,16 @@
 
 import ConsentFields from '../shared/ConsentFields'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, BarChart3, BriefcaseBusiness, Check, ChevronLeft, Code2, Globe2, Network, RotateCcw, ShieldCheck, Sparkles } from 'lucide-react'
+import { ArrowRight, BarChart3, BriefcaseBusiness, Check, ChevronLeft, Code2, Compass, Cpu, GraduationCap, Laptop, Layers, Lightbulb, Network, Palette, Puzzle, RotateCcw, Rocket, Sparkles, Sprout, TrendingUp, Repeat, Users, Wrench, Gauge } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Course } from '../../data/courses'
 import { rankRecommendations, type DiscoveryAnswers, getCareerDirection } from '../../lib/program-recommendation'
 import { submitCareerQuizLead, type QuizLeadState } from '../../app/(site)/admissions/quiz-actions'
 import AdvisorGuide from './AdvisorGuide'
 import { trackConversionEvent } from '../../lib/conversion-events'
+import IconTile from '../ui/IconTile'
 
 const QUESTIONS = [
   { key: 'interest', title: 'What interests you most?', options: [['websites', 'Building websites and applications'], ['data', 'Working with data and insights'], ['experiences', 'Creating digital experiences'], ['technology', 'Understanding how technology works'], ['business', 'Business and productivity technology'], ['exploring', 'I’m not sure yet']] },
@@ -23,7 +24,26 @@ const QUESTIONS = [
 type Props = { courses: Course[]; whatsapp: string }
 const initialState: QuizLeadState = { status: 'idle' }
 
-const ICONS: LucideIcon[] = [Code2, BarChart3, Globe2, Network, BriefcaseBusiness, ShieldCheck]
+// Icon per answer (by question + option id) so each card has meaningful, consistent iconography.
+const ICONS: Record<string, Record<string, LucideIcon>> = {
+  interest: { websites: Code2, data: BarChart3, experiences: Palette, technology: Network, business: BriefcaseBusiness, exploring: Compass },
+  enjoyment: { solving: Puzzle, creating: Lightbulb, analysing: BarChart3, people: Users, exploring: Compass, tools: Wrench },
+  goal: { career: Rocket, skills: TrendingUp, 'change-career': Repeat, academic: GraduationCap, freelance: Laptop, exploring: Compass },
+  experience: { beginner: Sprout, some: Layers, intermediate: Gauge, advanced: Cpu },
+  excitement: { software: Code2, data: BarChart3, websites: Laptop, experiences: Palette, business: BriefcaseBusiness, technology: Cpu }
+}
+
+// One-line supporting copy, used only where it improves clarity (question 1).
+const DESCRIPTIONS: Record<string, Record<string, string>> = {
+  interest: {
+    websites: 'Create websites, web apps and digital products',
+    data: 'Work with data, analysis and business intelligence',
+    experiences: 'Explore design, graphics and creative technology',
+    technology: 'Understand networks, systems and how technology works',
+    business: 'Build practical workplace and productivity skills',
+    exploring: 'Help me discover where I should start'
+  }
+}
 
 export default function ProgramFinder({ courses, whatsapp }: Props) {
   const [step, setStep] = useState(0)
@@ -33,11 +53,23 @@ export default function ProgramFinder({ courses, whatsapp }: Props) {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
+  const [pending, setPending] = useState<string | null>(null)
+  const timer = useRef<number | null>(null)
+  const headingRef = useRef<HTMLHeadingElement>(null)
+  const mounted = useRef(false)
 
   const ranked = useMemo(() => submittedAnswers ? rankRecommendations(courses, submittedAnswers) : [], [courses, submittedAnswers])
   const recommended = ranked[0] ?? null
   const secondary = ranked[1] ?? null
   const question = QUESTIONS[step]
+
+  useEffect(() => () => { if (timer.current) window.clearTimeout(timer.current) }, [])
+
+  // Move focus to the new question after a step change (not on first paint) so keyboard / screen-reader users follow the flow.
+  useEffect(() => {
+    if (!mounted.current) { mounted.current = true; return }
+    headingRef.current?.focus({ preventScroll: true })
+  }, [step])
 
   useEffect(() => {
     if (state.status === 'success') {
@@ -46,32 +78,61 @@ export default function ProgramFinder({ courses, whatsapp }: Props) {
   }, [state.status])
 
   function choose(value: string) {
+    if (pending) return
     const next = { ...answers, [question.key]: value } as Partial<DiscoveryAnswers>
     setAnswers(next)
+    setPending(value)
     window.dispatchEvent(new CustomEvent('aptech:conversion', { detail: { event: step === 0 ? 'quiz_started' : 'quiz_step_completed', step: step + 1 } }))
     if (step === 0) trackConversionEvent('career_quiz_started')
-    if (step < QUESTIONS.length - 1) setStep(step + 1)
-    else { setSubmittedAnswers(next as DiscoveryAnswers); trackConversionEvent('career_quiz_recommendation_viewed') }
+    // Short pause so the selected state is visible before auto-advancing (skipped for reduced motion).
+    const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    timer.current = window.setTimeout(() => {
+      setPending(null)
+      if (step < QUESTIONS.length - 1) setStep(step + 1)
+      else { setSubmittedAnswers(next as DiscoveryAnswers); trackConversionEvent('career_quiz_recommendation_viewed') }
+    }, reduce ? 0 : 260)
   }
 
   function reset() {
-    setStep(0); setAnswers({}); setSubmittedAnswers(null); setName(''); setPhone(''); setEmail('')
+    if (timer.current) window.clearTimeout(timer.current)
+    setPending(null); setStep(0); setAnswers({}); setSubmittedAnswers(null); setName(''); setPhone(''); setEmail('')
   }
 
   if (!submittedAnswers || !recommended) {
-    const progress = ((step + 1) / QUESTIONS.length) * 100
+    const count = question.options.length
+    const selectedValue = pending ?? (answers as Record<string, string | undefined>)[question.key]
     return (
-      <div className="program-finder">
-        <div className="program-finder__topline">
-          <div className="program-finder__step" aria-hidden="true">{step + 1}</div>
-          <div className="min-w-0"><p className="program-finder__question-label">Question {step + 1} of {QUESTIONS.length}</p><p className="program-finder__question">{question.title}</p></div>
+      <div className="pf">
+        <div className="pf__glow" aria-hidden="true" />
+        <div className="pf__dots" aria-hidden="true" />
+        <div className="pf__inner">
+          <div className="pf__meta">
+            <p className="pf__step-label"><span>Question</span> {String(step + 1).padStart(2, '0')} <span>of</span> {String(QUESTIONS.length).padStart(2, '0')}</p>
+            <div className="pf__progress" role="progressbar" aria-label="Programme finder progress" aria-valuemin={1} aria-valuemax={QUESTIONS.length} aria-valuenow={step + 1} aria-valuetext={`Question ${step + 1} of ${QUESTIONS.length}`}>
+              {QUESTIONS.map((q, i) => <span key={q.key} className={i < step ? 'is-done' : i === step ? 'is-current' : ''} />)}
+            </div>
+          </div>
+          <h3 ref={headingRef} tabIndex={-1} className="pf__question">{question.title}</h3>
+          <p className="pf__sr" aria-live="polite">Question {step + 1} of {QUESTIONS.length}: {question.title}</p>
+          <div className={`pf__options pf__options--${count >= 6 ? 'six' : 'four'}`} role="group" aria-label={question.title}>
+            {question.options.map(([id, label]) => {
+              const Icon = ICONS[question.key]?.[id] ?? Sparkles
+              const desc = DESCRIPTIONS[question.key]?.[id]
+              const selected = selectedValue === id
+              return (
+                <button key={id} type="button" onClick={() => choose(id)} aria-pressed={selected} className={`pf-option${selected ? ' is-selected' : ''}`}>
+                  <IconTile icon={Icon} />
+                  <span className="pf-option__copy"><span className="pf-option__title">{label}</span>{desc && <span className="pf-option__desc">{desc}</span>}</span>
+                  <span className="pf-option__check" aria-hidden="true"><Check size={14} strokeWidth={3} /></span>
+                </button>
+              )
+            })}
+          </div>
+          <div className="pf__footer">
+            <p className="pf__hint"><Sparkles size={14} aria-hidden="true" /> Your recommendation comes first. We only ask for details afterwards.</p>
+            {step > 0 ? <button type="button" onClick={() => { if (pending) return; setStep(step - 1) }} className="pf__back"><ChevronLeft size={15} aria-hidden="true" /> Back</button> : <span className="pf__auto">Select an option to continue <ArrowRight size={14} aria-hidden="true" /></span>}
+          </div>
         </div>
-        <div className="program-finder__progress" aria-label={`Question ${step + 1} of ${QUESTIONS.length}`}><span style={{ width: `${progress}%` }} /></div>
-        {step > 0 && <button type="button" onClick={() => setStep(step - 1)} className="program-finder__back"><ChevronLeft size={15} aria-hidden="true" /> Back</button>}
-        <div className="program-finder__options program-finder__options--five">
-          {question.options.map(([id, label], index) => { const Icon = ICONS[index % ICONS.length]; return <button key={id} type="button" onClick={() => choose(id)} className="program-finder__option"><span className="program-finder__icon program-finder__icon--blue"><Icon size={19} /></span><span className="program-finder__option-copy">{label}</span><ArrowRight size={17} className="program-finder__option-arrow" aria-hidden="true" /></button> })}
-        </div>
-        <div className="program-finder__hint"><Sparkles size={15} aria-hidden="true" /><span>Five quick questions. You’ll see your recommendation before we ask for your details.</span></div>
       </div>
     )
   }
@@ -86,13 +147,16 @@ export default function ProgramFinder({ courses, whatsapp }: Props) {
   }
 
   return (
-    <div className="program-finder program-finder--result">
-      <div className="program-finder__result-icon" aria-hidden="true"><Check size={22} /></div>
-      <p className="eyebrow">Your recommended path</p>
+    <div className="pf pf--result">
+      <div className="pf__glow" aria-hidden="true" />
+      <div className="pf__dots" aria-hidden="true" />
+      <div className="pf__inner">
+      <div className="pf-result__badge"><Check size={14} strokeWidth={3} aria-hidden="true" /> Personalised recommendation</div>
+      <p className="eyebrow mt-4">Your recommended path</p>
       <h3 className="h-section mt-2" style={{ fontSize: 'clamp(1.5rem, 2.4vw, 2rem)' }}>{recommended.title}</h3>
       <p className="mt-3 leading-relaxed" style={{ color: 'var(--color-body)' }}>Based on your answers, this programme appears to be a strong match for your interests and goals.</p>
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {[['Relevant skills', recommended.outcomes.slice(0, 2).join(' · ') || 'Practical technology skills'], ['Career direction', getCareerDirection(recommended)], ['Level', recommended.level]].map(([label, value]) => <div key={label} className="program-finder__meta"><p>{label}</p><strong>{value}</strong></div>)}
+        {[['Relevant skills', recommended.outcomes.slice(0, 2).join(' · ') || 'Practical technology skills'], ['Career direction', getCareerDirection(recommended)], ['Level', recommended.level]].map(([label, value]) => <div key={label} className="pf-meta"><p>{label}</p><strong>{value}</strong></div>)}
       </div>
       <div className="mt-7 flex flex-wrap gap-3 items-center">
         <Link href={`/courses/${recommended.slug}`} onClick={() => window.dispatchEvent(new CustomEvent('aptech:conversion', { detail: { event: 'programme_cta_clicked', programme: recommended.slug } }))} className="btn btn-secondary inline-flex items-center gap-1.5">Explore This Programme <ArrowRight size={15} aria-hidden="true" /></Link>
@@ -112,6 +176,7 @@ export default function ProgramFinder({ courses, whatsapp }: Props) {
           <div className="sm:col-span-3"><ConsentFields compact /></div>
           <div className="sm:col-span-3 flex flex-wrap items-center gap-3"><button type="submit" disabled={!name.trim()} className="btn btn-primary disabled:opacity-50">Send my result <ArrowRight size={15} /></button>{state.status === 'error' && <p className="text-sm" style={{ color: 'var(--color-danger)' }}>{state.message}</p>}</div>
         </form>}
+      </div>
       </div>
     </div>
   )

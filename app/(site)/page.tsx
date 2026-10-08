@@ -46,9 +46,9 @@ export default async function Home() {
       <section id="programme-discovery" className="section program-finder-section">
         <Container className="max-w-6xl">
           <SectionHeading
-            eyebrow="Program finder"
+            eyebrow="Programme finder"
             title="Which programme is right for you?"
-            description="Answer two quick questions and we'll point you to the APTECH Abeokuta programme that best fits your goals."
+            description="Answer five quick questions and we'll point you toward the APTECH Abeokuta programme that best fits your goals."
             align="center"
           />
           <div className="mt-10">
@@ -86,10 +86,9 @@ export default async function Home() {
         </Container>
       </section>
 
-      <section className="section-tight" style={{ background: 'var(--color-paper-alt)', borderTop: '1px solid var(--color-line)', borderBottom: '1px solid var(--color-line)' }}>
-        <Container>
-          <SectionHeading eyebrow="Why APTECH" title="Why choose APTECH Abeokuta" />
-          <WhyChoose />
+      <section className="section-tight faq-section">
+        <Container className="max-w-6xl">
+          <FAQSection faqs={faqs} whatsapp={whatsapp} />
         </Container>
       </section>
 

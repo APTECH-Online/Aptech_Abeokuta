@@ -1,46 +1,54 @@
 'use client'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import type { KeyboardEvent } from 'react'
 
 export type AccordionItem = { id: string; title: string; content: string }
 
+/**
+ * Accessible single-open accordion. Every answer stays in the DOM (so it is
+ * server-rendered and crawlable); closed panels are `inert` and collapsed with
+ * a CSS grid-rows transition. Real <button>s inside <h3>, aria-expanded /
+ * aria-controls, plus Arrow/Home/End navigation between questions.
+ */
 export default function Accordion({ items }: { items: AccordionItem[] }) {
   const [openId, setOpenId] = useState<string | null>(items[0]?.id ?? null)
+  const triggers = useRef<(HTMLButtonElement | null)[]>([])
+
+  function onKeyDown(e: KeyboardEvent<HTMLButtonElement>, index: number) {
+    const last = items.length - 1
+    let next = -1
+    if (e.key === 'ArrowDown') next = index === last ? 0 : index + 1
+    else if (e.key === 'ArrowUp') next = index === 0 ? last : index - 1
+    else if (e.key === 'Home') next = 0
+    else if (e.key === 'End') next = last
+    if (next >= 0) { e.preventDefault(); triggers.current[next]?.focus() }
+  }
 
   return (
-    <div className="space-y-3">
-      {items.map((item) => {
+    <div className="faq-list">
+      {items.map((item, index) => {
         const isOpen = openId === item.id
         const panelId = `${item.id}-panel`
         const buttonId = `${item.id}-button`
         return (
-          <div key={item.id} className="card overflow-hidden">
-            <h3>
+          <div key={item.id} className={`faq-item${isOpen ? ' is-open' : ''}`}>
+            <h3 className="faq-item__heading">
               <button
                 id={buttonId}
-                className="w-full text-left px-5 py-4 flex justify-between items-center gap-4"
+                ref={(el) => { triggers.current[index] = el }}
+                type="button"
+                className="faq-item__trigger"
                 onClick={() => setOpenId(isOpen ? null : item.id)}
+                onKeyDown={(e) => onKeyDown(e, index)}
                 aria-expanded={isOpen}
                 aria-controls={panelId}
               >
-                <span className="font-semibold text-[var(--color-ink)]">{item.title}</span>
-                <span
-                  aria-hidden="true"
-                  className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-sm"
-                  style={{ background: 'var(--color-navy-50)', color: 'var(--color-navy-700)' }}
-                >
-                  {isOpen ? '−' : '+'}
-                </span>
+                <span className="faq-item__question">{item.title}</span>
+                <span className="faq-item__icon" aria-hidden="true"><i /><i /></span>
               </button>
             </h3>
-            <div
-              id={panelId}
-              role="region"
-              aria-labelledby={buttonId}
-              hidden={!isOpen}
-              className="px-5 pb-5 pt-0 text-sm leading-relaxed"
-              style={{ color: 'var(--color-body)' }}
-            >
-              {item.content}
+            <div id={panelId} role="region" aria-labelledby={buttonId} className="faq-item__panel" inert={!isOpen}>
+              <div className="faq-item__panel-inner"><p className="faq-item__answer">{item.content}</p></div>
             </div>
           </div>
         )

@@ -13,7 +13,7 @@ const OPTIONS = [
   ['Something else', 'I have another question for Admissions.']
 ] as const
 
-export default function AdvisorGuide({ whatsapp, programmeName }: { whatsapp: string; programmeName?: string }) {
+export default function AdvisorGuide({ whatsapp, programmeName, label = 'Talk to an Academic Advisor' }: { whatsapp: string; programmeName?: string; label?: string }) {
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState<string | null>(null)
   const messageFor = (base: string) => programmeName ? `${base} I’m interested in the ${programmeName} programme.` : base
@@ -21,7 +21,7 @@ export default function AdvisorGuide({ whatsapp, programmeName }: { whatsapp: st
   return (
     <>
       <button type="button" className="btn btn-primary inline-flex items-center gap-2" onClick={() => setOpen(true)}>
-        Talk to an Academic Advisor <ArrowRight size={15} aria-hidden="true" />
+        {label} <ArrowRight size={15} aria-hidden="true" />
       </button>
       {open && (
         <div className="advisor-guide__backdrop" role="presentation" onMouseDown={() => setOpen(false)}>
