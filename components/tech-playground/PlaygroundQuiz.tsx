@@ -23,9 +23,9 @@ const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '
 
 function shuffle<T>(arr: T[]) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]] } return a }
 
-export default function PlaygroundQuiz({ challenge, questions, variant, backHref = '/tech-playground', backLabel = 'Tech Playground', eyebrow, extra, onResult, lockedMessage }: {
+export default function PlaygroundQuiz({ challenge, questions, variant, backHref = '/tech-playground', backLabel = 'Tech Playground', eyebrow, extra, onResult, lockedMessage, onBack }: {
   challenge: PlayChallenge; questions: Question[]; variant: Variant; backHref?: string; backLabel?: string; eyebrow?: string
-  extra?: React.ReactNode; onResult?: (r: any) => void; lockedMessage?: string | null
+  extra?: React.ReactNode; onResult?: (r: any) => void; lockedMessage?: string | null; onBack?: () => void
 }) {
   const pg = usePlayground()
   const limit = challenge.time_limit_seconds ?? null
