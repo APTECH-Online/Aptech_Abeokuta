@@ -5,7 +5,8 @@ import Container from '../../../components/ui/Container'
 import SectionHeading from '../../../components/ui/SectionHeading'
 import Accordion from '../../../components/ui/Accordion'
 import AdmissionsForm from '../../../components/admissions/AdmissionsForm'
-import { admissionsSteps, admissionsRequirements } from '../../../data/site'
+import ApplySteps from '../../../components/admissions/ApplySteps'
+import { admissionsRequirements } from '../../../data/site'
 import { getPublishedFaqs } from '../../../lib/faqs-public'
 import { getActiveProgrammesForPublicForm } from './programmes'
 import { breadcrumbJsonLd, faqJsonLd } from '../../../lib/structured-data'
@@ -50,15 +51,7 @@ export default async function Admissions() {
       <section className="section">
         <Container>
           <SectionHeading eyebrow="Process" title="How to apply" />
-          <ol className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {admissionsSteps.map((s) => (
-              <li key={s.step} className="card p-6 relative">
-                <span className="eyebrow">{`STEP_${String(s.step).padStart(2, '0')}`}</span>
-                <h3 className="mt-2 font-display font-semibold text-[1.05rem] text-[var(--color-ink)]">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>{s.body}</p>
-              </li>
-            ))}
-          </ol>
+          <div className="mt-10"><ApplySteps /></div>
         </Container>
       </section>
 

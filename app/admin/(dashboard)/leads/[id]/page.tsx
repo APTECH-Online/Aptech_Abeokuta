@@ -44,7 +44,7 @@ export default async function LeadProfilePage({ params }: { params: Promise<{ id
 
   if (!detail) notFound()
 
-  const { lead, education, interests, applications, interactions, followUps, staffOptions, programmeOptions, quizResults } = detail
+  const { lead, education, interests, applications, interactions, followUps, staffOptions, programmeOptions, quizResults, consents } = detail
   const activeProgrammeOptions = programmeOptions.filter((p: any) => p.status === 'active')
   const latestInterest = interests[0]
 
@@ -190,6 +190,53 @@ export default async function LeadProfilePage({ params }: { params: Promise<{ id
             ) : (
               <p className="text-sm" style={{ color: 'var(--color-muted)' }}>No education details recorded.</p>
             )}
+          </section>
+
+          <section className="card p-5 sm:p-6" aria-labelledby="lead-consent-heading">
+            <p id="lead-consent-heading" className="eyebrow mb-3">Privacy &amp; consent</p>
+            {consents.some((c: any) => c.minor_flag) && (
+              <p className="text-sm mb-3 p-3 rounded-lg" style={{ background: 'var(--color-amber-100)', color: 'var(--color-ink)' }}>
+                <strong>Under 18:</strong> this applicant&apos;s date of birth indicates they are a minor. Confirm parent or guardian agreement before enrolment.
+              </p>
+            )}
+            {consents.length === 0 ? (
+              <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
+                No consent record. This lead was likely created before consent capture was added, or was entered by staff.
+              </p>
+            ) : (
+              <>
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <dt style={{ color: 'var(--color-muted)' }}>Privacy Policy &amp; Terms</dt>
+                    <dd className="font-medium" style={{ color: 'var(--color-ink)' }}>
+                      Agreed {formatDateTime(consents[0].created_at)} (Privacy v{consents[0].privacy_version ?? '?'}, Terms v{consents[0].terms_version ?? '?'})
+                    </dd>
+                  </div>
+                  <div>
+                    <dt style={{ color: 'var(--color-muted)' }}>Marketing messages</dt>
+                    <dd className="font-medium" style={{ color: 'var(--color-ink)' }}>{lead.marketing_opt_in ? 'Opted in' : 'Not opted in. Service messages only'}</dd>
+                  </div>
+                </dl>
+                {consents.length > 1 && (
+                  <details className="mt-4 text-sm">
+                    <summary className="cursor-pointer font-semibold" style={{ color: 'var(--color-navy-700)' }}>Consent history ({consents.length})</summary>
+                    <ul className="grid gap-2 mt-3">
+                      {consents.map((c: any) => (
+                        <li key={c.id} className="p-3 rounded-lg" style={{ background: 'var(--color-paper)' }}>
+                          <span className="font-mono text-xs" style={{ color: 'var(--color-muted)' }}>{formatDateTime(c.created_at)}</span>
+                          <p style={{ color: 'var(--color-body)' }}>
+                            {String(c.form_source).replace('_', ' ')} form · Privacy v{c.privacy_version ?? '?'} · Terms v{c.terms_version ?? '?'}{c.marketing_opt_in ? ' · marketing opt-in' : ''}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+              </>
+            )}
+            <p className="text-xs mt-3" style={{ color: 'var(--color-muted)' }}>
+              Requests to access, correct or delete this person&apos;s data, or to stop marketing, arrive at the contact email in the Privacy Policy. Log them in the activity timeline.
+            </p>
           </section>
 
           <section className="card p-5 sm:p-6">

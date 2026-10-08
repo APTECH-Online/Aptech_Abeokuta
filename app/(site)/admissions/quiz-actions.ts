@@ -6,6 +6,7 @@ import { checkRateLimit } from '../../../lib/rate-limit'
 import { generateLeadReference } from '../../../lib/reference'
 import { findExistingLead } from '../../../lib/duplicate'
 import { createNotification } from '../../../lib/notifications'
+import { recordConsent, formFlag } from '../../../lib/consent'
 import { DiscoveryAnswers, rankRecommendations } from '../../../lib/program-recommendation'
 import type { Course } from '../../../data/courses'
 
@@ -26,6 +27,7 @@ export async function submitCareerQuizLead(_prev: QuizLeadState, formData: FormD
   const programmeName = clean(formData.get('programmeName'))
   const answersRaw = clean(formData.get('answers'))
   if (!name || !programmeId || !answersRaw) return { status: 'error', message: 'Please complete the discovery experience before sending your details.' }
+  if (!formFlag(formData.get('privacyConsent'))) return { status: 'error', message: 'Please agree to the Privacy Policy and Terms so we can contact you.' }
   if (name.length > 150) return { status: 'error', message: 'Please enter a shorter name.' }
   if (email && (!/^\S+@\S+\.\S+$/.test(email) || email.length > 200)) return { status: 'error', message: 'Please enter a valid email address.' }
   if (phone && !/^[+]?\d[\d\s().-]{6,19}$/.test(phone)) return { status: 'error', message: 'Please enter a valid phone number.' }
@@ -100,6 +102,8 @@ export async function submitCareerQuizLead(_prev: QuizLeadState, formData: FormD
       result_summary: resultSummary
     })
     if (resultError) throw resultError
+
+    await recordConsent(admin, { leadId: lead.id, source: 'career_quiz', marketingOptIn: formFlag(formData.get('marketingOptIn')), page: '/' })
 
     await admin.from('conversion_events').insert({
       event_name: 'career_quiz_completed',

@@ -15,7 +15,8 @@ export async function getLeadDetail(leadId: string) {
     { data: followUps },
     { data: staff },
     { data: programmes },
-    { data: quizResults }
+    { data: quizResults },
+    { data: consents }
   ] = await Promise.all([
     supabase.from('leads').select('*, staff:assigned_to(id, full_name)').eq('id', leadId).maybeSingle(),
     supabase.from('lead_education').select('*').eq('lead_id', leadId).order('created_at', { ascending: false }).limit(1),
@@ -45,7 +46,12 @@ export async function getLeadDetail(leadId: string) {
       .from('interactive_quiz_results')
       .select('*, recommended:programmes!recommended_programme_id(id, name), secondary:programmes!secondary_programme_id(id, name)')
       .eq('lead_id', leadId)
-      .order('completed_at', { ascending: false })
+      .order('completed_at', { ascending: false }),
+    supabase
+      .from('lead_consents')
+      .select('*')
+      .eq('lead_id', leadId)
+      .order('created_at', { ascending: false })
   ])
 
   if (!lead) return null
@@ -59,7 +65,8 @@ export async function getLeadDetail(leadId: string) {
     followUps: followUps ?? [],
     staffOptions: staff ?? [],
     programmeOptions: programmes ?? [],
-    quizResults: quizResults ?? []
+    quizResults: quizResults ?? [],
+    consents: consents ?? []
   }
 }
 

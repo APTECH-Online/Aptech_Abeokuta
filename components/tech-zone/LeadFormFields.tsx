@@ -47,7 +47,7 @@ export function LeadFormFields({ showPreference = false }: { showPreference?: bo
 
       <div className="lead-form__consent">
         <input id={id('consent')} type="checkbox" name="consent" value="yes" required />
-        <label htmlFor={id('consent')}>I agree that Aptech Abeokuta may use these details to send my challenge result and relevant programme information. <span className="lead-form__req" aria-hidden="true">*</span></label>
+        <label htmlFor={id('consent')}>I agree that Aptech Abeokuta may use these details to send my challenge result and relevant programme information, as described in the <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>. <span className="lead-form__req" aria-hidden="true">*</span></label>
       </div>
     </>
   )

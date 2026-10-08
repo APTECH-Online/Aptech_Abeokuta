@@ -28,6 +28,7 @@ export const primaryNav = [
   { label: 'Home', href: '/' },
   { label: 'Courses', href: '/courses' },
   { label: 'Admissions', href: '/admissions' },
+  { label: 'Tech Playground', href: '/tech-playground' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' }
 ]
@@ -128,21 +129,27 @@ export const whyChoose = [
 export const admissionsSteps = [
   {
     step: 1,
+    icon: 'compass',
     title: 'Choose your programme',
-    body: 'Browse the course catalogue and pick the track that matches your goals and schedule.'
+    body: 'Browse the course catalogue and pick the track that matches your goals and schedule. Not sure? Compare programmes side by side.',
+    cta: { label: 'Browse courses', href: '/courses' }
   },
   {
     step: 2,
+    icon: 'file',
     title: 'Submit an application',
-    body: 'Complete the enquiry form with your details and preferred programme. Our team will reach out to confirm next steps.'
+    body: 'Complete the enquiry form with your details and preferred programme. Our team will reach out to confirm next steps.',
+    cta: { label: 'Start your enquiry', href: '#apply' }
   },
   {
     step: 3,
+    icon: 'users',
     title: 'Attend an orientation',
     body: 'New students are guided through the campus, learning tools, and cohort schedule before classes begin.'
   },
   {
     step: 4,
+    icon: 'graduation',
     title: 'Start learning',
     body: 'Begin coursework with your cohort and instructor, with ongoing support throughout the programme.'
   }

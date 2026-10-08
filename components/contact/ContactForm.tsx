@@ -1,5 +1,7 @@
 'use client'
 
+import ConsentFields from '../shared/ConsentFields'
+
 import { useActionState, useEffect, useRef } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useActionFeedback } from '../admin/AdminFeedbackProvider'
@@ -102,6 +104,7 @@ export default function ContactForm({ whatsapp }: { whatsapp: string }) {
             <textarea id="contact-message" name="message" required className="field-textarea" placeholder="How can we help?" />
             {fieldErrors.message && <p className="field-error-text">{fieldErrors.message}</p>}
           </div>
+          <ConsentFields error={fieldErrors.privacyConsent} />
           <SubmitButton />
         </>
       )}

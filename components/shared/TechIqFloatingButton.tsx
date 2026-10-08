@@ -17,7 +17,7 @@ export default function TechIqFloatingButton() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  if (pathname === '/tech-challenge') return null
+  if (pathname === '/tech-challenge' || pathname?.startsWith('/tech-playground')) return null
 
   return (
     <Link

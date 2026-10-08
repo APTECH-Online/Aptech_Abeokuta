@@ -73,10 +73,17 @@ export default async function ChallengeDetail({ params }: { params: Promise<{ id
           <label className="tz-check"><input type="checkbox" name="is_weekly" defaultChecked={challenge.is_weekly} /> Weekly challenge</label>
         </div>
 
-        <input type="hidden" name="scoring_config" value={JSON.stringify(challenge.scoring_config || {})} />
+        <div className="tech-zone-section-heading"><div><p className="eyebrow">Tech Playground</p></div><span className="tech-zone-section-note">Leave placement empty to keep this a Tech Zone challenge</span></div>
+        <div className="tz-field-grid tz-field-grid--2">
+          <label className="tz-field">Playground placement<select name="playground_kind" defaultValue={challenge.playground_kind || ''} className="input mt-1"><option value="">Tech Zone only</option><option value="weekly">Weekly Challenge</option><option value="detective">Tech Detective case</option><option value="speed_round">60-Second Tech IQ</option><option value="data_detective">Data Detective</option><option value="daily">7-Day Streak day</option></select></label>
+          <label className="tz-field">Time limit (seconds)<input name="time_limit_seconds" type="number" min="10" max="3600" defaultValue={challenge.time_limit_seconds ?? ''} className="input mt-1" /></label>
+          <label className="tz-field">Detective category<select name="detective_category" defaultValue={challenge.detective_category || ''} className="input mt-1"><option value="">None</option><option value="code">Code</option><option value="web">Web</option><option value="sql">SQL</option><option value="cyber">Cyber</option><option value="data">Data</option></select></label>
+          <label className="tz-field">Streak day (1–7)<input name="streak_day" type="number" min="1" max="7" defaultValue={challenge.streak_day ?? ''} className="input mt-1" /></label>
+        </div>
+        <label className="tz-field">Scoring / dataset (JSON)<textarea name="scoring_config" defaultValue={JSON.stringify(challenge.scoring_config || {}, null, 2)} className="input mt-1 font-mono text-xs" rows={6} /><span className="text-xs tech-zone-help-text">Data Detective tables use {`{"dataset":{"caption":"…","columns":[…],"rows":[[…]]}}`}. Invalid JSON is rejected.</span></label>
         <div className="flex flex-wrap gap-3 tech-zone-admin-actions">
           <button className="btn btn-primary">Save challenge</button>
-          <Link href={`/tech-zone/${challenge.slug}`} className="btn btn-secondary">View public</Link>
+          <Link href={challenge.playground_kind ? '/tech-playground' : `/tech-zone/${challenge.slug}`} className="btn btn-secondary">View public</Link>
         </div>
       </form>
 

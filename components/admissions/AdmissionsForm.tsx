@@ -1,5 +1,6 @@
 'use client'
 
+import ConsentFields from '../shared/ConsentFields'
 import { useActionState, useEffect, useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useSearchParams } from 'next/navigation'
@@ -298,11 +299,8 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
           </fieldset>
 
           <div>
-            <SubmitButton />
-            <p className="field-hint">
-              By submitting, you agree to be contacted by APTECH Abeokuta about your enquiry. See our{' '}
-              <a href="/privacy" className="underline">privacy policy</a>.
-            </p>
+            <ConsentFields error={fieldErrors.privacyConsent} />
+            <div className="mt-4"><SubmitButton /></div>
           </div>
         </>
       )}

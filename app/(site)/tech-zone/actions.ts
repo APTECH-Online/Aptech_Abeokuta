@@ -1,5 +1,6 @@
 'use server'
 
+import { recordConsent } from '../../../lib/consent'
 import { headers } from 'next/headers'
 import { createAdminClient } from '../../../lib/supabase/admin'
 import { checkRateLimit } from '../../../lib/rate-limit'
@@ -134,6 +135,7 @@ export async function captureChallengeLead(formData: FormData) {
     const recIds = attempt.recommended_programme_ids || []
     for (const programmeId of recIds) await admin.from('lead_interests').insert({ lead_id: lead.id, programme_id: programmeId })
     const description = `Completed ${attempt.tech_challenges?.name || 'Tech Zone challenge'} with ${attempt.percentage}% (${attempt.result_level}). Score ${attempt.score}/${attempt.max_score}. Skills: ${(attempt.skill_areas || []).join(', ') || 'technology fundamentals'}.`
+    await recordConsent(admin, { leadId: lead.id, source: 'tech_zone', marketingOptIn: true, page: '/tech-zone' })
     await admin.from('interactions').insert({ lead_id: lead.id, user_id: null, type: 'website', subject: `Tech Zone: ${attempt.tech_challenges?.name || 'Challenge'} completed`, description })
     await admin.from('tech_challenge_attempts').update({ lead_id: lead.id, consented_to_follow_up: true, communication_preference: preference, captured_at: new Date().toISOString() }).eq('id', attemptId)
     await admin.from('conversion_events').insert({ event_name: 'challenge_lead_captured', lead_id: lead.id, metadata: { attemptId, challenge: attempt.tech_challenges?.slug, score: attempt.score, percentage: attempt.percentage, resultLevel: attempt.result_level, preference } })
@@ -155,6 +157,7 @@ export async function captureLegacyTechIqLead(formData: FormData) {
     const lead = await upsertChallengeLead(admin, name, email, phone, attribution)
     const resultLevel = score >= 4 ? 'Tech Pro' : score >= 3 ? 'Skilled' : score >= 2 ? 'Explorer' : 'Beginner'
     const description = `Completed Tech IQ Challenge with ${score}/5 (${Math.round(score / 5 * 100)}%). Result level: ${resultLevel}.`
+    await recordConsent(admin, { leadId: lead.id, source: 'tech_zone', marketingOptIn: true, page: '/' })
     await admin.from('interactions').insert({ lead_id: lead.id, user_id: null, type: 'website', subject: 'Tech IQ Challenge completed', description })
     await admin.from('conversion_events').insert({ event_name: 'challenge_lead_captured', lead_id: lead.id, metadata: { challenge: 'tech_iq', score, resultLevel } })
     await Promise.allSettled([createNotification(admin, { type: 'lead.created', title: `Tech IQ lead: ${name}`, body: description, link: `/admin/leads/${lead.id}`, entity: 'lead', entityId: lead.id, targetRoles: ['admissions_officer', 'super_admin'] })])

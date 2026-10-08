@@ -1,5 +1,6 @@
 'use server'
 
+import { recordConsent } from '../../../lib/consent'
 import { headers } from 'next/headers'
 import { createAdminClient } from '../../../lib/supabase/admin'
 import { contactFormSchema, formatZodErrors } from '../../../lib/validation'
@@ -109,6 +110,8 @@ export async function submitContactMessage(
 
     const leadId = result.lead_id
     const isDuplicate = Boolean(result.is_duplicate)
+
+    await recordConsent(admin, { leadId, source: 'contact', marketingOptIn: values.marketingOptIn === 'yes', page: '/contact' })
 
     await logAudit(admin, {
       action: isDuplicate ? 'lead.contacted' : 'lead.created',

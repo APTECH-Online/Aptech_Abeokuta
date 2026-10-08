@@ -28,7 +28,15 @@ const ALLOWED = new Set([
   'challenge_result_viewed',
   'challenge_lead_captured',
   'challenge_cta_clicked',
-  'challenge_whatsapp_clicked'
+  'challenge_whatsapp_clicked',
+  'playground_viewed',
+  'playground_activity_started',
+  'playground_activity_completed',
+  'playground_cta_clicked',
+  'playground_share_clicked',
+  'playground_badge_earned',
+  'playground_leaderboard_name_set',
+  'playground_lead_captured'
 ])
 
 export async function POST(request: Request) {

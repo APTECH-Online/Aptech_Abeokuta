@@ -1,5 +1,7 @@
 'use client'
 
+import ConsentFields from '../shared/ConsentFields'
+
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, BarChart3, BriefcaseBusiness, Check, ChevronLeft, Code2, Globe2, Network, RotateCcw, ShieldCheck, Sparkles } from 'lucide-react'
@@ -107,6 +109,7 @@ export default function ProgramFinder({ courses, whatsapp }: Props) {
           <input name="name" value={name} onChange={(e) => setName(e.target.value)} required className="field-input" placeholder="Full name *" aria-label="Full name" />
           <input name="phone" value={phone} onChange={(e) => setPhone(e.target.value)} className="field-input" placeholder="WhatsApp / phone" aria-label="WhatsApp or phone" />
           <input name="email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" className="field-input" placeholder="Email" aria-label="Email" />
+          <div className="sm:col-span-3"><ConsentFields compact /></div>
           <div className="sm:col-span-3 flex flex-wrap items-center gap-3"><button type="submit" disabled={!name.trim()} className="btn btn-primary disabled:opacity-50">Send my result <ArrowRight size={15} /></button>{state.status === 'error' && <p className="text-sm" style={{ color: 'var(--color-danger)' }}>{state.message}</p>}</div>
         </form>}
       </div>

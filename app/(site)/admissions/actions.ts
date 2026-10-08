@@ -10,6 +10,7 @@ import { logAudit } from '../../../lib/audit'
 import { sendEmail } from '../../../lib/email/send'
 import { applicantAcknowledgementEmail } from '../../../lib/email/templates'
 import { createNotification } from '../../../lib/notifications'
+import { recordConsent, isUnder18 } from '../../../lib/consent'
 
 export type SubmitEnquiryState = {
   status: 'idle' | 'success' | 'error'
@@ -269,6 +270,25 @@ export async function submitEnquiry(
     })
     if (interactionError) {
       console.error('[admissions] failed to log enquiry interaction', interactionError, { leadId })
+    }
+
+    // --- Consent ledger + under-18 flag -----------------------------------------
+    const minor = isUnder18(values.dateOfBirth)
+    await recordConsent(admin, {
+      leadId,
+      source: 'admissions',
+      marketingOptIn: values.marketingOptIn === 'yes',
+      minor,
+      page: '/admissions'
+    })
+    if (minor) {
+      await admin.from('interactions').insert({
+        lead_id: leadId,
+        user_id: null,
+        type: 'website',
+        subject: 'Applicant appears to be under 18',
+        description: 'Date of birth indicates the applicant is under 18. Confirm parent or guardian agreement before enrolment.'
+      })
     }
 
     await logAudit(admin, {

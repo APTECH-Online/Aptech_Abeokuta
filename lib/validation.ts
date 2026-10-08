@@ -63,6 +63,10 @@ export const admissionsFormSchema = z.object({
     'programme_comparison'
   ]),
 
+  // Consent — must be explicitly ticked (re-checked server-side).
+  privacyConsent: z.string().optional().refine((v) => v === 'yes', 'Please agree to the Privacy Policy and Terms to continue'),
+  marketingOptIn: z.string().optional().or(z.literal('')),
+
   // Honeypot — must always be empty. Bots that fill every field will trip this.
   companyWebsite: z.string().max(0, 'Spam check failed').optional().or(z.literal(''))
 })
@@ -79,6 +83,10 @@ export const contactFormSchema = z.object({
     .regex(phoneRegex, 'Enter a valid phone number'),
   subject: z.string().trim().max(200).optional().or(z.literal('')),
   message: z.string().trim().min(1, 'Please add a message').max(4000),
+
+  // Consent — must be explicitly ticked (re-checked server-side).
+  privacyConsent: z.string().optional().refine((v) => v === 'yes', 'Please agree to the Privacy Policy and Terms to continue'),
+  marketingOptIn: z.string().optional().or(z.literal('')),
 
   // Honeypot — must always be empty. Bots that fill every field will trip this.
   companyWebsite: z.string().max(0, 'Spam check failed').optional().or(z.literal(''))
