@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Check, Lock } from 'lucide-react'
+import { BarChart3, Check, ChevronLeft, Code2, Database, Flag, Flame, Globe, Laptop, Lock, Play, ShieldCheck } from 'lucide-react'
 import PlaygroundQuiz from './PlaygroundQuiz'
 import ShareButton from './ShareButton'
 import { usePlayground } from './usePlayground'
 import { STREAK_DAY_TITLES } from '../../data/playground'
 
 type Day = { day: number; challenge: any; questions: any[] }
+const DAY_ICONS = [Laptop, Code2, BarChart3, Globe, Database, ShieldCheck, Flag]
 
 export default function StreakBoard({ days }: { days: Day[] }) {
   const pg = usePlayground()
@@ -27,33 +28,48 @@ export default function StreakBoard({ days }: { days: Day[] }) {
   const message = finished ? 'You did it. All seven days complete!' : done.length === 0 ? 'Day 1 is waiting. Start your streak today.' : canToday ? "You're on a roll. Keep going!" : 'Great work today. Your next challenge unlocks tomorrow.'
 
   return (
-    <div className="pg-stage pg-stage--light">
-      <Link href="/tech-playground" className="pg-back">← Tech Playground</Link>
-      <p className="pg-eyebrow">🔥 Your Tech Streak</p>
-      <h1 className="pg-title">{finished ? '7 of 7 complete' : `Day ${Math.max(1, Math.min(7, nextDay ?? current))} of 7`}</h1>
-      <p className="pg-lede" aria-live="polite">{pg.ready ? message : 'Loading your progress…'}</p>
-      <ol className="pg-days">
-        {days.map((d) => {
-          const isDone = done.includes(d.day)
-          const isNext = d.day === nextDay
-          return (
-            <li key={d.day} className={`pg-day${isDone ? ' is-done' : ''}${isNext ? ' is-next' : ''}`}>
-              <span className="pg-day__n">{isDone ? <Check size={16} aria-label="Completed" /> : d.day > (nextDay ?? 8) ? <Lock size={14} aria-label="Locked" /> : d.day}</span>
-              <div><strong>Day {d.day}</strong><span>{STREAK_DAY_TITLES[d.day - 1]}</span></div>
-              {isNext && <button className="btn btn-accent" onClick={() => setPlaying(d.day)} disabled={!canToday}>{canToday ? 'Play' : 'Tomorrow'}</button>}
-            </li>
-          )
-        })}
-      </ol>
-      {finished && (
-        <div className="pg-cert" role="img" aria-label="7-Day Tech Explorer badge">
-          <p className="pg-eyebrow">APTECH Abeokuta Tech Playground</p>
-          <h2>🏆 7-Day Tech Explorer</h2>
-          <p>Seven days. Seven challenges. Completed.</p>
-          <div className="pg-actions"><ShareButton text="I completed the 7-Day Tech Streak at APTECH Abeokuta and earned the Tech Explorer badge!" path="/tech-playground/7-day-challenge" /><Link href="/courses" className="btn btn-accent">Start Learning</Link></div>
+    <div className="pf sk">
+      <div className="pf__glow" aria-hidden="true" />
+      <div className="pf__dots" aria-hidden="true" />
+      <div className="pf__inner">
+        <Link href="/tech-playground" className="pgx-back"><ChevronLeft size={15} aria-hidden="true" /> Tech Playground</Link>
+        <p className="pgx-badge"><Flame size={13} aria-hidden="true" /> Your Tech Streak</p>
+        <h1 className="pf__question pf__question--hero">{finished ? '7 of 7 complete' : `Day ${Math.max(1, Math.min(7, nextDay ?? current))} of 7`}</h1>
+        <p className="mt-3 leading-relaxed max-w-2xl" style={{ color: 'var(--color-body)' }} aria-live="polite">{pg.ready ? message : 'Loading your progress…'}</p>
+        <div className="sk__meter">
+          <div className="pf__progress" role="progressbar" aria-label="Streak progress" aria-valuemin={0} aria-valuemax={7} aria-valuenow={done.length}>
+            {days.map((d) => <span key={d.day} className={done.includes(d.day) ? 'is-done' : d.day === nextDay ? 'is-current' : ''} />)}
+          </div>
+          <p className="sk__meter-label"><b>{done.length}</b>/7 complete</p>
         </div>
-      )}
-      <p className="pg-muted">One challenge per day. Your progress is saved to this browser, with no account needed.</p>
+        <ol className="sk-days">
+          {days.map((d) => {
+            const isDone = done.includes(d.day)
+            const isNext = d.day === nextDay
+            const locked = !isDone && d.day > (nextDay ?? 8)
+            const Icon = DAY_ICONS[d.day - 1] ?? Flag
+            return (
+              <li key={d.day} className={`sk-day${isDone ? ' is-done' : ''}${isNext ? ' is-next' : ''}${locked ? ' is-locked' : ''}`}>
+                <span className="sk-day__n" aria-hidden="true">{isDone ? <Check size={18} strokeWidth={3} /> : locked ? <Lock size={15} /> : <Icon size={18} />}</span>
+                <div className="sk-day__body"><strong>Day {d.day}</strong><span>{STREAK_DAY_TITLES[d.day - 1]}</span></div>
+                {isDone && <span className="sk-day__pill sk-day__pill--done">Done</span>}
+                {locked && <span className="sk-day__pill">Locked</span>}
+                {isNext && <button className="btn btn-accent sk-day__play" onClick={() => setPlaying(d.day)} disabled={!canToday}>{canToday ? <><Play size={14} aria-hidden="true" /> Play</> : 'Tomorrow'}</button>}
+                <span className="sr-only">{isDone ? 'Completed' : locked ? 'Locked' : ''}</span>
+              </li>
+            )
+          })}
+        </ol>
+        {finished && (
+          <div className="pg-cert" role="img" aria-label="7-Day Tech Explorer badge">
+            <p className="pg-eyebrow">APTECH Abeokuta Tech Playground</p>
+            <h2>🏆 7-Day Tech Explorer</h2>
+            <p>Seven days. Seven challenges. Completed.</p>
+            <div className="pg-actions"><ShareButton text="I completed the 7-Day Tech Streak at APTECH Abeokuta and earned the Tech Explorer badge!" path="/tech-playground/7-day-challenge" /><Link href="/courses" className="btn btn-accent">Start Learning</Link></div>
+          </div>
+        )}
+        <p className="pg-muted">One challenge per day. Your progress is saved to this browser, with no account needed.</p>
+      </div>
     </div>
   )
 }

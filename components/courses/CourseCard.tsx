@@ -1,82 +1,79 @@
 import Link from 'next/link'
-import { admissionUi } from '../../lib/admission'
 import Image from 'next/image'
+import { ArrowRight, BarChart3, Clock, MapPin } from 'lucide-react'
+import { admissionUi } from '../../lib/admission'
 import { Course } from '../../data/courses'
 import CourseIcon from '../ui/CourseIcon'
 import CompareCourseButton from './CompareCourseButton'
 
-const coverStyles: Record<string, { bg: string; fg: string }> = {
-  'Advanced Diploma': { bg: 'var(--color-navy-900)', fg: 'rgba(239,192,119,0.9)' },
-  'Smart Pro': { bg: 'var(--color-teal-700)', fg: 'rgba(255,255,255,0.85)' },
-  'Aptech Certified Network Specialist': { bg: 'var(--color-navy-700)', fg: 'rgba(239,192,119,0.9)' },
-  'Short Term Courses': { bg: 'var(--color-amber-500)', fg: 'rgba(20,20,20,0.85)' }
+const coverStyles: Record<string, { bg: string; fg: string; accent: string }> = {
+  'Advanced Diploma': { bg: 'linear-gradient(135deg, var(--color-navy-950), var(--color-navy-800))', fg: 'var(--color-amber-400)', accent: 'var(--color-navy-700)' },
+  'Smart Pro': { bg: 'linear-gradient(135deg, var(--color-teal-700), #0b5f50)', fg: '#ffffff', accent: 'var(--color-teal-700)' },
+  'Aptech Certified Network Specialist': { bg: 'linear-gradient(135deg, var(--color-navy-700), var(--color-navy-900))', fg: 'var(--color-amber-400)', accent: 'var(--color-navy-700)' },
+  'Short Term Courses': { bg: 'linear-gradient(135deg, var(--color-amber-500), #c98a1e)', fg: '#2a1c04', accent: 'var(--color-amber-700)' }
 }
+
+const MAX_TOOLS = 3
 
 export default function CourseCard({ course }: { course: Course }) {
   const cover = coverStyles[course.category] ?? coverStyles['Aptech Certified Network Specialist']
+  const status = course.admissionStatus !== 'open' ? admissionUi(course.admissionStatus) : null
+  const tools = (course.tools ?? []).filter(Boolean)
+  const shownTools = tools.slice(0, MAX_TOOLS)
+  const extra = tools.length - shownTools.length
 
   return (
-    <article className="card card-interactive flex flex-col h-full overflow-hidden group">
-      <div
-        className="relative h-36 flex items-center justify-center overflow-hidden pattern-adire"
-        style={{ background: cover.bg }}
-      >
+    <article className="cc group" style={{ ['--cc-accent' as any]: cover.accent }}>
+      <div className="cc__cover pattern-adire" style={{ background: cover.bg }}>
         {course.coverImage ? (
           <Image
             src={course.coverImage}
             alt={`${course.title} curriculum`}
             fill
             sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.035]"
+            className="cc__img"
           />
         ) : (
-          <div
-            className="transition-transform duration-300 ease-out group-hover:scale-110"
-            style={{ color: cover.fg }}
-          >
-            <CourseIcon category={course.category} slug={course.slug} className="w-16 h-16" />
-          </div>
+          <span className="cc__watermark" style={{ color: cover.fg }} aria-hidden="true">
+            <CourseIcon category={course.category} slug={course.slug} className="w-full h-full" />
+          </span>
         )}
-        <span className="absolute top-3 left-3 badge" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', backdropFilter: 'blur(4px)' }}>
-          {course.category}
-        </span>
-        {course.admissionStatus !== 'open' && (
-          <span className="absolute top-3 right-3 badge" style={{ background: 'rgba(255,255,255,0.92)', color: 'var(--color-navy-900)' }}>
-            {admissionUi(course.admissionStatus).statusLabel}
+        <span className="cc__shade" aria-hidden="true" />
+        <span className="cc__category">{course.category}</span>
+        {status && (
+          <span className="cc__status">
+            <i style={{ background: status.dot }} aria-hidden="true" />{status.statusLabel}
           </span>
         )}
       </div>
 
-      <div className="p-6 flex flex-col flex-1">
-        <h3 className="text-[1.05rem] font-semibold text-[var(--color-ink)] font-display">
-          <Link href={`/courses/${course.slug}`} className="hover:underline">{course.title}</Link>
+      <div className="cc__body">
+        <span className="cc__tile" style={{ color: cover.accent }} aria-hidden="true">
+          <CourseIcon category={course.category} slug={course.slug} className="w-7 h-7" />
+        </span>
+
+        <h3 className="cc__title">
+          <Link href={`/courses/${course.slug}`} className="cc__link">{course.title}</Link>
         </h3>
-        <p className="mt-2 text-sm leading-relaxed line-clamp-3" style={{ color: 'var(--color-body)' }}>
-          {course.summary}
-        </p>
+        <p className="cc__summary">{course.summary}</p>
 
-        <dl className="mt-4 grid grid-cols-2 gap-2 text-xs" style={{ color: 'var(--color-muted)' }}>
-          <div>
-            <dt className="eyebrow" style={{ fontSize: '0.62rem' }}>Duration</dt>
-            <dd className="mt-1" style={{ color: 'var(--color-body)' }}>{course.duration}</dd>
-          </div>
-          <div>
-            <dt className="eyebrow" style={{ fontSize: '0.62rem' }}>Level</dt>
-            <dd className="mt-1" style={{ color: 'var(--color-body)' }}>{course.level}</dd>
-          </div>
-        </dl>
+        <ul className="cc__meta" aria-label="Programme details">
+          {course.duration && <li><Clock size={13} aria-hidden="true" /><span className="sr-only">Duration: </span>{course.duration}</li>}
+          {course.level && <li><BarChart3 size={13} aria-hidden="true" /><span className="sr-only">Level: </span>{course.level}</li>}
+          {course.mode && <li><MapPin size={13} aria-hidden="true" /><span className="sr-only">Mode: </span>{course.mode}</li>}
+        </ul>
 
-        <div className="mt-5 pt-4 flex items-center justify-between gap-4" style={{ borderTop: '1px solid var(--color-line)' }}>
-          <Link
-            href={`/courses/${course.slug}`}
-            className="text-sm font-semibold inline-flex items-center gap-1.5 transition-transform duration-150 group-hover:translate-x-0.5"
-            style={{ color: 'var(--color-navy-900)' }}
-          >
-            View programme
-            <span className="sr-only">: {course.title}</span>
-            <span aria-hidden="true">→</span>
-          </Link>
-          <CompareCourseButton slug={course.slug} />
+        {shownTools.length > 0 && (
+          <ul className="cc__tools" aria-label="Tools you will use">
+            {shownTools.map((t) => <li key={t}>{t}</li>)}
+            {extra > 0 && <li className="is-more">+{extra} more</li>}
+          </ul>
+        )}
+
+        <div className="cc__foot">
+          <span className="cc__cta" aria-hidden="true">View programme <ArrowRight size={15} /></span>
+          <span className="sr-only">View programme: {course.title}</span>
+          <span className="cc__compare"><CompareCourseButton slug={course.slug} /></span>
         </div>
       </div>
     </article>

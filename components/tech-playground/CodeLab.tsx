@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Check, Lightbulb, RotateCcw } from 'lucide-react'
+import { ArrowRight, Check, ChevronLeft, Code2, Lightbulb, Play, RotateCcw } from 'lucide-react'
 import { CODE_TASKS, BADGES, type BadgeKey } from '../../data/playground'
 import { submitPlaygroundActivity } from '../../app/(site)/tech-playground/actions'
 import { captureAttribution, getAttributionSnapshot } from '../../lib/attribution'
@@ -45,28 +45,37 @@ export default function CodeLab() {
 
   const srcDoc = `<!doctype html><meta charset="utf-8">${SANDBOX_STYLE}${code}`
   return (
-    <div className="pg-stage pg-stage--light pg-lab">
-      <Link href="/tech-playground" className="pg-back">← Tech Playground</Link>
-      <p className="pg-eyebrow">Code Lab · Task {taskIndex + 1} of {CODE_TASKS.length}</p>
-      <h1 className="pg-title">{task.title}</h1>
-      <p className="pg-lede">{task.brief}</p>
-      <div className="pg-lab__grid">
-        <div>
-          <label htmlFor="pg-code" className="field-label">Your code</label>
-          <textarea id="pg-code" className="pg-editor" value={code} onChange={(e) => setCode(e.target.value)} spellCheck={false} autoCapitalize="off" autoCorrect="off" rows={6} />
-          <div className="pg-actions pg-actions--tight">
-            <button className="btn btn-primary" onClick={run}>Run my code</button>
-            <button className="btn btn-secondary" onClick={() => { setCode(task.starter); setTried(false) }}><RotateCcw size={15} /> Reset</button>
-            <button className="btn btn-secondary" onClick={() => setShowHint((v) => !v)}><Lightbulb size={15} /> Hint</button>
+    <div className="pf cl">
+      <div className="pf__glow" aria-hidden="true" />
+      <div className="pf__dots" aria-hidden="true" />
+      <div className="pf__inner">
+        <Link href="/tech-playground" className="pgx-back"><ChevronLeft size={15} aria-hidden="true" /> Tech Playground</Link>
+        <p className="pgx-badge"><Code2 size={13} aria-hidden="true" /> Code Lab</p>
+        <div className="pf__meta cl__steps">
+          <p className="pf__step-label"><span>Task</span> {String(taskIndex + 1).padStart(2, '0')} <span>of</span> {String(CODE_TASKS.length).padStart(2, '0')}</p>
+          <div className="pf__progress" role="progressbar" aria-label="Code Lab progress" aria-valuemin={0} aria-valuemax={CODE_TASKS.length} aria-valuenow={Object.keys(passed).length}>
+            {CODE_TASKS.map((t, i) => <span key={t.id} className={passed[t.id] ? 'is-done' : i === taskIndex ? 'is-current' : ''} />)}
           </div>
-          {showHint && <p className="pg-note">{task.hint}</p>}
-          {tried && !ok && !passed[task.id] && <p className="pg-error" role="alert">Not quite yet. Check your change and run it again.</p>}
         </div>
-        <div>
-          <p className="field-label">Live preview</p>
-          <iframe title="Live preview of your code" className="pg-preview" sandbox="" srcDoc={srcDoc} />
+        <h1 className="pf__question pf__question--hero">{task.title}</h1>
+        <p className="mt-3 leading-relaxed max-w-2xl" style={{ color: 'var(--color-body)' }}>{task.brief}</p>
+        <div className="cl__grid">
+          <div className="cl-win cl-win--dark">
+            <div className="cl-win__bar"><span className="cl-win__dots" aria-hidden="true"><i /><i /><i /></span><label htmlFor="pg-code" className="cl-win__title">Your code · index.html</label></div>
+            <textarea id="pg-code" className="pg-editor cl-editor" value={code} onChange={(e) => setCode(e.target.value)} spellCheck={false} autoCapitalize="off" autoCorrect="off" rows={7} />
+          </div>
+          <div className="cl-win">
+            <div className="cl-win__bar"><span className="cl-win__dots" aria-hidden="true"><i /><i /><i /></span><span className="cl-win__title">Live preview</span></div>
+            <iframe title="Live preview of your code" className="pg-preview cl-preview" sandbox="" srcDoc={srcDoc} />
+          </div>
         </div>
-      </div>
+        <div className="cl__actions">
+          <button className="btn btn-accent" onClick={run}><Play size={15} aria-hidden="true" /> Run my code</button>
+          <button className="btn btn-secondary" onClick={() => { setCode(task.starter); setTried(false) }}><RotateCcw size={15} aria-hidden="true" /> Reset</button>
+          <button className="btn btn-secondary" onClick={() => setShowHint((v) => !v)} aria-expanded={showHint}><Lightbulb size={15} aria-hidden="true" /> Hint</button>
+        </div>
+        {showHint && <p className="cl-hint"><Lightbulb size={16} aria-hidden="true" /> <span>{task.hint}</span></p>}
+        {tried && !ok && !passed[task.id] && <p className="pg-error" role="alert">Not quite yet. Check your change and run it again.</p>}
       {passed[task.id] && (
         <div className="pg-panel pg-panel--ok" role="status">
           <strong><Check size={16} className="inline" /> Task complete!</strong>
@@ -82,6 +91,7 @@ export default function CodeLab() {
             <ShareButton text="I just wrote my first lines of code in the APTECH Tech Playground!" path="/tech-playground/code-lab" label="Share" /></div>
         </div>
       )}
+      </div>
     </div>
   )
 }

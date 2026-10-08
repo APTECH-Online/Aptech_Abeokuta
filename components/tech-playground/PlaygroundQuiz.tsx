@@ -107,7 +107,7 @@ export default function PlaygroundQuiz({ challenge, questions, variant, backHref
     <div className="pg-stage pg-stage--intro pg-intro">
       <div className="pg-intro__glow" aria-hidden="true" />
       {onBack ? <button type="button" className="pg-backbtn pg-backbtn--sm" onClick={onBack}><ArrowLeft size={14} aria-hidden="true" /> {backLabel}</button> : <Link href={backHref} className="pg-backbtn pg-backbtn--sm"><ArrowLeft size={14} aria-hidden="true" /> {backLabel}</Link>}
-      {eyebrow && <p className="pg-badge">{eyebrow}</p>}
+      {eyebrow && <p className="pg-intro__badge">{eyebrow}</p>}
       <h1 className="pg-title">{challenge.name}</h1>
       <p className="pg-lede">{challenge.description}</p>
       <dl className="pg-stats pg-stats--intro" aria-label="Challenge details">
