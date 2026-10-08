@@ -35,15 +35,15 @@ export default function ContentTypeListing({
   const [featured, ...rest] = posts
 
   return (
-    <section className="section">
+    <section className="section editorial-listing">
       <Container>
         <InsightsSubNav active={active} />
 
         {categories.length > 0 && (
-          <div className="mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Filter by category">
+          <div className="editorial-filters mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Filter by category">
             <Link
               href={categoryBaseHref}
-              className="px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors"
+              className="editorial-filter px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors"
               style={{
                 background: !activeCategory ? 'var(--color-navy-900)' : 'var(--color-navy-50)',
                 color: !activeCategory ? '#fff' : 'var(--color-navy-900)'
@@ -55,7 +55,7 @@ export default function ContentTypeListing({
               <Link
                 key={c}
                 href={`${categoryBaseHref}?category=${encodeURIComponent(c)}`}
-                className="px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors"
+                className="editorial-filter px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors"
                 style={{
                   background: activeCategory === c ? 'var(--color-navy-900)' : 'var(--color-navy-50)',
                   color: activeCategory === c ? '#fff' : 'var(--color-navy-900)'

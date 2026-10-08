@@ -29,11 +29,11 @@ export default async function EventsPage() {
         crumbs={[{ label: 'Home', href: '/' }, { label: 'Insights', href: '/insights' }, { label: 'Events' }]}
       />
 
-      <section className="section">
+      <section className="section editorial-events-page">
         <Container>
           <InsightsSubNav active="/insights/events" />
 
-          <div className="mt-10">
+          <div className="editorial-events-block mt-10">
             <p className="eyebrow">Upcoming events</p>
             {upcoming.length === 0 ? (
               <p className="mt-4 text-sm" style={{ color: 'var(--color-muted)' }}>
@@ -49,7 +49,7 @@ export default async function EventsPage() {
           </div>
 
           {past.length > 0 && (
-            <div className="mt-16">
+            <div className="editorial-events-block mt-16">
               <p className="eyebrow">Past events</p>
               <div className="mt-2 card p-6">
                 {past.map((event) => (

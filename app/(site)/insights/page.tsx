@@ -37,7 +37,7 @@ export default async function InsightsPage({ searchParams }: Props) {
       />
 
       {upcomingEvents.length > 0 && (
-        <section className="section-tight" style={{ background: 'var(--color-paper-alt)', borderBottom: '1px solid var(--color-line)' }}>
+        <section className="section-tight editorial-upcoming" style={{ background: 'var(--color-paper-alt)', borderBottom: '1px solid var(--color-line)' }}>
           <Container>
             <div className="flex flex-wrap items-end justify-between gap-4">
               <p className="eyebrow">Upcoming events</p>

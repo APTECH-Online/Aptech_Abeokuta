@@ -1,11 +1,21 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, CalendarDays, Star } from 'lucide-react'
+import { ArrowRight, CalendarDays, GraduationCap, Lightbulb, Monitor, ShieldCheck, Sparkles, Star } from 'lucide-react'
 import type { PublicInsight } from '../../lib/insights-public'
 import { badgeLabel, formatPublishedDate } from './badge'
 
+function CategoryIcon({ category }: { category?: string | null }) {
+  const value = (category || '').toLowerCase()
+  if (value.includes('student') || value.includes('guide')) return <GraduationCap size={16} strokeWidth={2.2} aria-hidden="true" />
+  if (value.includes('tip') || value.includes('how')) return <Lightbulb size={16} strokeWidth={2.2} aria-hidden="true" />
+  if (value.includes('digital') || value.includes('skill')) return <Monitor size={16} strokeWidth={2.2} aria-hidden="true" />
+  if (value.includes('cyber') || value.includes('security')) return <ShieldCheck size={16} strokeWidth={2.2} aria-hidden="true" />
+  return <Sparkles size={16} strokeWidth={2.2} aria-hidden="true" />
+}
+
 export default function FeaturedCard({ post }: { post: PublicInsight }) {
   const dateLabel = formatPublishedDate(post.publish_at)
+  const categoryLabel = post.category || badgeLabel(post.content_type, post.category)
 
   return (
     <article className="editorial-featured overflow-hidden group">
@@ -26,11 +36,17 @@ export default function FeaturedCard({ post }: { post: PublicInsight }) {
                 <span className="font-display font-semibold text-sm tracking-[0.12em] text-white/70">APTECH ABEOKUTA</span>
               </div>
             )}
-            <span className="editorial-featured__badge"><Star size={12} fill="currentColor" aria-hidden="true" /> FEATURED</span>
+            <div className="editorial-featured__media-overlay" aria-hidden="true" />
+            <span className="editorial-featured__badge"><Star size={13} fill="currentColor" aria-hidden="true" /> FEATURED</span>
           </div>
 
           <div className="editorial-featured__content">
-            <p className="editorial-category">◇ FEATURED · {post.category || badgeLabel(post.content_type, post.category)}</p>
+            <p className="editorial-category">
+              <span className="editorial-category__diamond" aria-hidden="true" />
+              <span>FEATURED</span>
+              <span className="editorial-category__dot" aria-hidden="true">•</span>
+              <span className="editorial-category__tag"><CategoryIcon category={post.category} /> {categoryLabel}</span>
+            </p>
             <h2 className="editorial-featured__title">{post.title}</h2>
             {dateLabel && (
               <p className="editorial-meta">
@@ -40,7 +56,7 @@ export default function FeaturedCard({ post }: { post: PublicInsight }) {
             )}
             {post.short_description && <p className="editorial-featured__excerpt">{post.short_description}</p>}
             <span className="editorial-readmore editorial-readmore--featured">
-              Read the full story <ArrowRight size={16} aria-hidden="true" />
+              Read the full story <ArrowRight size={17} aria-hidden="true" />
             </span>
           </div>
         </div>
