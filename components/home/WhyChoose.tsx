@@ -1,12 +1,12 @@
 import { Code2, Target, Users, Milestone, LifeBuoy, Globe2 } from 'lucide-react'
 import { whyChoose } from '../../data/site'
+import IconTile from '../ui/IconTile'
 
 const icons = [Code2, Target, Users, Milestone, LifeBuoy, Globe2]
 
 export default function WhyChoose() {
   const [dominant, wide, ...rest] = whyChoose
   const DominantIcon = icons[0]
-  const WideIcon = icons[1]
 
   return (
     <div className="mt-10 bento-grid">
@@ -26,31 +26,13 @@ export default function WhyChoose() {
         </p>
       </div>
 
-      <div className="bento-narrow card p-7 flex flex-col justify-between">
-        <div
-          className="w-11 h-11 rounded-lg flex items-center justify-center"
-          style={{ background: 'var(--color-teal-50)', color: 'var(--color-teal-700)' }}
-        >
-          <WideIcon aria-hidden="true" className="w-5 h-5" />
-        </div>
-        <div>
-          <h3 className="mt-4 font-display font-semibold text-[1.02rem] text-[var(--color-ink)]">{wide.title}</h3>
-          <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>{wide.body}</p>
-        </div>
-      </div>
-
-      {rest.map((item, i) => {
-        const Icon = icons[i + 2]
+      {[wide, ...rest].map((item, i) => {
+        const Icon = icons[i + 1]
         return (
-          <div key={item.id} className="bento-sm card p-6">
-            <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center"
-              style={{ background: 'var(--color-amber-100)', color: 'var(--color-amber-700)' }}
-            >
-              <Icon aria-hidden="true" className="w-5 h-5" />
-            </div>
-            <h3 className="mt-4 font-display font-semibold text-[0.98rem] text-[var(--color-ink)]">{item.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>{item.body}</p>
+          <div key={item.id} className={`why-card ${i === 0 ? 'bento-narrow' : 'bento-sm'}`}>
+            <IconTile icon={Icon} tone={i % 3 === 1 ? 'teal' : i % 3 === 2 ? 'amber' : 'navy'} />
+            <h3 className="why-card__title">{item.title}</h3>
+            <p className="why-card__desc">{item.body}</p>
           </div>
         )
       })}

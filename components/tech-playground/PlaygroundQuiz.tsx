@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Check, Clock3, RotateCcw, Trophy, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Clock3, Gauge, ListChecks, Medal, RotateCcw, ShieldCheck, Star, Target, Timer, TrendingUp, Trophy, X } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { answerPlaygroundQuestion, finishPlaygroundAttempt, startPlaygroundAttempt } from '../../app/(site)/tech-playground/actions'
 import { captureChallengeLead } from '../../app/(site)/tech-zone/actions'
 import { LeadFormFields, LeadFormStatus } from '../tech-zone/LeadFormFields'
@@ -103,22 +104,23 @@ export default function PlaygroundQuiz({ challenge, questions, variant, backHref
 
   // ------------------------------------------------------------------ intro
   if (phase === 'intro') return (
-    <div className="pg-stage pg-stage--intro">
-      {onBack ? <button type="button" className="pg-back" onClick={onBack}>← {backLabel}</button> : <Link href={backHref} className="pg-back">← {backLabel}</Link>}
-      {eyebrow && <p className="pg-eyebrow">{eyebrow}</p>}
+    <div className="pg-stage pg-stage--intro pg-intro">
+      <div className="pg-intro__glow" aria-hidden="true" />
+      {onBack ? <button type="button" className="pg-backbtn pg-backbtn--sm" onClick={onBack}><ArrowLeft size={14} aria-hidden="true" /> {backLabel}</button> : <Link href={backHref} className="pg-backbtn pg-backbtn--sm"><ArrowLeft size={14} aria-hidden="true" /> {backLabel}</Link>}
+      {eyebrow && <p className="pg-badge">{eyebrow}</p>}
       <h1 className="pg-title">{challenge.name}</h1>
       <p className="pg-lede">{challenge.description}</p>
-      <ul className="pg-meta" aria-label="Challenge details">
-        <li><strong>{questions.length}</strong> questions</li>
-        {limit && <li><strong>{limit}</strong> seconds</li>}
-        <li>Difficulty: <strong className="capitalize">{challenge.difficulty}</strong></li>
-      </ul>
+      <dl className="pg-stats pg-stats--intro" aria-label="Challenge details">
+        <Stat icon={ListChecks} tone="teal" label="Questions" value={questions.length} />
+        <Stat icon={Timer} tone="blue" label="Time limit" value={limit ? <>{limit}<small>s</small></> : 'Untimed'} text={!limit} />
+        <Stat icon={Gauge} tone="amber" label="Difficulty" value={challenge.difficulty} text />
+      </dl>
       {extra}
       {lockedMessage ? <p className="pg-note" role="status">{lockedMessage}</p> : (
         <>
           {notice && <p className="pg-error pg-error--inv" role="alert">{notice}</p>}
-          <button className="btn btn-accent pg-start" onClick={begin} disabled={busy || !pg.ready}>{busy ? 'Starting…' : variant === 'speed_round' ? 'Start the clock' : 'Start Challenge'} <ArrowRight size={16} /></button>
-          <p className="pg-fine">No account needed. Answers are checked instantly.</p>
+          <button className="btn btn-accent pg-start pg-start--wide" onClick={begin} disabled={busy || !pg.ready}>{busy ? 'Starting…' : variant === 'speed_round' ? 'Start the clock' : 'Start Challenge'} <ArrowRight size={16} /></button>
+          <p className="pg-fine"><ShieldCheck size={14} aria-hidden="true" /> No account needed. Answers are checked instantly.</p>
         </>
       )}
     </div>
@@ -135,10 +137,10 @@ export default function PlaygroundQuiz({ challenge, questions, variant, backHref
           <p className="pg-score" aria-live="polite">{score} pts</p>
           <p className={`pg-timer${low ? ' is-low' : ''}`} role="timer" aria-label={remaining !== null ? `${remaining} seconds left` : `${elapsed} seconds elapsed`}><Clock3 size={15} /> {remaining !== null ? fmt(remaining) : fmt(elapsed)}</p>
         </div>
-        <div className="pg-progress" aria-hidden="true"><span style={{ width: `${((index + (fb ? 1 : 0)) / order.length) * 100}%` }} /></div>
+        <div className="pg-steps" aria-hidden="true">{order.map((q2, i) => <span key={q2.id} className={i < index || (i === index && fb) ? 'is-done' : i === index ? 'is-current' : ''} />)}</div>
         {limit && <div className="pg-progress pg-progress--time" aria-hidden="true"><span style={{ width: `${((remaining ?? 0) / limit) * 100}%` }} /></div>}
         <div key={current.id} className="pg-qcard">
-          <p className="pg-eyebrow">{current.skill_area}</p>
+          <div className="pg-qtags"><span className="pg-qtag">{current.skill_area}</span><span className="pg-qtag pg-qtag--pts"><Star size={11} aria-hidden="true" /> {current.points} pts</span></div>
           <div className="pg-qtext"><RichText text={current.question} /></div>
         </div>
         <div className="pg-answers" role="group" aria-label="Answer choices">
@@ -156,8 +158,9 @@ export default function PlaygroundQuiz({ challenge, questions, variant, backHref
         </div>
         {fb && variant !== 'speed_round' && (
           <div className={`pg-feedback ${fb.isCorrect ? 'is-correct' : 'is-wrong'}`} role="status">
-            <strong>{fb.isCorrect ? 'Correct!' : 'Not quite.'}</strong> {fb.explanation}
-            <button className="btn btn-primary mt-3" onClick={advance} autoFocus>{index < order.length - 1 ? 'Next' : 'See my result'} <ArrowRight size={15} /></button>
+            <span className="pg-feedback__icon" aria-hidden="true">{fb.isCorrect ? <Check size={18} strokeWidth={3} /> : <X size={18} strokeWidth={3} />}</span>
+            <div className="pg-feedback__body"><strong>{fb.isCorrect ? 'Correct!' : 'Not quite.'}</strong> {fb.explanation}</div>
+            <button className="btn btn-accent pg-feedback__next" onClick={advance} autoFocus>{index < order.length - 1 ? 'Next' : 'See my result'} <ArrowRight size={15} /></button>
           </div>
         )}
         {notice && <p className="pg-error" role="alert">{notice}</p>}
@@ -202,15 +205,17 @@ function Result({ r, challenge, variant, token, displayName, onNamed, onAgain, b
       <p className="pg-eyebrow">{challenge.name}</p>
       <h1 className="pg-title">{headline}</h1>
       <p className="pg-lede">{sub}</p>
-      <div className="pg-ring" style={{ ['--pct' as any]: `${pct}%` }} role="img" aria-label={`Score ${pct} percent`}><strong>{pct}%</strong><span>Your Score</span></div>
-      <dl className="pg-stats">
-        <div><dt>Correct</dt><dd>{r.correctAnswers}/{r.totalQuestions}</dd></div>
-        <div><dt>Points</dt><dd>{r.score}</dd></div>
-        <div><dt>Time</dt><dd>{r.completionTimeSeconds}s</dd></div>
-        <div><dt>Level</dt><dd>{r.resultLevel}</dd></div>
-        {showCompete && r.percentile !== null && <div><dt>Percentile</dt><dd>Top {Math.max(1, 100 - r.percentile)}%</dd></div>}
-        {showCompete && r.rankWeek && <div><dt>Weekly rank</dt><dd>#{r.rankWeek}</dd></div>}
-      </dl>
+      <div className="pg-summary">
+        <div className="pg-ring" style={{ ['--pct' as any]: `${pct}%` }} role="img" aria-label={`Score ${pct} percent`}><strong>{pct}%</strong><span>Your Score</span></div>
+        <dl className="pg-stats">
+          <Stat icon={Check} tone="teal" label="Correct" value={<>{r.correctAnswers}<small>/{r.totalQuestions}</small></>} />
+          <Stat icon={Star} tone="amber" label="Points" value={r.score} />
+          <Stat icon={Clock3} tone="blue" label="Time" value={<>{r.completionTimeSeconds}<small>s</small></>} />
+          <Stat icon={Medal} tone="violet" label="Level" value={r.resultLevel} text />
+          {showCompete && r.percentile !== null && <Stat icon={TrendingUp} tone="teal" label="Percentile" value={<>Top {Math.max(1, 100 - r.percentile)}<small>%</small></>} />}
+          {showCompete && r.rankWeek && <Stat icon={Target} tone="amber" label="Weekly rank" value={`#${r.rankWeek}`} />}
+        </dl>
+      </div>
 
       {variant === 'speed_round' && r.skills?.length > 0 && (
         <div className="pg-panel"><h3 className="pg-h3">Category performance</h3>
@@ -241,7 +246,17 @@ function Result({ r, challenge, variant, token, displayName, onNamed, onAgain, b
         {showCompete && <Link href="/tech-playground/leaderboard" className="btn btn-secondary"><Trophy size={15} /> Leaderboard</Link>}
       </div>
       <AttemptLead attemptId={r.attemptId} />
-      {onBack ? <button type="button" className="pg-link" onClick={onBack}>← Back</button> : <Link href={backHref} className="pg-link">← Back</Link>}
+      {onBack ? <button type="button" className="pg-backbtn" onClick={onBack}><ArrowLeft size={15} aria-hidden="true" /> Back</button> : <Link href={backHref} className="pg-backbtn"><ArrowLeft size={15} aria-hidden="true" /> Back</Link>}
+    </div>
+  )
+}
+
+function Stat({ icon: Icon, tone, label, value, text = false }: { icon: LucideIcon; tone: 'teal' | 'amber' | 'blue' | 'violet'; label: string; value: React.ReactNode; text?: boolean }) {
+  return (
+    <div className={`pg-stat pg-stat--${tone}`}>
+      <span className="pg-stat__icon" aria-hidden="true"><Icon size={16} strokeWidth={2.2} /></span>
+      <dt>{label}</dt>
+      <dd className={text ? 'is-text' : ''}>{value}</dd>
     </div>
   )
 }

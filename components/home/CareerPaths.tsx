@@ -1,5 +1,7 @@
 import Link from 'next/link'
-import { Code2, Network, BarChart3, BookOpen, ArrowRight } from 'lucide-react'
+import { Code2, Network, BarChart3, BookOpen, ArrowRight, Check, Clock } from 'lucide-react'
+import IconTile from '../ui/IconTile'
+import { getCareerDirection } from '../../lib/program-recommendation'
 import type { Course } from '../../data/courses'
 
 /**
@@ -34,42 +36,35 @@ export default function CareerPaths({ courses }: { courses: Course[] }) {
   if (flagships.length === 0) return null
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
-      {flagships.map((course) => {
+    <ul className="path-grid">
+      {flagships.map((course, i) => {
         const Icon = ICONS[course.slug] ?? FALLBACK_ICON
         return (
-          <div key={course.slug} className="card p-7 flex flex-col">
-            <div
-              className="w-11 h-11 rounded-lg flex items-center justify-center"
-              style={{ background: 'var(--color-teal-50)', color: 'var(--color-teal-700)' }}
-            >
-              <Icon aria-hidden="true" className="w-5 h-5" />
+          <li key={course.slug} className="path-card">
+            <div className="path-card__top">
+              <IconTile icon={Icon} size="lg" tone={i % 3 === 1 ? 'teal' : i % 3 === 2 ? 'amber' : 'navy'} />
+              <span className="path-card__tag">{course.category}</span>
             </div>
-            <h3 className="mt-4 font-display font-semibold text-[1.02rem] text-[var(--color-ink)]">
-              {course.title}
+            <h3 className="path-card__title">
+              <Link href={`/courses/${course.slug}`} className="path-card__link">{course.title}</Link>
             </h3>
-            <p className="mt-1 text-xs font-medium" style={{ color: 'var(--color-muted)' }}>
-              {course.duration}
+            <p className="path-card__meta">
+              <Clock size={13} aria-hidden="true" /> {course.duration}
+              {course.level && <><span aria-hidden="true">·</span>{course.level}</>}
             </p>
-            <ul className="mt-4 space-y-2 flex-1">
+            <p className="path-card__direction">{getCareerDirection(course)}</p>
+            <ul className="path-card__outcomes">
               {course.outcomes.slice(0, 3).map((o) => (
-                <li key={o} className="text-sm leading-relaxed flex gap-2" style={{ color: 'var(--color-body)' }}>
-                  <span aria-hidden="true" className="mt-2 w-1 h-1 rounded-full shrink-0" style={{ background: 'var(--color-amber-500)' }} />
+                <li key={o}>
+                  <span className="path-card__tick" aria-hidden="true"><Check size={11} strokeWidth={3} /></span>
                   {o}
                 </li>
               ))}
             </ul>
-            <Link
-              href={`/courses/${course.slug}`}
-              className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold"
-              style={{ color: 'var(--color-navy-900)' }}
-            >
-              Explore this path
-              <ArrowRight size={14} aria-hidden="true" />
-            </Link>
-          </div>
+            <span className="path-card__cta" aria-hidden="true">Explore this path <ArrowRight size={15} /></span>
+          </li>
         )
       })}
-    </div>
+    </ul>
   )
 }

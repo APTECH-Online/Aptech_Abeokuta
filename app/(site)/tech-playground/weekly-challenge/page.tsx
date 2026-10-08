@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { CalendarClock, Trophy } from 'lucide-react'
 import { buildMetadata } from '../../../../lib/seo'
 import { getActiveWeekly, getChallengeHighScore, nextWeeklyReset } from '../../../../lib/playground'
 import PageShell from '../../../../components/tech-playground/PageShell'
@@ -24,10 +25,10 @@ export default async function Page() {
     <PageShell path={path} name="Weekly Tech Challenge" description={description}>
       <PlaygroundQuiz
         challenge={weekly.challenge as any} questions={weekly.questions} variant="weekly" eyebrow="🔥 This week's tech challenge"
-        extra={<ul className="pg-meta pg-meta--stack">
-          <li>Current highest score: <strong>{high ? `${Math.round(high.percentage)}% by ${high.name}` : 'Be the first!'}</strong></li>
-          <li>{weekly.meta.end_date ? 'Closes' : 'Refreshes'}: <strong>{dateFmt.format(closes)}</strong></li>
-        </ul>}
+        extra={<div className="pg-info">
+          <div className="pg-info__row"><span className="pg-info__icon pg-info__icon--amber" aria-hidden="true"><Trophy size={16} /></span><div><p>Current highest score</p><strong>{high ? `${Math.round(high.percentage)}% by ${high.name}` : 'Be the first!'}</strong></div></div>
+          <div className="pg-info__row"><span className="pg-info__icon pg-info__icon--blue" aria-hidden="true"><CalendarClock size={16} /></span><div><p>{weekly.meta.end_date ? 'Closes' : 'Refreshes'}</p><strong>{dateFmt.format(closes)}</strong></div></div>
+        </div>}
       />
     </PageShell>
   )
