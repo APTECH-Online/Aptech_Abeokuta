@@ -12,6 +12,10 @@ export const revalidate = 60
 
 const icons: Record<string, any> = { compass: Compass, sparkles: Sparkles, flame: Flame, zap: Zap, search: Search, chart: BarChart3, code: Code2, calendar: CalendarDays, wheel: CircleDot, trophy: Trophy, badge: BadgeCheck }
 
+const cardThemes = [
+  'blue', 'lavender', 'mint', 'orange', 'cyan', 'violet', 'pink', 'gold', 'sky', 'teal', 'purple'
+] as const
+
 export default async function TechPlaygroundPage() {
   const [top, weekly] = await Promise.all([getLeaderboard('week', 3).catch(() => []), getActiveWeekly().catch(() => null)])
   const high = weekly ? await getChallengeHighScore(weekly.challenge.id).catch(() => null) : null
@@ -39,15 +43,32 @@ export default async function TechPlaygroundPage() {
         </Link>
       )}
 
-      <h2 id="experiences" className="pg-h2 pg-h2--section">Pick your challenge</h2>
+      <div className="pg-section-heading">
+        <span className="pg-section-heading__spark" aria-hidden="true"><Sparkles size={15} /></span>
+        <h2 id="experiences" className="pg-h2 pg-h2--section">Pick your challenge</h2>
+        <p>Sharpen your skills, test your knowledge and have fun. Choose a challenge and see what you&apos;re made of!</p>
+      </div>
       <ul className="pg-cards">
-        {EXPERIENCES.map((e) => { const Icon = icons[e.icon] ?? Sparkles; return (
-          <li key={e.href}><Link href={e.href} className="pg-card">
-            <span className="pg-card__top"><span className="pg-card__icon"><Icon size={22} /></span><span className="pg-tag">{e.tag}</span></span>
-            <strong>{e.title}</strong><span>{e.text}</span>
-            <em>{e.time ? `${e.time} · ` : ''}Play <ArrowRight size={14} /></em>
-          </Link></li>
-        )})}
+        {EXPERIENCES.map((e, index) => {
+          const Icon = icons[e.icon] ?? Sparkles
+          const theme = cardThemes[index % cardThemes.length]
+          return (
+            <li key={e.href}>
+              <Link href={e.href} className={`pg-card pg-card--${theme}`}>
+                <span className="pg-card__top">
+                  <span className="pg-card__icon"><Icon size={21} strokeWidth={2.1} /></span>
+                  <span className="pg-tag">{e.tag}</span>
+                </span>
+                <span className="pg-card__content">
+                  <strong>{e.title}</strong>
+                  <span>{e.text}</span>
+                </span>
+                <em>{e.time ? `${e.time} · ` : ''}Play <ArrowRight size={14} /></em>
+                <span className="pg-card__art" aria-hidden="true"><Icon size={104} strokeWidth={1.15} /></span>
+              </Link>
+            </li>
+          )
+        })}
       </ul>
 
       <div className="pg-arena">
