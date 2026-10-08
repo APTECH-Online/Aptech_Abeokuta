@@ -3861,7 +3861,6 @@ button, input, select, textarea { font: inherit; }
   .pf__options--four, .pf__options--six { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (min-width: 1024px) {
-  .pf__options--six { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .pf-option { min-height: 92px; align-items: flex-start; }
   .pf__options--six .pf-option__check { margin-top: .1rem; }
   .faq-layout { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 3rem; }
