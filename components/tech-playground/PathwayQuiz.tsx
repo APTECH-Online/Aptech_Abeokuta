@@ -7,6 +7,7 @@ import { submitPlaygroundActivity } from '../../app/(site)/tech-playground/actio
 import { CAREERS, CAREER_QUIZ_QUESTIONS, PATHFINDER_QUESTIONS, scoreCareers, whyItMatches, type CareerKey } from '../../data/playground'
 import { captureAttribution, getAttributionSnapshot } from '../../lib/attribution'
 import { trackConversionEvent } from '../../lib/conversion-events'
+import { trackWhatsAppConversion } from '../../lib/whatsapp'
 import { BADGES, type BadgeKey } from '../../data/playground'
 import LeadCapture from './LeadCapture'
 import ShareButton from './ShareButton'
@@ -119,7 +120,7 @@ export default function PathwayQuiz({ mode, whatsappHref }: { mode: 'pathfinder'
         {notice && <p className="pg-error" role="alert">{notice}</p>}
         <div className="pg-actions">
           <Link href="/courses" className="btn btn-accent" onClick={() => trackConversionEvent('playground_cta_clicked', { kind: mode, cta: 'programme', career: career.key })}>{mode === 'pathfinder' ? 'Explore This Programme' : 'Explore Your Recommended Programme'} <ArrowRight size={15} /></Link>
-          <Link href={whatsappHref || '/contact'} className="btn btn-secondary" onClick={() => trackConversionEvent('advisor_cta_clicked', { kind: mode })} {...(whatsappHref ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>Talk to an APTECH Advisor</Link>
+          <Link href={whatsappHref || '/contact'} className="btn btn-secondary" onClick={() => { trackConversionEvent('advisor_cta_clicked', { kind: mode }); if (whatsappHref) trackWhatsAppConversion({ contextLabel: mode === 'pathfinder' ? 'Tech Career Pathfinder result' : 'Tech Career Quiz result', contextType: 'challenge' }) }} {...(whatsappHref ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>Talk to an APTECH Advisor</Link>
           <ShareButton text={mode === 'pathfinder' ? 'I just explored my tech career path with APTECH Abeokuta.' : `${scored.persona.title.replace('You’re', 'I’m')} — find your tech career match with APTECH Abeokuta.`} path={mode === 'pathfinder' ? '/tech-playground/career-pathfinder' : '/tech-playground/tech-career-quiz'} label="Share" />
           <button className="btn btn-secondary" onClick={reset}><RotateCcw size={15} /> Retake</button>
         </div>

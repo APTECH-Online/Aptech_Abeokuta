@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ArrowRight, X } from 'lucide-react'
-import { buildWhatsAppLink } from '../../lib/whatsapp'
+import { buildWhatsAppLink, trackWhatsAppConversion } from '../../lib/whatsapp'
 
 const OPTIONS = [
   ['Choosing a programme', 'I’d like help choosing a programme.'],
@@ -43,7 +43,7 @@ export default function AdvisorGuide({ whatsapp, programmeName, label = 'Talk to
             {selected && (
               <div className="mt-5 rounded-xl p-4" style={{ background: 'var(--color-paper-alt)', border: '1px solid var(--color-line)' }}>
                 <p className="text-sm" style={{ color: 'var(--color-body)' }}>We can take you to WhatsApp with the context already prepared.</p>
-                <a className="btn btn-secondary mt-3 inline-flex" target="_blank" rel="noreferrer" href={buildWhatsAppLink(whatsapp, messageFor(OPTIONS.find(([label]) => label === selected)?.[1] || 'Hi APTECH Abeokuta, I need help.'))}>
+                <a className="btn btn-secondary mt-3 inline-flex" target="_blank" rel="noreferrer" href={buildWhatsAppLink(whatsapp, `${messageFor(OPTIONS.find(([label]) => label === selected)?.[1] || 'Hi APTECH Abeokuta, I need help.')} ${programmeName ? `I was viewing the ${programmeName} programme.` : 'I was viewing the Academic Advisor guide.'}`)} onClick={() => trackWhatsAppConversion({ contextLabel: programmeName || `Academic Advisor: ${selected}`, contextType: 'programme' })}>
                   Continue to WhatsApp <ArrowRight size={15} aria-hidden="true" />
                 </a>
               </div>

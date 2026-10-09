@@ -77,6 +77,7 @@ export default function ContactForm({ whatsapp }: { whatsapp: string }) {
                     variant="secondary"
                     label="Contact Admissions"
                     message="Hi APTECH Abeokuta, I tried to send a message on your website but it didn't go through. Can you help?"
+                    contextLabel="Contact page enquiry"
                   />
                 </div>
               </FormAlert>

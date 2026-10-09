@@ -231,6 +231,29 @@ export async function submitEnquiry(
       leadId = created.id
     }
 
+    // Attach anonymous programme-page visits from this browser session to the
+    // now-identified CRM lead. This makes earlier intent useful without storing
+    // names or contact details in anonymous page-view telemetry.
+    const analyticsSessionId = String(raw.analyticsSessionId || '').slice(0, 120)
+    if (analyticsSessionId) {
+      const { error: sessionLinkError } = await admin.from('conversion_events')
+        .update({ lead_id: leadId })
+        .eq('session_id', analyticsSessionId)
+        .is('lead_id', null)
+        .in('event_name', ['programme_page_viewed', 'fee_inquiry'])
+      if (sessionLinkError) console.error('[admissions] failed to link programme page-view history', sessionLinkError)
+    }
+
+    // Record a fee-intent signal when this enquiry came from a fee-specific CTA.
+    // The lead score trigger recalculates transparently from this event.
+    if (/fee|tuition|payment/i.test(conversionPoint)) {
+      const { error: scoreEventError } = await admin.from('conversion_events').insert({
+        event_name: 'fee_inquiry', lead_id: leadId,
+        metadata: { conversionPoint, programmeId: programme.id, programmeName: programme.name }
+      })
+      if (scoreEventError) console.error('[admissions] failed to record fee-intent score signal', scoreEventError)
+    }
+
     // --- Education + interest records ------------------------------------------
     // These are supplementary to the core lead record: if one of these writes
     // fails we still want the applicant to see a success response (their

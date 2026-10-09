@@ -3,10 +3,12 @@ import { notFound } from 'next/navigation'
 import { getLeadDetail } from '../../../../../lib/crm/lead-detail'
 import { getCurrentStaff } from '../../../../../lib/auth'
 import StatusBadge from '../../../../../components/admin/StatusBadge'
+import WhatsAppButton from '../../../../../components/shared/WhatsAppButton'
 import {
   StatusChangeForm,
   AssignForm,
   InteractionForm,
+  WhatsAppOutcomeForm,
   FollowUpForm,
   EditLeadForm,
   StartApplicationForm
@@ -85,11 +87,26 @@ export default async function LeadProfilePage({ params }: { params: Promise<{ id
         <div className="flex items-center gap-2"><StatusBadge status={lead.priority} label={LEAD_PRIORITY_LABELS[lead.priority as keyof typeof LEAD_PRIORITY_LABELS]} /><StatusBadge status={lead.status} label={LEAD_STATUS_LABELS[lead.status as keyof typeof LEAD_STATUS_LABELS]} /></div>
       </div>
 
+      <section className="card p-5 sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div><p className="eyebrow">Intent signals</p><h2 className="mt-1 font-display text-lg font-semibold">Lead score: {lead.lead_score ?? 0}/100</h2><p className="mt-1 text-sm" style={{ color: 'var(--color-muted)' }}>A transparent prioritisation score based on tracked actions and CRM activity.</p></div>
+          <StatusBadge status={lead.priority} label={`${LEAD_PRIORITY_LABELS[lead.priority as keyof typeof LEAD_PRIORITY_LABELS]} priority`} />
+        </div>
+        <div className="mt-4 rounded-xl p-4" style={{ background: 'var(--color-paper-alt)' }}><p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-muted)' }}>Recommended next action</p><p className="mt-1 font-semibold">{lead.lead_next_action || 'Review inquiry and make first contact'}</p></div>
+        <div className="mt-4"><h3 className="text-sm font-semibold">Why this score?</h3>{Array.isArray(lead.lead_score_reasons) && lead.lead_score_reasons.length > 0 ? <ul className="mt-2 grid gap-2 sm:grid-cols-2">{lead.lead_score_reasons.map((reason: any, index: number) => <li key={`${reason.event}-${index}`} className="flex items-center justify-between gap-3 rounded-lg border p-3 text-sm" style={{ borderColor: 'var(--color-line)' }}><span>{reason.label}{reason.count > 1 ? ` × ${reason.count}` : ''}</span><strong>+{reason.points} pts</strong></li>)}</ul> : <p className="mt-2 text-sm" style={{ color: 'var(--color-muted)' }}>No configured intent signals have been recorded yet. Staff can still prioritise this lead manually.</p>}</div>
+        <p className="mt-3 text-xs" style={{ color: 'var(--color-muted)' }}>Last recalculated: {lead.lead_score_updated_at ? formatDateTime(lead.lead_score_updated_at) : 'Not yet calculated'} · <Link className="underline" href="/admin/lead-scoring">View scoring rules</Link></p>
+      </section>
+
       <div className="flex flex-wrap gap-2">
         {lead.phone && <a className="btn btn-secondary btn-sm" href={`tel:${lead.phone}`}>Call</a>}
-        {(lead.whatsapp || lead.phone) && <a className="btn btn-secondary btn-sm" target="_blank" rel="noreferrer" href={`https://wa.me/${String(lead.whatsapp || lead.phone).replace(/\D/g, '')}`}>WhatsApp</a>}
+        {(lead.whatsapp || lead.phone) && <WhatsAppButton whatsapp={String(lead.whatsapp || lead.phone)} variant="secondary" className="btn-sm" label="WhatsApp" message={`Hi ${lead.first_name}, this is APTECH Abeokuta Admissions following up on your enquiry.`} inquiryReference={lead.lead_reference} contextLabel={latestInterest?.programmes?.name || 'Admissions enquiry'} contextType="programme" />}
         {lead.email && <a className="btn btn-secondary btn-sm" href={`mailto:${lead.email}`}>Email</a>}
       </div>
+
+      <section className="card p-5 sm:p-6">
+        <div className="mb-4"><p className="eyebrow">WhatsApp conversion</p><h2 className="mt-1 font-display text-lg font-semibold">Record conversation outcome</h2><p className="mt-1 text-sm" style={{ color: 'var(--color-muted)' }}>Record what was confirmed after the WhatsApp conversation. Counselling and application conversion events are only counted when staff confirms the outcome.</p></div>
+        <WhatsAppOutcomeForm leadId={lead.id} />
+      </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left column: profile info */}

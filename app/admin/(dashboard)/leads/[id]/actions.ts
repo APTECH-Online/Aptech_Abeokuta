@@ -61,6 +61,42 @@ export async function addInteraction(_prev: ActionResult, formData: FormData): P
   }
 }
 
+
+export async function recordWhatsAppOutcome(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  try {
+    const staff = await requireCrmAction('enquiries', 'edit')
+    const leadId = String(formData.get('leadId') || '')
+    const outcome = String(formData.get('outcome') || '')
+    const notes = String(formData.get('notes') || '').trim().slice(0, 2000)
+    const allowed = new Set(['contacted', 'no_answer', 'follow_up_needed', 'counselling_booked', 'application_started', 'application_submitted'])
+    if (!leadId || !allowed.has(outcome)) return { ok: false, message: 'Choose a valid WhatsApp contact outcome.' }
+    const admin = createAdminClient()
+    const { data: lead } = await admin.from('leads').select('id, lead_reference, first_name, last_name').eq('id', leadId).maybeSingle()
+    if (!lead) return { ok: false, message: 'Lead not found.' }
+    const labels: Record<string, string> = { contacted: 'Contacted successfully', no_answer: 'No answer', follow_up_needed: 'Follow-up needed', counselling_booked: 'Counselling confirmed', application_started: 'Application started', application_submitted: 'Application submitted' }
+    const description = `WhatsApp outcome: ${labels[outcome]}.${notes ? ` Notes: ${notes}` : ''}`
+    const { error: interactionError } = await admin.from('interactions').insert({ lead_id: leadId, user_id: staff.id, type: 'whatsapp', subject: labels[outcome], description })
+    if (interactionError) return { ok: false, message: 'Could not save the WhatsApp outcome to the CRM timeline.' }
+    await admin.from('conversion_events').insert({ event_name: 'whatsapp_contact_outcome_recorded', lead_id: leadId, metadata: { outcome, label: labels[outcome], notes: notes || null, leadReference: lead.lead_reference, confirmedByStaff: staff.id } })
+    if (outcome === 'counselling_booked') {
+      await admin.from('conversion_events').insert({ event_name: 'whatsapp_progressed_to_counselling', lead_id: leadId, metadata: { confirmedByStaff: staff.id, source: 'whatsapp_crm_outcome' } })
+      await admin.from('conversion_events').insert({ event_name: 'consultation_booked', lead_id: leadId, metadata: { confirmedByStaff: staff.id, source: 'whatsapp_crm_outcome' } })
+    }
+    if (outcome === 'application_submitted') {
+      await admin.from('conversion_events').insert({ event_name: 'whatsapp_progressed_to_application', lead_id: leadId, metadata: { confirmedByStaff: staff.id, source: 'whatsapp_crm_outcome' } })
+      await admin.from('conversion_events').insert({ event_name: 'application_completed', lead_id: leadId, metadata: { confirmedByStaff: staff.id, source: 'whatsapp_crm_outcome' } })
+    }
+    if (outcome === 'application_started') {
+      await admin.from('leads').update({ status: 'application_started' }).eq('id', leadId)
+    }
+    await logAudit(admin, { userId: staff.id, action: 'lead.whatsapp_outcome_recorded', entity: 'lead', entityId: leadId, metadata: { outcome, leadReference: lead.lead_reference } })
+    revalidatePath(`/admin/leads/${leadId}`)
+    revalidatePath('/admin/leads')
+    revalidatePath('/admin')
+    return { ok: true }
+  } catch (err) { return friendlyAuthError(err) }
+}
+
 export async function changeLeadStatus(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   try {
     const staff = await requireCrmAction('enquiries', 'edit')

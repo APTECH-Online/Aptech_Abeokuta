@@ -78,8 +78,15 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
   const [referrer, setReferrer] = useState('')
   const [comparisonContext, setComparisonContext] = useState('')
   const [attribution, setAttribution] = useState<ReturnType<typeof getAttributionSnapshot>>({})
+  const [analyticsSessionId, setAnalyticsSessionId] = useState('')
 
   useEffect(() => {
+    try {
+      const sessionKey = 'aptech-analytics-session'
+      let session = sessionStorage.getItem(sessionKey)
+      if (!session) { session = crypto.randomUUID(); sessionStorage.setItem(sessionKey, session) }
+      setAnalyticsSessionId(session)
+    } catch { setAnalyticsSessionId('') }
     setComparisonContext(searchParams.get('programmes') || '')
     setAttribution(captureAttribution(window.location.search))
 
@@ -105,6 +112,7 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
     <form ref={formRef} action={formAction} className="form-card" noValidate>
       {/* Hidden tracking fields */}
       <input type="hidden" name="landingPage" value={landingPage || '/admissions'} />
+      <input type="hidden" name="analyticsSessionId" value={analyticsSessionId} />
       <input type="hidden" name="referrer" value={referrer} />
       <input type="hidden" name="utm_source" value={attribution.lastSource || searchParams.get('utm_source') || ''} />
       <input type="hidden" name="utm_medium" value={attribution.lastMedium || searchParams.get('utm_medium') || ''} />
@@ -119,7 +127,7 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
       <input type="hidden" name="last_touch_medium" value={attribution.lastMedium || ''} />
       <input type="hidden" name="last_touch_campaign" value={attribution.lastCampaign || ''} />
       <input type="hidden" name="last_touch_campaign_id" value={attribution.lastCampaignId || ''} />
-      <input type="hidden" name="conversionPoint" value="enquiry_form" />
+      <input type="hidden" name="conversionPoint" value={searchParams.get('conversionPoint') || 'enquiry_form'} />
       <input type="hidden" name="comparisonContext" value={comparisonContext} />
       {/* Honeypot — hidden from real visitors via CSS, not display:none, so simple bots that skip hidden fields still get caught less reliably; kept minimal and off-screen */}
       <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden' }}>
@@ -158,6 +166,8 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
                     variant="secondary"
                     label="Contact Admissions"
                     message="Hi APTECH Abeokuta, I tried to apply on your website but it didn't go through. Can you help?"
+                    contextLabel="Admissions application form"
+                    contextType="application"
                   />
                 </div>
               </FormAlert>

@@ -6,7 +6,7 @@ import type { KeyboardEvent as ReactKeyboardEvent, FocusEvent as ReactFocusEvent
 import { usePathname } from 'next/navigation'
 import { Menu, X, ShieldCheck, MessageCircle, ChevronDown, ArrowRight, ExternalLink } from 'lucide-react'
 import { primaryNav, campusNav, newsInsightsNav } from '../../data/site'
-import { buildWhatsAppLink, WHATSAPP_DEFAULT_MESSAGE } from '../../lib/whatsapp'
+import { buildWhatsAppLink, WHATSAPP_DEFAULT_MESSAGE, trackWhatsAppConversion } from '../../lib/whatsapp'
 
 type NavGroup = { label: string; items: { label: string; href: string }[] }
 
@@ -318,6 +318,7 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
             </Link>
             <a
               href={buildWhatsAppLink(whatsapp, WHATSAPP_DEFAULT_MESSAGE)}
+              onClick={(event) => { event.preventDefault(); trackWhatsAppConversion({ contextType: 'page' }); window.open(buildWhatsAppLink(whatsapp, `${WHATSAPP_DEFAULT_MESSAGE} I was viewing ${document.title || window.location.pathname}.`), '_blank', 'noopener,noreferrer') }}
               target="_blank"
               rel="noopener noreferrer nofollow"
               className={`site-header__contact ${isDark ? 'site-header__contact--dark' : ''}`}
@@ -391,6 +392,7 @@ export default function Header({ whatsapp }: { whatsapp: string }) {
               </Link>
               <a
                 href={buildWhatsAppLink(whatsapp, WHATSAPP_DEFAULT_MESSAGE)}
+              onClick={(event) => { event.preventDefault(); trackWhatsAppConversion({ contextType: 'page' }); window.open(buildWhatsAppLink(whatsapp, `${WHATSAPP_DEFAULT_MESSAGE} I was viewing ${document.title || window.location.pathname}.`), '_blank', 'noopener,noreferrer') }}
                 target="_blank"
                 rel="noopener noreferrer nofollow"
                 className="site-header__contact site-header__contact--mobile"

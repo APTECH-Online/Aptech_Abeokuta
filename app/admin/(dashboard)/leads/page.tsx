@@ -50,11 +50,14 @@ export default async function LeadsPage({
           <p className="eyebrow">Lead management</p>
           <h1 className="h-section mt-1">Leads</h1>
         </div>
-        {canExport && (
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/admin/lead-scoring" className="btn btn-secondary btn-sm">Configure scoring</Link>
+          {canExport && (
           <a href={`/api/leads/export?${exportParams.toString()}`} className="btn btn-secondary btn-sm">
             <Download size={15} className="mr-1.5" aria-hidden="true" /> Export CSV
           </a>
-        )}
+          )}
+        </div>
       </div>
 
       <form className="card p-4 sm:p-5 admin-filters">
@@ -136,6 +139,7 @@ export default async function LeadsPage({
               <th>Programme</th>
               <th>Status</th>
               <th>Priority</th>
+              <th>Score / next action</th>
               <th>Source</th>
               <th>Assigned</th>
               <th>Created</th>
@@ -146,7 +150,7 @@ export default async function LeadsPage({
           <tbody>
             {leads.length === 0 ? (
               <tr>
-                <td colSpan={canDelete ? 12 : 11} className="text-center py-10" style={{ color: 'var(--color-muted)' }}>
+                <td colSpan={canDelete ? 13 : 12} className="text-center py-10" style={{ color: 'var(--color-muted)' }}>
                   No leads match these filters yet.
                 </td>
               </tr>
@@ -166,6 +170,7 @@ export default async function LeadsPage({
                   <td data-label="Programme">{lead.programmeName || '—'}</td>
                   <td data-label="Status"><StatusBadge status={lead.status} label={LEAD_STATUS_LABELS[lead.status]} /></td>
                   <td data-label="Priority"><StatusBadge status={lead.priority} label={LEAD_PRIORITY_LABELS[lead.priority]} /></td>
+                  <td data-label="Score / next action"><div className="font-semibold tabular-nums" style={{ color: lead.priority === 'high' ? '#b42318' : lead.priority === 'medium' ? '#946200' : 'var(--color-ink)' }}>{lead.lead_score ?? 0}/100</div><div className="mt-1 max-w-[240px] whitespace-normal text-xs" style={{ color: 'var(--color-muted)' }}>{lead.lead_next_action || 'Review inquiry and make first contact'}</div>{lead.lead_score_reasons?.length > 0 && <div className="mt-1 max-w-[240px] whitespace-normal text-xs" style={{ color: 'var(--color-muted)' }}>Signals: {lead.lead_score_reasons.map((reason) => `${reason.label} +${reason.points}`).join(' · ')}</div>}</td>
                   <td data-label="Source">{LEAD_SOURCE_LABELS[lead.source]}</td>
                   <td data-label="Assigned">{lead.assignedName || 'Unassigned'}</td>
                   <td data-label="Created">{new Date(lead.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>

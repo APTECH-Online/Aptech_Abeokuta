@@ -6,6 +6,7 @@ import { useFormStatus } from 'react-dom'
 import FormAlert from '../shared/FormAlert'
 import {
   addInteraction,
+  recordWhatsAppOutcome,
   changeLeadStatus,
   assignLead,
   scheduleFollowUp,
@@ -127,6 +128,34 @@ export function InteractionForm({ leadId }: { leadId: string }) {
       <div className="flex justify-end">
         <TinyButton>Add to timeline</TinyButton>
       </div>
+      <Feedback state={state} />
+    </form>
+  )
+}
+
+export function WhatsAppOutcomeForm({ leadId }: { leadId: string }) {
+  const [state, formAction] = useActionState(recordWhatsAppOutcome, initial)
+  useActionFeedback(state, 'WhatsApp outcome saved to the CRM.')
+  return (
+    <form action={formAction} className="grid gap-3">
+      <input type="hidden" name="leadId" value={leadId} />
+      <div>
+        <label htmlFor="whatsappOutcome" className="field-label">Confirmed contact outcome</label>
+        <select id="whatsappOutcome" name="outcome" required defaultValue="" className="admin-select w-full">
+          <option value="" disabled>Select outcome</option>
+          <option value="contacted">Contacted successfully</option>
+          <option value="no_answer">No answer</option>
+          <option value="follow_up_needed">Follow-up needed</option>
+          <option value="counselling_booked">Counselling booked (confirmed)</option>
+          <option value="application_started">Application started</option>
+          <option value="application_submitted">Application submitted (confirmed)</option>
+        </select>
+      </div>
+      <div>
+        <label htmlFor="whatsappOutcomeNotes" className="field-label">Notes (optional)</label>
+        <textarea id="whatsappOutcomeNotes" name="notes" rows={2} maxLength={2000} className="field-textarea" placeholder="Questions asked, agreed next step, or follow-up details" />
+      </div>
+      <div className="flex justify-end"><TinyButton>Save outcome</TinyButton></div>
       <Feedback state={state} />
     </form>
   )

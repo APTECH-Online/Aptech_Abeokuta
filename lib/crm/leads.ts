@@ -25,6 +25,9 @@ export interface LeadRow {
   phone: string
   status: LeadStatus
   priority: LeadPriority
+  lead_score: number
+  lead_score_reasons: Array<{ event: string; label: string; count: number; points: number }>
+  lead_next_action: string
   source: LeadSource
   created_at: string
   updated_at: string
@@ -45,10 +48,11 @@ export async function getLeads(filter: LeadsFilter) {
     .from('leads')
     .select(
       filter.programmeId
-        ? 'id, lead_reference, first_name, last_name, email, phone, status, priority, source, created_at, updated_at, assigned_to, staff:assigned_to(full_name), lead_interests!inner(programme_id, created_at, programmes(name))'
-        : 'id, lead_reference, first_name, last_name, email, phone, status, priority, source, created_at, updated_at, assigned_to, staff:assigned_to(full_name), lead_interests(programme_id, created_at, programmes(name))',
+        ? 'id, lead_reference, first_name, last_name, email, phone, status, priority, lead_score, lead_score_reasons, lead_next_action, source, created_at, updated_at, assigned_to, staff:assigned_to(full_name), lead_interests!inner(programme_id, created_at, programmes(name))'
+        : 'id, lead_reference, first_name, last_name, email, phone, status, priority, lead_score, lead_score_reasons, lead_next_action, source, created_at, updated_at, assigned_to, staff:assigned_to(full_name), lead_interests(programme_id, created_at, programmes(name))',
       { count: 'exact' }
     )
+    .order('lead_score', { ascending: false })
     .order('created_at', { ascending: false })
 
   if (filter.search) {
@@ -64,9 +68,10 @@ export async function getLeads(filter: LeadsFilter) {
       const ids = (matchingProgrammes ?? []).map((p: any) => p.id)
       if (ids.length) {
         query = supabase.from('leads')
-          .select('id, lead_reference, first_name, last_name, email, phone, status, priority, source, created_at, updated_at, assigned_to, staff:assigned_to(full_name), lead_interests!inner(programme_id, created_at, programmes(name))', { count: 'exact' })
+          .select('id, lead_reference, first_name, last_name, email, phone, status, priority, lead_score, lead_score_reasons, lead_next_action, source, created_at, updated_at, assigned_to, staff:assigned_to(full_name), lead_interests!inner(programme_id, created_at, programmes(name))', { count: 'exact' })
           .in('lead_interests.programme_id', ids)
           .or(`first_name.ilike.%${s}%,last_name.ilike.%${s}%,email.ilike.%${s}%,phone.ilike.%${s}%,lead_reference.ilike.%${s}%`)
+          .order('lead_score', { ascending: false })
           .order('created_at', { ascending: false })
       }
     }
@@ -102,6 +107,9 @@ export async function getLeads(filter: LeadsFilter) {
       phone: l.phone,
       status: l.status,
       priority: l.priority,
+      lead_score: l.lead_score ?? 0,
+      lead_score_reasons: l.lead_score_reasons ?? [],
+      lead_next_action: l.lead_next_action ?? 'Review inquiry and make first contact',
       source: l.source,
       created_at: l.created_at,
       updated_at: l.updated_at,

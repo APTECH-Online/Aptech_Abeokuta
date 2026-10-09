@@ -60,6 +60,13 @@ export async function createConsultationBooking(_prev: BookingResult, formData: 
       if (leadError) console.error('[consultation-booking] lead sync failed', leadError)
       else if (newLead?.id) { linkedLeadId = newLead.id; await admin.from('consultation_bookings').update({ lead_id: newLead.id }).eq('id', created.id) }
     }
+    if (linkedLeadId) {
+      const { error: scoreEventError } = await admin.from('conversion_events').insert({
+        event_name: 'consultation_booked', lead_id: linkedLeadId,
+        metadata: { bookingReference: reference, appointmentType, programmeId: programmeId || null }
+      })
+      if (scoreEventError) console.error('[consultation-booking] failed to record lead-score signal', scoreEventError)
+    }
     const manageUrl = `${getSiteUrl()}/manage-booking/${created.cancellation_token}`
     const displayDate = new Intl.DateTimeFormat('en-NG', { dateStyle: 'full', timeZone: 'Africa/Lagos' }).format(new Date(`${appointmentDate}T${appointmentTime}:00+01:00`))
     const typeLabel = appointmentType === 'campus' ? 'In-person at APTECH Abeokuta' : appointmentType === 'phone' ? 'Phone call' : 'Virtual meeting'

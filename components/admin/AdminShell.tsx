@@ -47,6 +47,7 @@ import NotificationBell from './NotificationBell'
 const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, access: 'dashboard' },
   { href: '/admin/leads', label: 'Enquiries', icon: Users, access: 'enquiries' },
+  { href: '/admin/lead-scoring', label: 'Lead scoring', icon: Gauge, access: 'enquiries' },
   { href: '/admin/applications', label: 'Applications', icon: FileText, access: 'applications' },
   { href: '/admin/follow-ups', label: 'Follow-ups', icon: CalendarClock, access: 'follow_ups' },
   { href: '/admin/bookings', label: 'Counselling bookings', icon: CalendarCheck, access: 'enquiries' },

@@ -34,6 +34,8 @@ import CompareCourseButton from '../../../../components/courses/CompareCourseBut
 import CareerPathways from '../../../../components/courses/CareerPathways'
 import CourseConversionLink from '../../../../components/courses/CourseConversionLink'
 import { getPublishedTestimonials } from '../../../../lib/testimonials-public'
+import ProgrammePageViewTracker from '../../../../components/courses/ProgrammePageViewTracker'
+import FeeInquiryLink from '../../../../components/courses/FeeInquiryLink'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -104,6 +106,7 @@ export default async function CoursePage({ params }: Props) {
 
   return (
     <>
+      <ProgrammePageViewTracker programmeSlug={course.slug} programmeName={course.title} />
       <JsonLd data={[courseJsonLd(baseUrl, course), breadcrumbJsonLd(baseUrl, crumbs)]} />
       <section className="border-b hairline pattern-adire" style={{ background: 'var(--color-navy-900)' }}>
         <div className="container py-12 sm:py-16">
@@ -510,7 +513,7 @@ export default async function CoursePage({ params }: Props) {
               </dl>
               <p className="mt-5 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>
                 {course.prerequisites ? 'Fees and intake dates' : 'Entry requirements, fees and intake dates'} are confirmed by the admissions team, so
-                check the <Link href="/admissions" className="font-semibold underline" style={{ color: 'var(--color-teal-700)' }}>admissions page</Link> or{' '}
+                check the <FeeInquiryLink href={`/admissions?conversionPoint=fee_inquiry`} programmeSlug={course.slug} className="font-semibold underline" style={{ color: 'var(--color-teal-700)' }}>admissions page</FeeInquiryLink> or{' '}
                 <Link href="/contact" className="font-semibold underline" style={{ color: 'var(--color-teal-700)' }}>contact the academy</Link> before you apply.{' '}
                 {chooserGuide ? (
                   <>

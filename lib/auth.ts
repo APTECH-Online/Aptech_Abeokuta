@@ -76,14 +76,14 @@ export function canAccessPath(staff: Pick<Staff, 'role' | 'permissions'>, pathna
     if (pathname.startsWith('/admin/challenges')) return hasAnyModulePermission(staff, 'challenges')
     if (pathname.startsWith('/admin/reports/seo')) return hasPermission(staff, 'dashboard_access') && hasPermission(staff, 'dashboard_view_seo_metrics')
     if (pathname.startsWith('/admin/reports')) return hasPermission(staff, 'dashboard_access') && hasPermission(staff, 'dashboard_view_reports')
-    if (pathname.startsWith('/admin/leads')) return hasAnyModulePermission(staff, 'enquiries')
+    if (pathname.startsWith('/admin/leads') || pathname.startsWith('/admin/lead-scoring')) return hasAnyModulePermission(staff, 'enquiries')
     if (pathname.startsWith('/admin/applications')) return hasAnyModulePermission(staff, 'applications')
     if (pathname.startsWith('/admin/follow-ups')) return hasAnyModulePermission(staff, 'follow_ups')
     if (pathname.startsWith('/admin/bookings')) return hasAnyModulePermission(staff, 'enquiries')
     return false
   }
   if (staff.role === 'admissions_officer') {
-    return pathname === '/admin' || pathname.startsWith('/admin/leads') || pathname.startsWith('/admin/applications') || pathname.startsWith('/admin/follow-ups') || pathname.startsWith('/admin/bookings')
+    return pathname === '/admin' || pathname.startsWith('/admin/leads') || pathname.startsWith('/admin/lead-scoring') || pathname.startsWith('/admin/applications') || pathname.startsWith('/admin/follow-ups') || pathname.startsWith('/admin/bookings')
   }
   return false
 }

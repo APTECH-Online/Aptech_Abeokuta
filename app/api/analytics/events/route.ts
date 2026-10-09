@@ -36,7 +36,15 @@ const ALLOWED = new Set([
   'playground_share_clicked',
   'playground_badge_earned',
   'playground_leaderboard_name_set',
-  'playground_lead_captured'
+  'playground_lead_captured',
+  'programme_page_viewed',
+  'fee_inquiry',
+  'consultation_booked',
+  'application_completed',
+  'whatsapp_conversion_clicked',
+  'whatsapp_contact_outcome_recorded',
+  'whatsapp_progressed_to_counselling',
+  'whatsapp_progressed_to_application'
 ])
 
 export async function POST(request: Request) {
@@ -48,8 +56,15 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => null) as { event?: unknown; leadId?: unknown; metadata?: unknown; sessionId?: unknown } | null
     const event = typeof body?.event === 'string' ? body.event : ''
     if (!ALLOWED.has(event)) return NextResponse.json({ ok: false }, { status: 400 })
+    // Outcome/progression events are trusted CRM facts and may only be written
+    // by authenticated server actions. Never accept them from a browser client.
+    const staffOnlyEvents = new Set(['whatsapp_contact_outcome_recorded', 'whatsapp_progressed_to_counselling', 'whatsapp_progressed_to_application'])
+    if (staffOnlyEvents.has(event)) return NextResponse.json({ ok: false }, { status: 403 })
     const metadata = body?.metadata && typeof body.metadata === 'object' ? body.metadata : {}
-    const leadId = typeof body?.leadId === 'string' ? body.leadId : null
+    // High-intent events and WhatsApp clicks remain anonymous at this endpoint.
+    // Only trusted server actions can link confirmed conversion outcomes to a lead.
+    const anonymousEvents = new Set(['programme_page_viewed', 'fee_inquiry', 'consultation_booked', 'application_completed', 'whatsapp_conversion_clicked'])
+    const leadId = !anonymousEvents.has(event) && typeof body?.leadId === 'string' ? body.leadId : null
     const sessionId = typeof body?.sessionId === 'string' ? body.sessionId.slice(0, 120) : null
     const admin = createAdminClient()
     const { error } = await admin.from('conversion_events').insert({ event_name: event, lead_id: leadId, session_id: sessionId, metadata })

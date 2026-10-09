@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { GraduationCap, MessageCircle } from 'lucide-react'
-import { buildWhatsAppLink, WHATSAPP_DEFAULT_MESSAGE } from '../../lib/whatsapp'
+import { buildWhatsAppLink, WHATSAPP_DEFAULT_MESSAGE, trackWhatsAppConversion } from '../../lib/whatsapp'
 
 /**
  * Discreet, mobile-only sticky action bar. Hidden on md and up, where the
@@ -22,6 +22,7 @@ export default function StickyMobileCTA({ whatsapp }: { whatsapp: string }) {
     >
       <a
         href={buildWhatsAppLink(whatsapp, WHATSAPP_DEFAULT_MESSAGE)}
+        onClick={(event) => { event.preventDefault(); trackWhatsAppConversion({ contextType: 'page' }); window.open(buildWhatsAppLink(whatsapp, `${WHATSAPP_DEFAULT_MESSAGE} I was viewing ${document.title || window.location.pathname}.`), '_blank', 'noopener,noreferrer') }}
         target="_blank"
         rel="noopener noreferrer nofollow"
         className="flex items-center justify-center gap-1.5 py-3 text-sm font-semibold"

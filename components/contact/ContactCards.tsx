@@ -1,6 +1,8 @@
+'use client'
+
 import { ArrowUpRight, Clock, Mail, MessageCircle, Phone } from 'lucide-react'
 import IconTile from '../ui/IconTile'
-import { buildWhatsAppLink, WHATSAPP_DEFAULT_MESSAGE } from '../../lib/whatsapp'
+import { buildWhatsAppLink, WHATSAPP_DEFAULT_MESSAGE, trackWhatsAppConversion } from '../../lib/whatsapp'
 import { telHref } from '../../lib/seo'
 
 type Hour = { day: string; time: string }
@@ -37,7 +39,7 @@ export default function ContactCards({
             </a>
           )}
           {whatsapp && (
-            <a href={buildWhatsAppLink(whatsapp, WHATSAPP_DEFAULT_MESSAGE)} target="_blank" rel="noopener noreferrer" className="contact-action contact-action--wa">
+            <a href={buildWhatsAppLink(whatsapp, `${WHATSAPP_DEFAULT_MESSAGE} I was viewing the Contact page.`)} onClick={() => trackWhatsAppConversion({ contextLabel: 'Contact page', contextType: 'page' })} target="_blank" rel="noopener noreferrer" className="contact-action contact-action--wa">
               <MessageCircle size={14} aria-hidden="true" /> WhatsApp
               <span className="sr-only"> (opens in a new tab)</span>
             </a>

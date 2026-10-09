@@ -34,7 +34,7 @@ export default function ApplyAside({ whatsapp, email }: { whatsapp: string; emai
         <p className="aside-help__title">Prefer to talk first?</p>
         <p className="aside-help__text">Message the admissions team and we&apos;ll help you pick a programme.</p>
         <div className="aside-help__actions">
-          <WhatsAppButton whatsapp={whatsapp} variant="secondary" label="Chat on WhatsApp" />
+          <WhatsAppButton whatsapp={whatsapp} variant="secondary" label="Chat on WhatsApp" contextLabel="Admissions and programme selection" contextType="programme" message="Hi APTECH Abeokuta, I would like advice on choosing the right programme." />
           {email && (
             <a href={`mailto:${email}`} className="aside-help__mail">
               <Mail size={15} aria-hidden="true" />
