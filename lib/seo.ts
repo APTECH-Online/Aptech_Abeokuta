@@ -424,6 +424,7 @@ export const STATIC_INDEXABLE_PATHS = [
   '/about',
   '/courses',
   '/admissions',
+  '/book-consultation',
   '/tech-zone',
   '/tech-challenge',
   '/tech-playground',

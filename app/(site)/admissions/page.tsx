@@ -44,6 +44,7 @@ export default async function Admissions() {
       >
         <div className="mt-7 flex flex-wrap gap-3">
           <Link href="#apply" className="btn btn-accent">Apply now</Link>
+          <Link href="/book-consultation" className="btn btn-secondary btn-secondary-on-dark">Book counselling</Link>
           <Link href="/courses" className="btn btn-secondary btn-secondary-on-dark">
             Browse courses first
           </Link>

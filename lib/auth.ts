@@ -79,10 +79,11 @@ export function canAccessPath(staff: Pick<Staff, 'role' | 'permissions'>, pathna
     if (pathname.startsWith('/admin/leads')) return hasAnyModulePermission(staff, 'enquiries')
     if (pathname.startsWith('/admin/applications')) return hasAnyModulePermission(staff, 'applications')
     if (pathname.startsWith('/admin/follow-ups')) return hasAnyModulePermission(staff, 'follow_ups')
+    if (pathname.startsWith('/admin/bookings')) return hasAnyModulePermission(staff, 'enquiries')
     return false
   }
   if (staff.role === 'admissions_officer') {
-    return pathname === '/admin' || pathname.startsWith('/admin/leads') || pathname.startsWith('/admin/applications') || pathname.startsWith('/admin/follow-ups')
+    return pathname === '/admin' || pathname.startsWith('/admin/leads') || pathname.startsWith('/admin/applications') || pathname.startsWith('/admin/follow-ups') || pathname.startsWith('/admin/bookings')
   }
   return false
 }
@@ -98,6 +99,7 @@ const LANDING_CANDIDATES = [
   '/admin/leads',
   '/admin/applications',
   '/admin/follow-ups',
+  '/admin/bookings',
   '/admin/insights',
   '/admin/gallery',
   '/admin/courses',
