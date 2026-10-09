@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import Container from '../ui/Container'
 import InsightsSubNav from './InsightsSubNav'
+import InsightsTopics from './InsightsTopics'
 import FeaturedCard from './FeaturedCard'
 import ContentCard from './ContentCard'
 import type { PublicInsight } from '../../lib/insights-public'
@@ -25,7 +25,6 @@ type Props = {
  */
 export default function ContentTypeListing({
   active,
-  eyebrow,
   categories,
   activeCategory,
   categoryBaseHref,
@@ -40,31 +39,7 @@ export default function ContentTypeListing({
         <InsightsSubNav active={active} />
 
         {categories.length > 0 && (
-          <div className="editorial-filters mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Filter by category">
-            <Link
-              href={categoryBaseHref}
-              className="editorial-filter px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors"
-              style={{
-                background: !activeCategory ? 'var(--color-navy-900)' : 'var(--color-navy-50)',
-                color: !activeCategory ? '#fff' : 'var(--color-navy-900)'
-              }}
-            >
-              All {eyebrow}
-            </Link>
-            {categories.map((c) => (
-              <Link
-                key={c}
-                href={`${categoryBaseHref}?category=${encodeURIComponent(c)}`}
-                className="editorial-filter px-3.5 py-1.5 rounded-full text-sm font-semibold transition-colors"
-                style={{
-                  background: activeCategory === c ? 'var(--color-navy-900)' : 'var(--color-navy-50)',
-                  color: activeCategory === c ? '#fff' : 'var(--color-navy-900)'
-                }}
-              >
-                {c}
-              </Link>
-            ))}
-          </div>
+          <InsightsTopics categories={categories} activeCategory={activeCategory} baseHref={categoryBaseHref} />
         )}
 
         {posts.length === 0 ? (
