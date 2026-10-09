@@ -2326,29 +2326,45 @@ button, input, select, textarea { font: inherit; }
 }
 .floating-stack > * { pointer-events: auto; }
 .consultation-float {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: .7rem;
   flex: 0 0 auto;
-  min-height: 44px;
+  min-height: 58px;
   max-width: 100%;
-  padding: .72rem 1.1rem;
-  border: 1px solid rgba(255,255,255,.22);
-  border-radius: 14px;
-  background: #D71920;
+  padding: .58rem .82rem .58rem .62rem;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 17px;
+  background: #D71920; /* brand red, unchanged */
   color: #fff;
-  font-family: var(--font-display);
-  font-size: .8rem;
-  font-weight: 800;
-  letter-spacing: .01em;
-  line-height: 1.2;
-  white-space: nowrap;
+  box-shadow: 0 18px 42px rgba(215,25,32,.3), 0 4px 12px rgba(5,13,42,.14);
   text-decoration: none;
-  box-shadow: 0 14px 32px rgba(215,25,32,.3), 0 4px 12px rgba(5,13,42,.14);
-  transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease, opacity .2s ease;
+  overflow: hidden;
+  transition: transform .2s ease, box-shadow .2s ease, padding .2s ease, background-color .2s ease, opacity .2s ease;
 }
-.consultation-float:hover { background: #B9151B; color: #fff; transform: translateY(-2px); box-shadow: 0 18px 38px rgba(215,25,32,.36), 0 5px 15px rgba(5,13,42,.16); }
+/* Soft sheen that sweeps across on hover, echoing the premium feel of Tech IQ. */
+.consultation-float::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.2) 50%, transparent 65%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+.consultation-float:hover { background: #C4161D; color: #fff; transform: translateY(-3px); box-shadow: 0 22px 48px rgba(215,25,32,.36), 0 5px 15px rgba(5,13,42,.16); }
+.consultation-float:hover::after { transform: translateX(120%); transition: transform .65s ease; }
 .consultation-float:focus-visible { outline: 3px solid rgba(245,189,53,.75); outline-offset: 3px; }
+.consultation-float__icon { position: relative; display: grid; place-items: center; width: 40px; height: 40px; flex: 0 0 40px; border: 1px solid rgba(255,255,255,.38); border-radius: 12px; background: rgba(255,255,255,.16); color: #fff; }
+.consultation-float__copy { position: relative; display: grid; gap: .12rem; min-width: 0; }
+.consultation-float__label { font-family: var(--font-display); font-size: .8rem; font-weight: 800; letter-spacing: .01em; line-height: 1.2; white-space: nowrap; }
+.consultation-float__hint { color: rgba(255,255,255,.9); font-size: .64rem; line-height: 1.2; white-space: nowrap; }
+.consultation-float__arrow { position: relative; margin-left: .1rem; color: #fff; transition: transform .2s ease; }
+.consultation-float:hover .consultation-float__arrow { transform: translateX(3px); }
+/* Collapses to icon-only on scroll, exactly like Tech IQ, so the two stay a tidy pair. */
+.consultation-float.is-compact { padding-right: .64rem; }
+.consultation-float.is-compact .consultation-float__copy, .consultation-float.is-compact .consultation-float__arrow { display: none; }
+.consultation-float.is-compact .consultation-float__icon { width: 42px; height: 42px; flex-basis: 42px; }
 /* Hidden while a form field has focus so it never sits over the field, its
    submit button or the on-screen keyboard area. */
 .consultation-float.is-suppressed { opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(6px); }
@@ -2358,7 +2374,10 @@ button, input, select, textarea { font: inherit; }
     bottom: calc(4.7rem + env(safe-area-inset-bottom, 0px)); /* clears the mobile sticky CTA bar, as before */
     gap: .75rem; /* 12px */
   }
-  .consultation-float { font-size: .76rem; padding: .66rem .95rem; }
+  .consultation-float { min-height: 50px; padding: .48rem .58rem; border-radius: 15px; }
+  .consultation-float__icon { width: 36px; height: 36px; flex-basis: 36px; }
+  .consultation-float__label { font-size: .76rem; }
+  .consultation-float__hint, .consultation-float__arrow { display: none; }
 }
 
 .tech-challenge--intro { position: relative; overflow: hidden; grid-template-columns: minmax(0, 1.4fr) minmax(220px, .6fr); min-height: 340px; padding: clamp(1.5rem, 4vw, 2.5rem); background: linear-gradient(145deg, #071337 0%, #0c1b4f 58%, #101f58 100%); border-color: rgba(255,255,255,.1); color: #fff; box-shadow: 0 24px 70px rgba(5,13,42,.18); }
@@ -2413,7 +2432,9 @@ button, input, select, textarea { font: inherit; }
   .tech-challenge__score-wrap > div:last-child { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .tech-iq-float, .consultation-float, .tech-challenge__answer, .tech-challenge__progress span { transition: none; }
+  .tech-iq-float, .consultation-float, .consultation-float__arrow, .tech-challenge__answer, .tech-challenge__progress span { transition: none; }
+  .consultation-float::after { display: none; }
+  .consultation-float:hover, .consultation-float:hover .consultation-float__arrow { transform: none; }
 }
 
 /* Interactive conversion experiences — deliberately uses the existing site card/button language. */

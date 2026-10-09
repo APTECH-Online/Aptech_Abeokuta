@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { ArrowRight, CalendarCheck } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { trackConversionEvent } from '../../lib/conversion-events'
@@ -17,6 +18,15 @@ const FIELD_SELECTOR = 'input:not([type="button"]):not([type="submit"]):not([typ
 export default function ConsultationFloatingButton() {
   const pathname = usePathname()
   const [typing, setTyping] = useState(false)
+  const [compact, setCompact] = useState(false)
+
+  // Same 220px scroll threshold as the Tech IQ button, so the pair collapses together.
+  useEffect(() => {
+    const onScroll = () => setCompact(window.scrollY > 220)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => {
     const onFocusIn = (event: FocusEvent) => {
@@ -37,12 +47,20 @@ export default function ConsultationFloatingButton() {
   return (
     <Link
       href="/book-consultation"
-      className={`consultation-float${typing ? ' is-suppressed' : ''}`}
+      aria-label="Book a Consultation: free admissions counselling"
+      className={`consultation-float${compact ? ' is-compact' : ''}${typing ? ' is-suppressed' : ''}`}
       tabIndex={typing ? -1 : undefined}
       aria-hidden={typing ? true : undefined}
       onClick={() => trackConversionEvent('enquiry_cta_clicked', { source: 'floating_consultation_button', destination: '/book-consultation' })}
     >
-      Book a Consultation
+      <span className="consultation-float__icon" aria-hidden="true">
+        <CalendarCheck size={19} strokeWidth={1.9} />
+      </span>
+      <span className="consultation-float__copy">
+        <span className="consultation-float__label">Book a Consultation</span>
+        <span className="consultation-float__hint">Free admissions counselling</span>
+      </span>
+      <ArrowRight className="consultation-float__arrow" size={14} aria-hidden="true" />
     </Link>
   )
 }
