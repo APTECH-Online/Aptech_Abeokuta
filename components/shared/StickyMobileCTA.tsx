@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { GraduationCap, MessageCircle } from 'lucide-react'
 import { buildWhatsAppLink, WHATSAPP_DEFAULT_MESSAGE, trackWhatsAppConversion } from '../../lib/whatsapp'
