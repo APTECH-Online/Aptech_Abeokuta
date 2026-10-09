@@ -5077,3 +5077,72 @@ fieldset.form-section::after { content: ""; height: 1px; margin-top: 0.75rem; ba
   .consultation-booking .consultation-option-icon { width: 2.4rem; height: 2.4rem; }
   .consultation-booking .consultation-option-check { width: 1.25rem; height: 1.25rem; }
 }
+
+
+/* About page: "What we value" cards. */
+.value-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
+.value-card {
+  --vc-accent: var(--color-navy-700);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1.75rem 1.5rem 1.6rem;
+  border: 1px solid var(--color-line);
+  border-radius: 18px;
+  background: linear-gradient(160deg, #fff 55%, color-mix(in srgb, var(--vc-accent) 7%, #fff) 100%);
+  box-shadow: var(--shadow-card);
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+}
+.value-card--amber { --vc-accent: var(--color-amber-500); }
+.value-card--teal { --vc-accent: var(--color-teal-600); }
+/* Accent bar that grows across the top on hover. */
+.value-card::before { content: ''; position: absolute; left: 0; top: 0; height: 4px; width: 3rem; background: var(--vc-accent); border-radius: 0 0 4px 0; transition: width .3s ease; }
+.value-card:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--vc-accent) 55%, var(--color-line)); box-shadow: var(--shadow-card-hover); }
+.value-card:hover::before { width: 100%; }
+.value-card__num { position: absolute; top: .9rem; right: 1.2rem; color: color-mix(in srgb, var(--vc-accent) 22%, #fff); font-family: var(--font-mono); font-size: 3.4rem; font-weight: 600; line-height: 1; pointer-events: none; }
+.value-card .value-card__icon { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vc-accent) 25%, transparent); }
+.value-card:hover .icon-tile--navy { background: var(--color-navy-700); color: #fff; }
+.value-card:hover .icon-tile--amber { background: var(--color-amber-500); color: var(--color-navy-950); }
+.value-card:hover .icon-tile--teal { background: var(--color-teal-700); color: #fff; }
+.value-card__tag { margin: 1.15rem 0 0; color: var(--color-body); font-family: var(--font-mono); font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+.value-card__title { margin: .35rem 0 0; color: var(--color-ink); font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; line-height: 1.25; }
+.value-card__body { margin: .65rem 0 0; color: var(--color-body); font-size: .92rem; line-height: 1.65; }
+@media (max-width: 900px) { .value-grid { grid-template-columns: 1fr; gap: 1rem; } .value-card { padding: 1.4rem 1.25rem; } }
+@media (min-width: 640px) and (max-width: 900px) { .value-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .value-card:last-child { grid-column: 1 / -1; } }
+@media (prefers-reduced-motion: reduce) { .value-card, .value-card::before { transition: none; } .value-card:hover { transform: none; } }
+
+
+/* Testimonials page: Practical / Support / Community pillars. */
+.pillar-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+.pillar-card {
+  --pc-accent: var(--color-navy-700);
+  --pc-tint: var(--color-navy-50);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  border: 1px solid var(--color-line);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: var(--shadow-card);
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+}
+.pillar-card--teal { --pc-accent: var(--color-teal-700); --pc-tint: var(--color-teal-50); }
+.pillar-card--amber { --pc-accent: var(--color-amber-700); --pc-tint: var(--color-amber-100); }
+.pillar-card::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 84px; background: linear-gradient(180deg, var(--pc-tint), rgba(255,255,255,0)); pointer-events: none; }
+.pillar-card:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--pc-accent) 45%, var(--color-line)); box-shadow: var(--shadow-card-hover); }
+.pillar-card__watermark { position: absolute; right: -14px; bottom: -18px; color: var(--pc-accent); opacity: .07; transform: rotate(-8deg); transition: transform .3s ease, opacity .3s ease; pointer-events: none; }
+.pillar-card:hover .pillar-card__watermark { opacity: .11; transform: rotate(-3deg) scale(1.05); }
+.pillar-card__head { position: relative; display: flex; align-items: center; gap: .7rem; }
+.pillar-card__icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px; border-radius: 13px; color: var(--pc-accent); background: #fff; box-shadow: 0 0 0 1px color-mix(in srgb, var(--pc-accent) 25%, transparent), 0 6px 14px rgba(11,23,71,.08); transition: background .2s ease, color .2s ease; }
+.pillar-card:hover .pillar-card__icon { background: var(--pc-accent); color: #fff; }
+.pillar-card__label { color: var(--pc-accent); font-family: var(--font-mono); font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.pillar-card__title { position: relative; margin: 1.1rem 0 0; color: var(--color-ink); font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; line-height: 1.3; }
+.pillar-card__body { position: relative; margin: .55rem 0 0; color: var(--color-body); font-size: .9rem; line-height: 1.65; }
+.pillar-card__chips { position: relative; list-style: none; margin: auto 0 0; padding: 1.1rem 0 0; display: flex; flex-wrap: wrap; gap: .45rem; }
+.pillar-card__chips li { padding: .28rem .65rem; border: 1px solid color-mix(in srgb, var(--pc-accent) 22%, transparent); border-radius: 999px; background: var(--pc-tint); color: var(--pc-accent); font-size: .72rem; font-weight: 700; line-height: 1.3; }
+@media (max-width: 900px) { .pillar-grid { grid-template-columns: 1fr; gap: 1rem; } }
+@media (prefers-reduced-motion: reduce) { .pillar-card, .pillar-card__watermark, .pillar-card__icon { transition: none; } .pillar-card:hover { transform: none; } .pillar-card:hover .pillar-card__watermark { transform: rotate(-8deg); } }

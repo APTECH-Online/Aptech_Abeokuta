@@ -12,6 +12,7 @@ import { breadcrumbJsonLd, webPageJsonLd } from '../../../lib/structured-data'
 import { buildMetadata, getSiteUrl } from '../../../lib/seo'
 import JsonLd from '../../../components/shared/JsonLd'
 import AboutJourney from '../../../components/about/AboutJourney'
+import ValueCards from '../../../components/about/ValueCards'
 
 export const metadata = buildMetadata({
   title: 'About APTECH Abeokuta | IT Training Centre in Ogun State',
@@ -19,12 +20,6 @@ export const metadata = buildMetadata({
     'Learn about APTECH Abeokuta: our mission, vision and hands-on approach to technology education for students in Abeokuta, Ogun State and the wider region.',
   path: '/about'
 })
-
-const values = [
-  { title: 'Practical first', body: 'We teach by building. Every module pairs concepts with a hands-on task or project.' },
-  { title: 'Career-focused', body: 'Curriculum choices are guided by what employers actually look for in entry-level tech hires.' },
-  { title: 'Locally rooted', body: 'A campus in Abeokuta, built for students in Ogun State and the wider region.' }
-]
 
 export default async function About() {
   const courses = await getPublishedCourses()
@@ -78,14 +73,7 @@ export default async function About() {
       <section className="section-tight" style={{ background: 'var(--color-paper-alt)', borderTop: '1px solid var(--color-line)', borderBottom: '1px solid var(--color-line)' }}>
         <Container>
           <SectionHeading eyebrow="What we value" title="How we approach training" />
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {values.map((v) => (
-              <div key={v.title} className="card p-6">
-                <h3 className="font-display font-semibold text-[1.05rem] text-[var(--color-ink)]">{v.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>{v.body}</p>
-              </div>
-            ))}
-          </div>
+          <div className="mt-8"><ValueCards /></div>
         </Container>
       </section>
 

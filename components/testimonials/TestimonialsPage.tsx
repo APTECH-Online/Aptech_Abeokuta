@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Quote } from 'lucide-react'
 import { trackConversionEvent } from '../../lib/conversion-events'
 import type { PublicTestimonial } from '../../lib/testimonials-public'
 import StoryCard from './StoryCard'
+import PillarCards from './PillarCards'
 
 function initials(name: string) {
   return name.slice(0, 2).toUpperCase()
@@ -89,11 +90,7 @@ export default function TestimonialsPage({ testimonials }: { testimonials: Publi
         ))}
       </div>
 
-      <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="card p-6"><p className="eyebrow">Practical</p><h3 className="font-display font-semibold mt-3">Learn by doing</h3><p className="mt-2 text-sm leading-relaxed text-[var(--color-body)]">Every programme is built around hands-on projects and lab-based practice, not passive lectures.</p></div>
-        <div className="card p-6"><p className="eyebrow">Support</p><h3 className="font-display font-semibold mt-3">Guidance matters</h3><p className="mt-2 text-sm leading-relaxed text-[var(--color-body)]">Instructors stay accessible throughout, with a structured pathway from fundamentals to applied work.</p></div>
-        <div className="card p-6"><p className="eyebrow">Community</p><h3 className="font-display font-semibold mt-3">A local learning community</h3><p className="mt-2 text-sm leading-relaxed text-[var(--color-body)]">A campus in Abeokuta, connected to the wider APTECH computer education network.</p></div>
-      </div>
+      <div className="mt-10"><PillarCards /></div>
     </>
   )
 }
