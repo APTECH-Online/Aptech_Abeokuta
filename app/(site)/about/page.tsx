@@ -13,6 +13,7 @@ import { buildMetadata, getSiteUrl } from '../../../lib/seo'
 import JsonLd from '../../../components/shared/JsonLd'
 import AboutJourney from '../../../components/about/AboutJourney'
 import ValueCards from '../../../components/about/ValueCards'
+import MissionVision from '../../../components/about/MissionVision'
 
 export const metadata = buildMetadata({
   title: 'About APTECH Abeokuta | IT Training Centre in Ogun State',
@@ -42,33 +43,7 @@ export default async function About() {
 
       <AboutJourney />
 
-      <section className="section">
-        <Container>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
-            <div>
-              <p className="eyebrow">Mission</p>
-              <h2 className="h-section mt-2">Deliver industry-relevant training and career pathways.</h2>
-              <p className="lede mt-4">
-                APTECH Abeokuta provides career-focused technology education and practical IT
-                training for students at every stage — from complete beginners to those looking
-                to sharpen professional IT skills.
-              </p>
-            </div>
-            <div>
-              <p className="eyebrow">Vision</p>
-              <h2 className="h-section mt-2">Empower students to succeed in the digital economy.</h2>
-              <p className="lede mt-4">
-                We aim to be a trusted local starting point for a technology career: practical
-                enough to build real skill, structured enough to build real confidence.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <Link href="/admissions" className="btn btn-primary">See admissions</Link>
-          </div>
-        </Container>
-      </section>
+      <MissionVision />
 
       <section className="section-tight" style={{ background: 'var(--color-paper-alt)', borderTop: '1px solid var(--color-line)', borderBottom: '1px solid var(--color-line)' }}>
         <Container>

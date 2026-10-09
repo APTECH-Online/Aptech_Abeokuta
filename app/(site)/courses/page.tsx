@@ -4,6 +4,7 @@ import { getInsightsBySlugs } from '../../../lib/insights-public'
 import { INSIGHT_TOPICS } from '../../../lib/topics'
 import CourseSearch from '../../../components/courses/CourseSearch'
 import GuideCards from '../../../components/courses/GuideCards'
+import CompareCallout from '../../../components/courses/CompareCallout'
 import PageHero from '../../../components/shared/PageHero'
 import Container from '../../../components/ui/Container'
 import { breadcrumbJsonLd } from '../../../lib/structured-data'
@@ -38,13 +39,7 @@ export default async function CoursesPage() {
         <Container>
           <CourseSearch initialCourses={courses} />
           {courses.length >= 2 && (
-            <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 card p-5" style={{ background: 'var(--color-paper-alt)' }}>
-              <div>
-                <p className="font-semibold text-[var(--color-ink)]">Considering more than one option?</p>
-                <p className="mt-1 text-sm" style={{ color: 'var(--color-muted)' }}>Compare two or three programmes by skills, duration, requirements and learning format.</p>
-              </div>
-              <Link href="/courses/compare" className="btn btn-secondary shrink-0">Compare programmes</Link>
-            </div>
+            <div className="mt-8"><CompareCallout /></div>
           )}
         </Container>
       </section>
