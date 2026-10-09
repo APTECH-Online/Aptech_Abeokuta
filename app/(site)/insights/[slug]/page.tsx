@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, CalendarDays, MapPin, Link2, Phone } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import Container from '../../../../components/ui/Container'
 import Breadcrumbs from '../../../../components/shared/Breadcrumbs'
 import CTABand from '../../../../components/home/CTABand'
@@ -14,6 +14,9 @@ import { findSlugRedirect } from '../../../../lib/seo-redirects'
 import { getPublishedCourses } from '../../../../lib/courses-public'
 import { INSIGHT_TOPICS, isEvergreenInsight, pickRelated } from '../../../../lib/topics'
 import { formatPublishedDate } from '../../../../components/insights/badge'
+import EventDetailPanel from '../../../../components/insights/EventDetailPanel'
+import EventHeroMeta from '../../../../components/insights/EventHeroMeta'
+import eventStyles from '../../../../components/insights/events.module.css'
 import { siteConfig } from '../../../../data/site'
 import JsonLd from '../../../../components/shared/JsonLd'
 
@@ -76,11 +79,93 @@ export default async function InsightArticlePage({ params }: Props) {
     { label: post.title }
   ]
 
+  const eventUrl = `${baseUrl}/insights/${post.slug}`
+  const eventSummary = post.short_description || truncate(stripHtml(post.content), 200)
+
+  const relatedCoursesBlock = relatedCourses.length > 0 && (
+    <aside className="mt-10 card p-6" aria-labelledby="related-courses-heading">
+      <h2 id="related-courses-heading" className="font-display font-semibold text-[1.05rem] text-[var(--color-ink)]">
+        Courses at {siteConfig.name} related to this guide
+      </h2>
+      <ul className="mt-4 space-y-3">
+        {relatedCourses.map((c) => (
+          <li key={c.slug} className="text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>
+            <Link href={`/courses/${c.slug}`} className="font-semibold underline" style={{ color: 'var(--color-teal-700)' }}>
+              {c.title}
+            </Link>
+            <span style={{ color: 'var(--color-muted)' }}> · {c.duration} · {c.level}</span>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  )
+  const ctaBlock = (
+    <div className="mt-10 pt-8" style={{ borderTop: '1px solid var(--color-line)' }}>
+      <CTABand />
+    </div>
+  )
+
   return (
     <>
       {/* articleOrEventJsonLd is null for an Event without a start date (schema would be invalid) */}
       <JsonLd data={[breadcrumbJsonLd(baseUrl, crumbs), articleOrEventJsonLd]} />
 
+      {isEvent ? (
+        <>
+      <section className="border-b hairline pattern-adire" style={{ background: 'var(--color-navy-900)' }}>
+        <div className="container py-12 sm:py-16">
+          <Breadcrumbs items={crumbs} />
+          <p className="eyebrow eyebrow-inverse mt-5">{post.category ? `${post.category} · ` : ''}Event</p>
+          <h1 className="h-display mt-2 max-w-3xl" style={{ color: '#fff' }}>{post.title}</h1>
+          {post.short_description && (
+            <p className="mt-4 max-w-2xl text-[1.05rem] leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>
+              {post.short_description}
+            </p>
+          )}
+          <EventHeroMeta event={post} url={eventUrl} summary={eventSummary} />
+        </div>
+      </section>
+
+      <section className="section">
+        <Container className="max-w-6xl">
+          <Link
+            href="/insights/events"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold"
+            style={{ color: 'var(--color-teal-700)' }}
+          >
+            <ArrowLeft size={14} aria-hidden="true" />
+            All events
+          </Link>
+
+          <div className={`${eventStyles.layout} mt-6`}>
+            <div className={eventStyles.main}>
+              {post.featured_image && (
+                <div className={eventStyles.cover}>
+                  <Image
+                    src={post.featured_image}
+                    alt={post.title}
+                    fill
+                    priority
+                    sizes="(max-width: 1023px) 100vw, 720px"
+                    className="object-cover"
+                  />
+                </div>
+              )}
+              <h2 className={eventStyles.sectionLabel}>About this event</h2>
+              <div className="insight-content" dangerouslySetInnerHTML={{ __html: post.content }} />
+              {relatedCoursesBlock}
+              {ctaBlock}
+            </div>
+            <div className={eventStyles.aside}>
+              <EventDetailPanel event={post} url={eventUrl} summary={eventSummary} />
+            </div>
+          </div>
+        </Container>
+      </section>
+
+        </>
+      ) : (
+        <>
       <section className="border-b hairline pattern-adire" style={{ background: 'var(--color-navy-900)' }}>
         <div className="container py-12 sm:py-16">
           <Breadcrumbs items={crumbs} />
@@ -123,68 +208,16 @@ export default async function InsightArticlePage({ params }: Props) {
             </div>
           )}
 
-          {isEvent && (post.event_start_at || post.event_venue) && (
-            <div className="mt-8 card p-5 grid gap-2.5">
-              <p className="eyebrow">Event details</p>
-              {post.event_start_at && (
-                <p className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--color-ink)' }}>
-                  <CalendarDays size={16} aria-hidden="true" style={{ color: 'var(--color-teal-700)' }} />
-                  {new Date(post.event_start_at).toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' })}
-                  {post.event_end_at && ` — ${new Date(post.event_end_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}`}
-                </p>
-              )}
-              {post.event_venue && (
-                <p className="flex items-center gap-2 text-sm" style={{ color: 'var(--color-body)' }}>
-                  <MapPin size={16} aria-hidden="true" style={{ color: 'var(--color-teal-700)' }} />
-                  {post.event_venue}
-                </p>
-              )}
-              {post.event_registration_url && (
-                <a
-                  href={post.event_registration_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm font-semibold"
-                  style={{ color: 'var(--color-teal-700)' }}
-                >
-                  <Link2 size={16} aria-hidden="true" />
-                  Register for this event
-                </a>
-              )}
-              {post.event_contact && (
-                <p className="flex items-center gap-2 text-sm" style={{ color: 'var(--color-muted)' }}>
-                  <Phone size={16} aria-hidden="true" />
-                  {post.event_contact}
-                </p>
-              )}
-            </div>
-          )}
-
           <div className="insight-content mt-8" dangerouslySetInnerHTML={{ __html: post.content }} />
 
-          {relatedCourses.length > 0 && (
-            <aside className="mt-10 card p-6" aria-labelledby="related-courses-heading">
-              <h2 id="related-courses-heading" className="font-display font-semibold text-[1.05rem] text-[var(--color-ink)]">
-                Courses at {siteConfig.name} related to this guide
-              </h2>
-              <ul className="mt-4 space-y-3">
-                {relatedCourses.map((c) => (
-                  <li key={c.slug} className="text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>
-                    <Link href={`/courses/${c.slug}`} className="font-semibold underline" style={{ color: 'var(--color-teal-700)' }}>
-                      {c.title}
-                    </Link>
-                    <span style={{ color: 'var(--color-muted)' }}> · {c.duration} · {c.level}</span>
-                  </li>
-                ))}
-              </ul>
-            </aside>
-          )}
+          {relatedCoursesBlock}
 
-          <div className="mt-10 pt-8" style={{ borderTop: '1px solid var(--color-line)' }}>
-            <CTABand />
-          </div>
+          {ctaBlock}
         </Container>
       </section>
+
+        </>
+      )}
 
       {related.length > 0 && (
         <section className="section-tight" style={{ background: 'var(--color-paper-alt)', borderTop: '1px solid var(--color-line)' }}>

@@ -1,8 +1,10 @@
 import Link from 'next/link'
-import { CalendarDays, MapPin } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import PageHero from '../../../components/shared/PageHero'
 import Container from '../../../components/ui/Container'
 import ContentTypeListing from '../../../components/insights/ContentTypeListing'
+import UpcomingEventCard from '../../../components/insights/UpcomingEventCard'
+import eventStyles from '../../../components/insights/events.module.css'
 import { getPublishedInsights, getUpcomingEvents, getInsightCategories } from '../../../lib/insights-public'
 import { breadcrumbJsonLd } from '../../../lib/structured-data'
 import { buildMetadata, getSiteUrl } from '../../../lib/seo'
@@ -37,32 +39,20 @@ export default async function InsightsPage({ searchParams }: Props) {
       />
 
       {upcomingEvents.length > 0 && (
-        <section className="section-tight editorial-upcoming" style={{ background: 'var(--color-paper-alt)', borderBottom: '1px solid var(--color-line)' }}>
+        <section className="section-tight editorial-upcoming" aria-labelledby="upcoming-events-heading" style={{ background: 'var(--color-paper-alt)', borderBottom: '1px solid var(--color-line)' }}>
           <Container>
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <p className="eyebrow">Upcoming events</p>
-              <Link href="/insights/events" className="text-sm font-semibold" style={{ color: 'var(--color-teal-700)' }}>
-                View all events →
+            <div className={eventStyles.sectionHead}>
+              <div>
+                <p className="eyebrow">Upcoming events</p>
+                <h2 id="upcoming-events-heading" className={eventStyles.sectionTitle}>Come and meet us</h2>
+              </div>
+              <Link href="/insights/events" className={eventStyles.viewAll}>
+                View all events <ArrowRight size={15} aria-hidden="true" />
               </Link>
             </div>
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {upcomingEvents.map((event) => (
-                <Link key={event.slug} href={`/insights/${event.slug}`} className="card p-5 flex flex-col">
-                  <p className="eyebrow">Event</p>
-                  <h3 className="mt-2 font-display font-semibold text-sm text-[var(--color-ink)] leading-snug">{event.title}</h3>
-                  {event.event_start_at && (
-                    <p className="mt-3 flex items-center gap-1.5 text-xs" style={{ color: 'var(--color-muted)' }}>
-                      <CalendarDays size={13} aria-hidden="true" />
-                      {new Date(event.event_start_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </p>
-                  )}
-                  {event.event_venue && (
-                    <p className="mt-1 flex items-center gap-1.5 text-xs" style={{ color: 'var(--color-muted)' }}>
-                      <MapPin size={13} aria-hidden="true" />
-                      {event.event_venue}
-                    </p>
-                  )}
-                </Link>
+            <div className={eventStyles.grid} data-count={upcomingEvents.length}>
+              {upcomingEvents.map((event, i) => (
+                <UpcomingEventCard key={event.slug} event={event} priority={i === 0} />
               ))}
             </div>
           </Container>
