@@ -2,6 +2,8 @@ import Hero from '../../components/hero/Hero'
 import { getPublishedCourses } from '../../lib/courses-public'
 import CourseCard from '../../components/courses/CourseCard'
 import Link from 'next/link'
+import { ArrowRight, Handshake } from 'lucide-react'
+import IconTile from '../../components/ui/IconTile'
 import Testimonials from '../../components/testimonials/Testimonials'
 import Container from '../../components/ui/Container'
 import SectionHeading from '../../components/ui/SectionHeading'
@@ -103,21 +105,25 @@ export default async function Home() {
 
       <section className="section-tight">
         <Container>
-          <div className="card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center gap-6 justify-between">
-            <div>
-              <p className="eyebrow">Partners & alliances</p>
-              <h2 className="h-section mt-2" style={{ fontSize: '1.35rem' }}>
-                {partnersHighlight?.headline ?? 'Backed by Avigo Investment Limited, connected to Middlesex & Portsmouth Universities'}
-              </h2>
-              <p className="lede mt-2" style={{ fontSize: '0.95rem' }}>
-                {partnersHighlight?.description ?? 'A Nigerian-owned network partner, plus a pathway to a BSc in Software Engineering through our university alliance.'}
-              </p>
+          <div className="alliance-panel">
+            <div className="alliance-top">
+              <IconTile icon={Handshake} tone="navy" size="lg" className="alliance-icon" />
+              <div className="alliance-copy">
+                <p className="eyebrow">Partners & alliances</p>
+                <h2 className="h-section mt-2" style={{ fontSize: '1.35rem' }}>
+                  {partnersHighlight?.headline ?? 'Backed by Avigo Investment Limited, connected to Middlesex & Portsmouth Universities'}
+                </h2>
+                <p className="lede mt-2" style={{ fontSize: '0.95rem' }}>
+                  {partnersHighlight?.description ?? 'A Nigerian-owned network partner, plus a pathway to a BSc in Software Engineering through our university alliance.'}
+                </p>
+              </div>
+              <Link href={partnersHighlight?.cta_href ?? '/about#partners'} className="btn btn-secondary alliance-cta">
+                {partnersHighlight?.cta_label ?? 'Meet our partners'}
+                <ArrowRight size={16} aria-hidden="true" />
+              </Link>
             </div>
-            <Link href={partnersHighlight?.cta_href ?? '/about#partners'} className="btn btn-secondary shrink-0">
-              {partnersHighlight?.cta_label ?? 'Meet our partners'}
-            </Link>
+            <PartnerLogos variant="embedded" />
           </div>
-          <PartnerLogos />
         </Container>
       </section>
 

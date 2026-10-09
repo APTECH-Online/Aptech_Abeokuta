@@ -1,10 +1,10 @@
 import Link from 'next/link'
-import { CheckCircle2 } from 'lucide-react'
 import PageHero from '../../../components/shared/PageHero'
 import Container from '../../../components/ui/Container'
 import SectionHeading from '../../../components/ui/SectionHeading'
 import CTABand from '../../../components/home/CTABand'
 import StatsBand from '../../../components/home/StatsBand'
+import PartnerCard from '../../../components/shared/PartnerCard'
 import PartnerLogos from '../../../components/shared/PartnerLogos'
 import { getPublishedCourses } from '../../../lib/courses-public'
 import { getPublishedPartnerOrganizations } from '../../../lib/partners-public'
@@ -99,18 +99,7 @@ export default async function About() {
               <p className="eyebrow mt-2">Industry partners</p>
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
                 {partners.map((p) => (
-                  <div key={p.id} className="card p-6 sm:p-8">
-                    <h3 className="font-display font-semibold text-[1.15rem] text-[var(--color-ink)]">{p.title}</h3>
-                    <p className="mt-3 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>{p.body}</p>
-                    <ul className="mt-5 space-y-2.5">
-                      {p.points.map((point) => (
-                        <li key={point} className="flex items-start gap-2 text-sm" style={{ color: 'var(--color-body)' }}>
-                          <CheckCircle2 className="shrink-0 mt-0.5" size={16} style={{ color: 'var(--color-amber-500)' }} />
-                          <span>{point}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  <PartnerCard key={p.id} partner={p} />
                 ))}
               </div>
             </>

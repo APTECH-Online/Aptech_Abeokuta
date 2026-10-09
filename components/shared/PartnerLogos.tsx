@@ -1,58 +1,77 @@
 import Image from 'next/image'
+import { ArrowUpRight } from 'lucide-react'
 import { getPublishedAffiliatedUniversities } from '../../lib/partners-public'
 
 /**
- * Logo grid for our affiliated universities. This sits inside the broader
- * "Partners & alliances" section alongside the Avigo Investment Limited /
- * Middlesex & Portsmouth alliance write-up (see the `partner_organizations`
- * table, rendered in app/(site)/about/page.tsx) — the label here calls out
- * that this specific grid is the affiliated-university logos, distinct from
- * that industry/alliance copy.
+ * Affiliated-university cards. Sits inside the broader "Partners & alliances"
+ * area alongside the industry-partner write-ups (partner_organizations).
  *
- * Logos are staff-managed at /admin/settings/partners/universities (see
- * migration 0011_partners_and_affiliated_universities.sql). Uploaded logos
- * have no known intrinsic width/height, so each renders with next/image's
- * `fill` inside a fixed-size box rather than explicit width/height props.
+ * Each card is a logo well plus a footer with the university name; when the
+ * university has a website the whole card is a link. Logos are staff-managed
+ * at /admin/settings/partners/universities and have no known intrinsic size,
+ * so they render with next/image `fill` inside a fixed-height well.
+ *
+ * variant="section"  — standalone block with its own label (About page)
+ * variant="embedded" — footer band of the home-page alliance panel
  */
-export default async function PartnerLogos({ showLabel = true }: { showLabel?: boolean }) {
+export default async function PartnerLogos({
+  showLabel = true,
+  variant = 'section'
+}: {
+  showLabel?: boolean
+  variant?: 'section' | 'embedded'
+}) {
   const universities = await getPublishedAffiliatedUniversities()
   if (universities.length === 0) return null
 
-  return (
-    <div className={showLabel ? 'mt-10 sm:mt-12' : undefined}>
-      {showLabel && <p className="eyebrow">Affiliated universities</p>}
-      <div className={`grid grid-cols-2 sm:grid-cols-4 gap-6 items-center ${showLabel ? 'mt-4' : 'mt-8'}`}>
-        {universities.map((uni) => {
-          const logo = (
-            <div className="relative w-full h-12">
-              <Image
-                src={uni.logo_url}
-                alt={`${uni.name} logo`}
-                fill
-                className="object-contain"
-                sizes="160px"
-              />
+  const label = showLabel && (
+    <div className="partner-label">
+      <p className="eyebrow">Affiliated universities</p>
+      <span className="partner-rule" aria-hidden="true" />
+    </div>
+  )
+
+  const grid = (
+    <ul className="uni-grid">
+      {universities.map((uni) => {
+        const inner = (
+          <>
+            <div className="uni-logo">
+              <Image src={uni.logo_url} alt={`${uni.name} logo`} fill className="object-contain" sizes="(min-width: 768px) 200px, 45vw" />
             </div>
-          )
-          return (
-            <div key={uni.id} className="card flex items-center justify-center p-5 h-24" title={uni.name}>
-              {uni.website_url ? (
-                <a
-                  href={uni.website_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full h-full flex items-center justify-center"
-                  aria-label={uni.name}
-                >
-                  {logo}
-                </a>
-              ) : (
-                logo
-              )}
+            <div className="uni-foot">
+              <span className="uni-name">{uni.name}</span>
+              {uni.website_url && <ArrowUpRight className="uni-visit" size={15} strokeWidth={2} aria-hidden="true" />}
             </div>
-          )
-        })}
+          </>
+        )
+        return (
+          <li key={uni.id} className="uni-item">
+            {uni.website_url ? (
+              <a href={uni.website_url} target="_blank" rel="noopener noreferrer" className="uni-card" aria-label={`${uni.name} (opens in a new tab)`}>
+                {inner}
+              </a>
+            ) : (
+              <div className="uni-card">{inner}</div>
+            )}
+          </li>
+        )
+      })}
+    </ul>
+  )
+
+  if (variant === 'embedded') {
+    return (
+      <div className="alliance-foot">
+        {label}
+        {grid}
       </div>
+    )
+  }
+  return (
+    <div className={showLabel ? 'mt-10 sm:mt-12' : 'mt-8'}>
+      {label}
+      {grid}
     </div>
   )
 }
