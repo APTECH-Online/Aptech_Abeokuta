@@ -1,6 +1,6 @@
-import Image from 'next/image'
-import Link from 'next/link'
-import { BookOpen, Hammer, Trophy, Users, TrendingUp, PartyPopper, ArrowRight } from 'lucide-react'
+import { BookOpen, Hammer, Trophy, Users, TrendingUp, PartyPopper } from 'lucide-react'
+import LifeCards from '../../../components/student-life/LifeCards'
+import EventFeature from '../../../components/student-life/EventFeature'
 import PageHero from '../../../components/shared/PageHero'
 import Container from '../../../components/ui/Container'
 import SectionHeading from '../../../components/ui/SectionHeading'
@@ -73,47 +73,13 @@ export default async function StudentLifePage() {
             eyebrow="Learn → Build → Certify → Launch"
             title="What campus life actually looks like"
           />
-          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pillars.map((p) => (
-              <div key={p.title} className="card p-6">
-                <div
-                  className="w-11 h-11 rounded-lg flex items-center justify-center"
-                  style={{ background: 'var(--color-teal-50)', color: 'var(--color-teal-700)' }}
-                >
-                  <p.icon aria-hidden="true" className="w-5 h-5" />
-                </div>
-                <h3 className="mt-4 font-display font-semibold text-[1.02rem] text-[var(--color-ink)]">{p.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>{p.body}</p>
-              </div>
-            ))}
-          </div>
+          <div className="mt-10"><LifeCards items={pillars} /></div>
         </Container>
       </section>
 
       <section className="section-tight" style={{ background: 'var(--color-paper-alt)', borderTop: '1px solid var(--color-line)', borderBottom: '1px solid var(--color-line)' }}>
         <Container>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden" style={{ border: '1px solid var(--color-line)' }}>
-              <Image
-                src="/images/gallery/event-1.jpg"
-                alt="A group of students at the APTECH Career Quest event, held in association with Middlesex University"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div>
-              <p className="eyebrow">Events</p>
-              <h2 className="h-section mt-2">Aptech Career Quest</h2>
-              <p className="mt-3 lede">
-                Students take part in Aptech Career Quest, a nationwide competition held in association with
-                Middlesex University — a chance to put classroom skills to the test outside the campus.
-              </p>
-              <Link href="/gallery" className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold" style={{ color: 'var(--color-teal-700)' }}>
-                See more from the gallery
-                <ArrowRight size={14} aria-hidden="true" />
-              </Link>
-            </div>
-          </div>
+          <EventFeature />
         </Container>
       </section>
 

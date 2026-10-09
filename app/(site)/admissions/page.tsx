@@ -5,6 +5,8 @@ import Container from '../../../components/ui/Container'
 import SectionHeading from '../../../components/ui/SectionHeading'
 import Accordion from '../../../components/ui/Accordion'
 import AdmissionsForm from '../../../components/admissions/AdmissionsForm'
+import { RequirementsChecklist, IntakesAndFees } from '../../../components/admissions/AdmissionsInfo'
+import ApplyAside from '../../../components/admissions/ApplyAside'
 import ApplySteps from '../../../components/admissions/ApplySteps'
 import { admissionsRequirements } from '../../../data/site'
 import { getPublishedFaqs } from '../../../lib/faqs-public'
@@ -57,50 +59,36 @@ export default async function Admissions() {
 
       <section className="section-tight" style={{ background: 'var(--color-paper-alt)', borderTop: '1px solid var(--color-line)', borderBottom: '1px solid var(--color-line)' }}>
         <Container>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12">
+            <div className="flex flex-col">
               <SectionHeading eyebrow="What you'll need" title="Requirements" />
-              <ul className="mt-6 space-y-3">
-                {admissionsRequirements.map((r) => (
-                  <li key={r} className="flex items-start gap-3 text-sm" style={{ color: 'var(--color-body)' }}>
-                    <span
-                      aria-hidden="true"
-                      className="mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs shrink-0"
-                      style={{ background: 'var(--color-teal-50)', color: 'var(--color-teal-700)' }}
-                    >
-                      ✓
-                    </span>
-                    {r}
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-6 flex-1 flex flex-col"><RequirementsChecklist items={admissionsRequirements} /></div>
             </div>
-            <div>
+            <div className="flex flex-col">
               <SectionHeading eyebrow="Good to know" title="Intakes & fees" />
-              <p className="mt-6 text-sm leading-relaxed" style={{ color: 'var(--color-body)' }}>
-                Intake dates and fee structures vary by programme and are confirmed directly with
-                the admissions office. Get in touch and we'll walk you through current options for
-                your chosen track.
-              </p>
-              <Link href="/contact" className="btn btn-secondary mt-5">Ask admissions a question</Link>
+              <div className="mt-6 flex-1 flex flex-col"><IntakesAndFees /></div>
             </div>
           </div>
         </Container>
       </section>
 
-      <section id="apply" className="section">
-        <Container className="max-w-2xl">
-          <SectionHeading eyebrow="Application" title="Submit an enquiry" description="Tell us about yourself and the programme you're interested in — the admissions team will follow up with next steps." />
-          {programmes.length > 0 ? (
-            <Suspense fallback={<div className="mt-8 card p-8 text-sm" style={{ color: 'var(--color-muted)' }}>Loading form…</div>}>
-              <AdmissionsForm programmes={programmes} whatsapp={whatsapp} />
-            </Suspense>
-          ) : (
-            <div className="mt-8 card p-6 sm:p-8 text-sm" style={{ color: 'var(--color-muted)' }}>
-              The enquiry form is temporarily unavailable. Please contact admissions directly at{' '}
-              <a href={`mailto:${email}`} className="underline">{email}</a>.
+      <section id="apply" className="section scroll-mt-20">
+        <Container className="max-w-5xl">
+          <div className="apply-layout">
+            <ApplyAside whatsapp={whatsapp} email={email} />
+            <div className="min-w-0">
+              {programmes.length > 0 ? (
+                <Suspense fallback={<div className="form-card text-sm" style={{ color: 'var(--color-muted)' }}>Loading form…</div>}>
+                  <AdmissionsForm programmes={programmes} whatsapp={whatsapp} />
+                </Suspense>
+              ) : (
+                <div className="form-card text-sm" style={{ color: 'var(--color-muted)' }}>
+                  The enquiry form is temporarily unavailable. Please contact admissions directly at{' '}
+                  <a href={`mailto:${email}`} className="underline">{email}</a>.
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </Container>
       </section>
 

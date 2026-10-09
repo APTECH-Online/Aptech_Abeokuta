@@ -4,6 +4,8 @@ import ConsentFields from '../shared/ConsentFields'
 import { useActionState, useEffect, useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { useSearchParams } from 'next/navigation'
+import { ArrowRight, CheckCircle2, Loader2 } from 'lucide-react'
+import IconTile from '../ui/IconTile'
 import { useActionFeedback } from '../admin/AdminFeedbackProvider'
 import FormAlert from '../shared/FormAlert'
 import WhatsAppButton from '../shared/WhatsAppButton'
@@ -49,9 +51,19 @@ function SubmitButton() {
       type="submit"
       disabled={pending}
       aria-busy={pending}
-      className="btn btn-primary btn-block sm:w-auto sm:justify-self-start disabled:opacity-60 disabled:cursor-not-allowed"
+      className="btn btn-primary btn-block sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
     >
-      {pending ? 'Submitting application…' : 'Submit application'}
+      {pending ? (
+        <>
+          <Loader2 size={17} className="animate-spin" aria-hidden="true" />
+          Submitting application…
+        </>
+      ) : (
+        <>
+          Submit application
+          <ArrowRight size={17} aria-hidden="true" />
+        </>
+      )}
     </button>
   )
 }
@@ -90,7 +102,7 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
   const errorClass = (field: string) => (fieldErrors[field] ? 'field-error' : '')
 
   return (
-    <form ref={formRef} action={formAction} className="mt-8 card p-6 sm:p-8 grid gap-8" noValidate>
+    <form ref={formRef} action={formAction} className="form-card" noValidate>
       {/* Hidden tracking fields */}
       <input type="hidden" name="landingPage" value={landingPage || '/admissions'} />
       <input type="hidden" name="referrer" value={referrer} />
@@ -115,19 +127,24 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
         <input id="companyWebsite" name="companyWebsite" type="text" tabIndex={-1} autoComplete="off" />
       </div>
 
+      {state.status !== 'success' && (
+        <p className="form-note"><span className="field-req" aria-hidden="true">*</span> Required fields</p>
+      )}
+
       {state.status === 'success' ? (
-        <div id="admissions-form-result">
-          <FormAlert variant="success" title="Enquiry received">
-            <p>
-              Thank you for your interest in APTECH Abeokuta. Your enquiry has been received
-              successfully. Our admissions team will contact you shortly.
+        <div id="admissions-form-result" className="form-success" role="status">
+          <IconTile icon={CheckCircle2} tone="teal" size="lg" />
+          <h3 className="form-success__title">Enquiry received</h3>
+          <p className="form-success__text">
+            Thank you for your interest in APTECH Abeokuta. Your enquiry has been received
+            successfully. Our admissions team will contact you shortly.
+          </p>
+          {state.leadReference && state.leadReference !== 'APC-0000-000000' && (
+            <p className="form-ref">
+              <span>Your reference number</span>
+              <strong>{state.leadReference}</strong>
             </p>
-            {state.leadReference && state.leadReference !== 'APC-0000-000000' && (
-              <p className="mt-2 font-mono text-xs sm:text-sm" style={{ color: 'var(--color-ink)' }}>
-                Your reference number: <strong>{state.leadReference}</strong>
-              </p>
-            )}
-          </FormAlert>
+          )}
         </div>
       ) : (
         <>
@@ -155,37 +172,41 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
           )}
 
           {/* Personal information */}
-          <fieldset className="grid gap-5">
-            <legend className="eyebrow mb-1">Personal information</legend>
+          <fieldset className="form-section">
+            <legend className="form-legend"><span className="form-step" aria-hidden="true">1</span>Personal information</legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label htmlFor="firstName" className="field-label">First name *</label>
+                <label htmlFor="firstName" className="field-label">First name <span className="field-req" aria-hidden="true">*</span></label>
                 <input id="firstName" name="firstName" required className={`field-input ${errorClass('firstName')}`} placeholder="e.g. Ade" />
                 {fieldErrors.firstName && <p className="field-error-text">{fieldErrors.firstName}</p>}
               </div>
               <div>
-                <label htmlFor="lastName" className="field-label">Last name *</label>
+                <label htmlFor="lastName" className="field-label">Last name <span className="field-req" aria-hidden="true">*</span></label>
                 <input id="lastName" name="lastName" required className={`field-input ${errorClass('lastName')}`} placeholder="e.g. Ogundele" />
                 {fieldErrors.lastName && <p className="field-error-text">{fieldErrors.lastName}</p>}
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label htmlFor="email" className="field-label">Email address *</label>
+                <label htmlFor="email" className="field-label">Email address <span className="field-req" aria-hidden="true">*</span></label>
                 <input id="email" name="email" type="email" required className={`field-input ${errorClass('email')}`} placeholder="you@example.com" />
                 {fieldErrors.email && <p className="field-error-text">{fieldErrors.email}</p>}
               </div>
               <div>
-                <label htmlFor="phone" className="field-label">Phone number *</label>
+                <label htmlFor="phone" className="field-label">Phone number <span className="field-req" aria-hidden="true">*</span></label>
                 <input id="phone" name="phone" type="tel" required className={`field-input ${errorClass('phone')}`} placeholder="e.g. 080X XXX XXXX" />
                 {fieldErrors.phone && <p className="field-error-text">{fieldErrors.phone}</p>}
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <div>
                 <label htmlFor="whatsapp" className="field-label">WhatsApp number</label>
                 <input id="whatsapp" name="whatsapp" type="tel" className={`field-input ${errorClass('whatsapp')}`} placeholder="If different from phone" />
                 {fieldErrors.whatsapp && <p className="field-error-text">{fieldErrors.whatsapp}</p>}
+              </div>
+              <div>
+                <label htmlFor="dateOfBirth" className="field-label">Date of birth</label>
+                <input id="dateOfBirth" name="dateOfBirth" type="date" className="field-input" />
               </div>
               <div>
                 <label htmlFor="gender" className="field-label">Gender</label>
@@ -197,17 +218,11 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
                 </select>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div>
-                <label htmlFor="dateOfBirth" className="field-label">Date of birth</label>
-                <input id="dateOfBirth" name="dateOfBirth" type="date" className="field-input" />
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <div>
                 <label htmlFor="city" className="field-label">City</label>
                 <input id="city" name="city" className="field-input" placeholder="e.g. Abeokuta" />
               </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label htmlFor="state" className="field-label">State</label>
                 <input id="state" name="state" className="field-input" placeholder="e.g. Ogun" />
@@ -224,8 +239,8 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
           </fieldset>
 
           {/* Academic information */}
-          <fieldset className="grid gap-5">
-            <legend className="eyebrow mb-1">Academic information</legend>
+          <fieldset className="form-section">
+            <legend className="form-legend"><span className="form-step" aria-hidden="true">2</span>Academic information</legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label htmlFor="highestQualification" className="field-label">Highest qualification</label>
@@ -250,10 +265,10 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
           </fieldset>
 
           {/* Programme information */}
-          <fieldset className="grid gap-5">
-            <legend className="eyebrow mb-1">Programme information</legend>
+          <fieldset className="form-section">
+            <legend className="form-legend"><span className="form-step" aria-hidden="true">3</span>Programme information</legend>
             <div>
-              <label htmlFor="programmeId" className="field-label">Programme of interest *</label>
+              <label htmlFor="programmeId" className="field-label">Programme of interest <span className="field-req" aria-hidden="true">*</span></label>
               <select id="programmeId" name="programmeId" required className={`field-select ${errorClass('programmeId')}`} defaultValue={searchParams.get('programmeId') || ""}>
                 <option value="" disabled>Select a programme</option>
                 {programmes.map((p) => (
@@ -262,7 +277,7 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
               </select>
               {fieldErrors.programmeId && <p className="field-error-text">{fieldErrors.programmeId}</p>}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <div>
                 <label htmlFor="studyMode" className="field-label">Preferred study mode</label>
                 <select id="studyMode" name="studyMode" className="field-select" defaultValue="">
@@ -276,18 +291,18 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
                 <label htmlFor="preferredIntake" className="field-label">Preferred intake</label>
                 <input id="preferredIntake" name="preferredIntake" className="field-input" placeholder="e.g. January 2027" />
               </div>
-            </div>
-            <div>
-              <label htmlFor="expectedStartDate" className="field-label">Expected start date</label>
-              <input id="expectedStartDate" name="expectedStartDate" type="date" className="field-input" />
+              <div>
+                <label htmlFor="expectedStartDate" className="field-label">Expected start date</label>
+                <input id="expectedStartDate" name="expectedStartDate" type="date" className="field-input" />
+              </div>
             </div>
           </fieldset>
 
           {/* Marketing */}
-          <fieldset className="grid gap-5">
-            <legend className="eyebrow mb-1">How did you hear about us?</legend>
+          <fieldset className="form-section">
+            <legend className="form-legend"><span className="form-step" aria-hidden="true">4</span>How did you hear about us?</legend>
             <div>
-              <label htmlFor="source" className="field-label">Source *</label>
+              <label htmlFor="source" className="field-label">Source <span className="field-req" aria-hidden="true">*</span></label>
               <select id="source" name="source" required className={`field-select ${errorClass('source')}`} defaultValue={searchParams.get('source') || ""}>
                 <option value="" disabled>Select an option</option>
                 {SOURCE_OPTIONS.map((o) => (
@@ -298,9 +313,12 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
             </div>
           </fieldset>
 
-          <div>
+          <div className="form-section">
             <ConsentFields error={fieldErrors.privacyConsent} />
-            <div className="mt-4"><SubmitButton /></div>
+            <div className="form-submit">
+              <SubmitButton />
+              <p className="form-submit__note">The admissions team will follow up with next steps.</p>
+            </div>
           </div>
         </>
       )}
