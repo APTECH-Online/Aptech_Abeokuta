@@ -387,6 +387,14 @@ export interface Testimonial {
   program: string
   quote: string
   image_url: string | null
+  story_type: 'testimonial' | 'student_project' | 'graduate_experience' | 'employer_outcome' | 'certification_outcome'
+  project_title: string | null
+  story_summary: string | null
+  programme_slug: string | null
+  consent_confirmed: boolean
+  consent_confirmed_at: string | null
+  verified_by: string | null
+  verified_at: string | null
   sort_order: number
   is_published: boolean
   uploaded_by: string | null

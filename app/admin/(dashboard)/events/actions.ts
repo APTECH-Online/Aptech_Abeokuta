@@ -1,0 +1,5 @@
+'use server'
+import { revalidatePath } from 'next/cache'
+import { createClient } from '../../../../lib/supabase/server'
+import { getSessionAndStaff } from '../../../../lib/auth'
+export async function updateEventRegistration(formData:FormData){const {hasSession,staff}=await getSessionAndStaff();if(!hasSession||!staff||!staff.is_active)throw new Error('Not authorised');const id=String(formData.get('id')||'');const attendance_status=String(formData.get('attendance_status')||'registered');const inquiry_outcome=String(formData.get('inquiry_outcome')||'not_recorded');const allowedAttendance=['registered','attended','no_show','cancelled'];const allowedOutcome=['not_recorded','interested','requested_counselling','application_started','not_interested','no_follow_up_needed'];if(!id||!allowedAttendance.includes(attendance_status)||!allowedOutcome.includes(inquiry_outcome))throw new Error('Invalid event outcome');const db=await createClient();const {error}=await db.from('event_registrations').update({attendance_status,inquiry_outcome}).eq('id',id);if(error)throw new Error('Could not update event outcome');revalidatePath('/admin/events')}

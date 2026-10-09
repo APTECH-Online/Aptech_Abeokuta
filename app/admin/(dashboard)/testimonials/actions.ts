@@ -43,6 +43,15 @@ export async function createTestimonial(_prev: ActionResult, formData: FormData)
     const name = String(formData.get('name') || '').trim()
     const program = String(formData.get('program') || '').trim()
     const quote = String(formData.get('quote') || '').trim()
+    const consentConfirmed = formData.get('consentConfirmed') === 'on'
+    const storyType = String(formData.get('storyType') || 'testimonial')
+    const projectTitle = String(formData.get('projectTitle') || '').trim() || null
+    const storySummary = String(formData.get('storySummary') || '').trim() || null
+    const programmeSlug = String(formData.get('programmeSlug') || '').trim() || null
+    const validStoryTypes = ['testimonial','student_project','graduate_experience','employer_outcome','certification_outcome']
+    if (!validStoryTypes.includes(storyType)) return { ok: false, message: 'Choose a valid story type.' }
+    const isPublished = formData.get('isPublished') !== 'off'
+    if (isPublished && !consentConfirmed) return { ok: false, message: 'Confirm authenticity and publication permission before publishing.' }
 
     const fieldErrors = validateFields({ name, program, quote })
     if (Object.keys(fieldErrors).length > 0) {
@@ -61,16 +70,17 @@ export async function createTestimonial(_prev: ActionResult, formData: FormData)
     }
 
     const sortOrder = await getNextTestimonialSortOrder()
-    const isPublished = formData.get('isPublished') !== 'off'
-
     const { error } = await admin.from('testimonials').insert({
       id,
       name,
       program,
       quote,
+      story_type: storyType, project_title: projectTitle, story_summary: storySummary, programme_slug: programmeSlug,
+      consent_confirmed: consentConfirmed, consent_confirmed_at: consentConfirmed ? new Date().toISOString() : null,
+      verified_by: isPublished ? staff.id : null, verified_at: isPublished ? new Date().toISOString() : null,
       image_url: imageUrl,
       sort_order: sortOrder,
-      is_published: isPublished,
+      is_published: isPublished && consentConfirmed,
       uploaded_by: staff.id
     })
 
@@ -104,6 +114,15 @@ export async function updateTestimonial(_prev: ActionResult, formData: FormData)
     const name = String(formData.get('name') || '').trim()
     const program = String(formData.get('program') || '').trim()
     const quote = String(formData.get('quote') || '').trim()
+    const consentConfirmed = formData.get('consentConfirmed') === 'on'
+    const storyType = String(formData.get('storyType') || 'testimonial')
+    const projectTitle = String(formData.get('projectTitle') || '').trim() || null
+    const storySummary = String(formData.get('storySummary') || '').trim() || null
+    const programmeSlug = String(formData.get('programmeSlug') || '').trim() || null
+    const validStoryTypes = ['testimonial','student_project','graduate_experience','employer_outcome','certification_outcome']
+    if (!validStoryTypes.includes(storyType)) return { ok: false, message: 'Choose a valid story type.' }
+    const isPublished = formData.get('isPublished') !== 'off'
+    if (isPublished && !consentConfirmed) return { ok: false, message: 'Confirm authenticity and publication permission before publishing.' }
     const sortOrderRaw = String(formData.get('sortOrder') || '0')
     const sortOrder = Number.isFinite(Number(sortOrderRaw)) ? Math.trunc(Number(sortOrderRaw)) : 0
 
@@ -133,16 +152,16 @@ export async function updateTestimonial(_prev: ActionResult, formData: FormData)
       imageUrl = null
     }
 
-    const isPublished = formData.get('isPublished') !== 'off'
-
     const { error } = await admin
       .from('testimonials')
       .update({
         name,
         program,
-        quote,
+        quote, story_type: storyType, project_title: projectTitle, story_summary: storySummary, programme_slug: programmeSlug,
+        consent_confirmed: consentConfirmed, consent_confirmed_at: consentConfirmed ? new Date().toISOString() : null,
+        verified_by: isPublished ? staff.id : null, verified_at: isPublished ? new Date().toISOString() : null,
         sort_order: sortOrder,
-        is_published: isPublished,
+        is_published: isPublished && consentConfirmed,
         ...(imageUrl !== undefined ? { image_url: imageUrl } : {})
       })
       .eq('id', itemId)
@@ -175,7 +194,18 @@ export async function toggleTestimonialPublished(_prev: ActionResult, formData: 
     if (!itemId) return { ok: false, message: 'Missing testimonial.' }
 
     const admin = createAdminClient()
-    const { error } = await admin.from('testimonials').update({ is_published: nextValue }).eq('id', itemId)
+    if (nextValue) {
+      const { data: existing, error: lookupError } = await admin.from('testimonials')
+        .select('consent_confirmed')
+        .eq('id', itemId)
+        .maybeSingle()
+      if (lookupError || !existing) return { ok: false, message: 'Could not verify this story.' }
+      if (!existing.consent_confirmed) return { ok: false, message: 'Verify authenticity and publication permission in the story editor before publishing.' }
+    }
+    const { error } = await admin.from('testimonials').update({
+      is_published: nextValue,
+      ...(nextValue ? { verified_by: staff.id, verified_at: new Date().toISOString() } : {})
+    }).eq('id', itemId)
     if (error) return { ok: false, message: 'Could not update this testimonial.' }
 
     await logAudit(admin, {

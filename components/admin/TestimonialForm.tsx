@@ -47,6 +47,18 @@ export default function TestimonialForm({ mode, item }: { mode: 'create' | 'edit
         </div>
       </div>
 
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="storyType" className="field-label">Story type</label>
+          <select id="storyType" name="storyType" defaultValue={item?.story_type ?? 'testimonial'} className="admin-select">
+            <option value="testimonial">Student testimonial</option><option value="student_project">Completed student project</option><option value="graduate_experience">Graduate experience</option><option value="employer_outcome">Employer outcome (evidence required)</option><option value="certification_outcome">Certification outcome (evidence required)</option>
+          </select>
+        </div>
+        <div><label htmlFor="projectTitle" className="field-label">Project / achievement title (optional)</label><input id="projectTitle" name="projectTitle" maxLength={180} defaultValue={item?.project_title ?? ''} className="admin-input" placeholder="e.g. Inventory management app" /></div>
+      </div>
+      <div><label htmlFor="storySummary" className="field-label">Additional context (optional)</label><textarea id="storySummary" name="storySummary" rows={3} maxLength={1200} defaultValue={item?.story_summary ?? ''} className="admin-input" placeholder="Describe the project or outcome using verified facts only." /></div>
+      <div><label htmlFor="programmeSlug" className="field-label">Programme page slug (optional)</label><input id="programmeSlug" name="programmeSlug" maxLength={180} defaultValue={item?.programme_slug ?? ''} className="admin-input" placeholder="e.g. adse" /></div>
+
       <div>
         <label htmlFor="quote" className="field-label">Quote</label>
         <textarea id="quote" name="quote" required rows={5} maxLength={2000} defaultValue={item?.quote ?? ''} className="admin-input" placeholder="What the student said, in their own words" />
@@ -101,6 +113,10 @@ export default function TestimonialForm({ mode, item }: { mode: 'create' | 'edit
         </div>
       )}
 
+      <label className="flex items-start gap-2 text-sm" style={{ color: 'var(--color-ink)' }}>
+        <input type="checkbox" name="consentConfirmed" required defaultChecked={item?.consent_confirmed ?? false} className="mt-1" />
+        <span>I confirm this story is genuine, the person/outcome has been checked, and explicit permission to publish the submitted text and any photo has been obtained. Required before publishing.</span>
+      </label>
       <label className="flex items-center gap-2 text-sm" style={{ color: 'var(--color-ink)' }}>
         <input type="checkbox" name="isPublished" defaultChecked={item?.is_published ?? true} />
         Published (visible on the public site)

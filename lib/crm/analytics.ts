@@ -12,7 +12,9 @@ type ApplicationRow = { id: string; lead_id: string; programme_id: string | null
 type FollowUpRow = { id: string; lead_id: string; assigned_to: string | null; due_date: string; status: string; completed_at: string | null }
 type ProgrammeRow = { id: string; name: string }
 type StaffRow = { id: string; full_name: string }
-type EventRow = { event_name: string; lead_id: string | null; session_id: string | null; created_at: string }
+type EventRow = { event_name: string; lead_id: string | null; session_id: string | null; created_at: string; metadata?: Record<string, unknown> | null }
+type InteractionRow = { lead_id: string; created_at: string; type?: string; subject?: string | null; description?: string | null }
+type SpendRow = { campaign_id: string; spend_date: string; amount: number; currency: string }
 
 function startOfDay(d: Date) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x }
 function endOfDay(d: Date) { const x = new Date(d); x.setHours(23, 59, 59, 999); return x }
@@ -88,12 +90,15 @@ export interface AnalyticsData {
   campaigns: { id: string; name: string; identifier: string; source: string; medium: string; status: string; programme: string; leads: number; applications: number; enrolled: number; conversion: number | null; leadToApplication: number | null; leadToEnrollment: number | null }[]
   sourcePerformance: { source: string; leads: number; applications: number; enrolled: number; conversion: number | null }[]
   marketingFunnel: { label: string; count: number | null; note: string }[]
+  operations: { averageFirstResponseMinutes: number | null; leadsWithResponse: number; overdueFollowUps: number }
+  landingPages: { landingPage: string; leads: number; applications: number; enrolled: number; leadToEnrolment: number | null }[]
+  campaignCosts: { campaign: string; spend: number | null; currency: string; inquiries: number; enrolments: number; costPerInquiry: number | null; costPerEnrolment: number | null }[]
 }
 
 async function loadPeriod(supabase: any, range: AnalyticsRange) {
   const start = range.start.toISOString(); const end = range.end.toISOString()
   const [leads, createdApps, enrolledApps, dueFollowups, completedFollowups, events, programmes, staff, campaigns] = await Promise.all([
-    paged<LeadRow>((from, to) => supabase.from('leads').select('id,source,status,created_at,assigned_to,utm_source,utm_medium,utm_campaign,first_touch_source,first_touch_medium,first_touch_campaign,first_touch_campaign_id,last_touch_source,last_touch_medium,last_touch_campaign,last_touch_campaign_id').gte('created_at', start).lte('created_at', end).range(from, to)),
+    paged<LeadRow>((from, to) => supabase.from('leads').select('id,source,status,created_at,assigned_to,utm_source,utm_medium,utm_campaign,first_touch_source,first_touch_medium,first_touch_campaign,first_touch_campaign_id,last_touch_source,last_touch_medium,last_touch_campaign,last_touch_campaign_id,attribution_landing_page').gte('created_at', start).lte('created_at', end).range(from, to)),
     paged<ApplicationRow>((from, to) => supabase.from('applications').select('id,lead_id,programme_id,status,assigned_to,created_at,enrolled_at').gte('created_at', start).lte('created_at', end).range(from, to)),
     paged<ApplicationRow>((from, to) => supabase.from('applications').select('id,lead_id,programme_id,status,assigned_to,created_at,enrolled_at').gte('enrolled_at', start).lte('enrolled_at', end).range(from, to)),
     paged<FollowUpRow>((from, to) => supabase.from('follow_ups').select('id,lead_id,assigned_to,due_date,status,completed_at').gte('due_date', start).lte('due_date', end).range(from, to)),
@@ -101,7 +106,7 @@ async function loadPeriod(supabase: any, range: AnalyticsRange) {
     paged<EventRow>((from, to) => supabase.from('conversion_events').select('event_name,lead_id,session_id,created_at').gte('created_at', start).lte('created_at', end).range(from, to)),
     supabase.from('programmes').select('id,name').order('display_order').then((r: any) => { if (r.error) throw r.error; return r.data ?? [] }),
     supabase.from('staff').select('id,full_name').eq('is_active', true).order('full_name').then((r: any) => { if (r.error) throw r.error; return r.data ?? [] }),
-    supabase.from('campaigns').select('id,name,campaign_identifier,source,medium,status,programme_id').order('created_at', { ascending: false }).then((r: any) => { if (r.error) throw r.error; return r.data ?? [] })
+    supabase.from('campaigns').select('id,name,campaign_identifier,source,medium,status,programme_id,landing_page').order('created_at', { ascending: false }).then((r: any) => { if (r.error) throw r.error; return r.data ?? [] })
   ])
   const appMap = new Map<string, ApplicationRow>()
   for (const row of [...createdApps, ...enrolledApps]) appMap.set(row.id, row)
@@ -115,9 +120,9 @@ async function loadLeadAux(supabase: any, range: AnalyticsRange, leadIds: string
   const interests = await paged<any>((from, to) => supabase.from('lead_interests').select('lead_id,programme_id,created_at').gte('created_at', start).lte('created_at', end).range(from, to))
   const relevantIds = [...new Set([...leadIds, ...interests.map((x: any) => x.lead_id).filter(Boolean)])]
   const lost = relevantIds.length ? await paged<any>((from, to) => supabase.from('leads').select('id,lost_reason,status').in('id', relevantIds).eq('status', 'lost').range(from, to)) : []
-  const interactions = leadIds.length ? await paged<any>((from, to) => supabase.from('interactions').select('lead_id').in('lead_id', leadIds).gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString()).range(from, to)) : []
-  const attributionLeads = relevantIds.length ? await paged<LeadRow>((from, to) => supabase.from('leads').select('id,source,status,created_at,assigned_to,utm_source,utm_medium,utm_campaign,first_touch_source,first_touch_medium,first_touch_campaign,first_touch_campaign_id,last_touch_source,last_touch_medium,last_touch_campaign,last_touch_campaign_id').in('id', relevantIds).range(from, to)) : []
-  return { interests, lost, activityLeadIds: new Set(interactions.map((x: any) => x.lead_id)), attributionLeads }
+  const interactions = leadIds.length ? await paged<InteractionRow>((from, to) => supabase.from('interactions').select('lead_id,created_at,type,subject,description').in('lead_id', leadIds).gte('created_at', range.start.toISOString()).lte('created_at', range.end.toISOString()).range(from, to)) : []
+  const attributionLeads = relevantIds.length ? await paged<LeadRow>((from, to) => supabase.from('leads').select('id,source,status,created_at,assigned_to,utm_source,utm_medium,utm_campaign,first_touch_source,first_touch_medium,first_touch_campaign,first_touch_campaign_id,last_touch_source,last_touch_medium,last_touch_campaign,last_touch_campaign_id,attribution_landing_page').in('id', relevantIds).range(from, to)) : []
+  return { interests, lost, interactions, activityLeadIds: new Set(interactions.map((x: any) => x.lead_id)), attributionLeads }
 }
 
 export async function getAdmissionsAnalytics(range: AnalyticsRange): Promise<AnalyticsData> {
@@ -128,6 +133,9 @@ export async function getAdmissionsAnalytics(range: AnalyticsRange): Promise<Ana
   const current = { ...raw, leads: scopedLeadIds ? raw.leads.filter(l => scopedLeadIds.has(l.id)) : raw.leads, apps: scopedLeadIds ? raw.apps.filter(a => scopedLeadIds.has(a.lead_id) || a.assigned_to === staff.id) : raw.apps, followups: scopedLeadIds ? raw.followups.filter(f => scopedLeadIds.has(f.lead_id) || f.assigned_to === staff.id) : raw.followups }
   const leadIds = current.leads.map(x => x.id)
   const aux = await loadLeadAux(supabase, range, leadIds)
+  const spendResult = await supabase.from('campaign_spend').select('campaign_id,spend_date,amount,currency').gte('spend_date', range.start.toISOString().slice(0,10)).lte('spend_date', range.end.toISOString().slice(0,10))
+  if (spendResult.error) throw spendResult.error
+  const spendRows = (spendResult.data ?? []) as SpendRow[]
   const programmeMap = new Map(current.programmes.map(p => [p.id, p.name]))
   const leadsById = new Map([...aux.attributionLeads, ...current.leads].map(l => [l.id, l]))
   const appsInRange = current.apps.filter(a => new Date(a.created_at) >= range.start && new Date(a.created_at) <= range.end)
@@ -154,9 +162,9 @@ export async function getAdmissionsAnalytics(range: AnalyticsRange): Promise<Ana
   const statuses = [...new Set(current.leads.map(l => l.status))].map(status => ({ status: LEAD_STATUS_LABELS[status] ?? status, count: current.leads.filter(l => l.status === status).length })).sort((a,b)=>b.count-a.count)
   const total = current.leads.length; const applications = appsInRange.length; const enrolled = enrolledInRange.length
   const funnelBase = [
-    { label: 'Leads', count: total },
+    { label: 'Inquiries', count: total },
     { label: 'Contacted', count: current.leads.filter(l => ['contacted','interested','follow_up_later','application_started','application_submitted','admission_offered','enrolled'].includes(l.status)).length },
-    { label: 'Interested', count: current.leads.filter(l => ['interested','follow_up_later','application_started','application_submitted','admission_offered','enrolled'].includes(l.status)).length },
+    { label: 'Counselled', count: current.leads.filter(l => ['counselling','application_started','application_submitted','admission_offered','enrolled'].includes(l.status)).length },
     { label: 'Applications', count: applications },
     { label: 'Enrolled', count: enrolled }
   ]
@@ -228,13 +236,39 @@ export async function getAdmissionsAnalytics(range: AnalyticsRange): Promise<Ana
   const engagedSessions = new Set(current.events.filter(e => ['career_quiz_started','tech_challenge_started','comparison_started','career_quiz_completed','tech_challenge_completed','comparison_completed'].includes(e.event_name)).map(e => e.session_id).filter(Boolean)).size
   const programmeInterestLeads = new Set(aux.interests.map((i:any) => i.lead_id).filter(Boolean)).size
   const marketingFunnel = [
-    { label: 'Tracked visitors', count: trackedSessions || null, note: trackedSessions ? 'Unique anonymous analytics sessions' : 'Visitor totals are not available yet' },
-    { label: 'Engaged visitors', count: engagedSessions || null, note: 'Sessions with a tracked interactive engagement' },
-    { label: 'Programme interest', count: programmeInterestLeads || null, note: 'Leads with a recorded programme interest' },
-    { label: 'Enquiries / leads', count: total, note: 'Existing CRM leads' },
-    { label: 'Applications', count: applications, note: 'Existing CRM applications' },
-    { label: 'Enrollments', count: enrolled, note: 'Existing enrollment events' }
+    { label: 'Visitors', count: trackedSessions || null, note: trackedSessions ? 'Unique sessions with recorded analytics events; not a complete page-view count' : 'Visitor totals are not available yet' },
+    { label: 'Inquiries', count: total, note: 'Existing CRM leads created in the selected period' },
+    { label: 'Contacted', count: current.leads.filter(l => ['contacted','interested','follow_up_later','application_started','application_submitted','admission_offered','enrolled'].includes(l.status)).length, note: 'Leads whose current status indicates staff contact' },
+    { label: 'Counselled', count: current.leads.filter(l => ['counselling','application_started','application_submitted','admission_offered','enrolled'].includes(l.status)).length, note: 'Leads whose status indicates counselling or a later stage' },
+    { label: 'Applications', count: applications, note: 'Applications created in the selected period' },
+    { label: 'Enrolled', count: enrolled, note: 'Applications with an enrollment timestamp in the selected period' }
   ]
+
+  // First response is the earliest recorded staff interaction after the lead was created.
+  // Historical periods without interaction timestamps remain explicitly unavailable.
+  const firstInteractionByLead = new Map<string, number>()
+  for (const interaction of aux.interactions) {
+    const lead = leadsById.get(interaction.lead_id)
+    if (!lead) continue
+    const created = new Date(lead.created_at).getTime(); const interacted = new Date(interaction.created_at).getTime()
+    if (interacted < created) continue
+    const prior = firstInteractionByLead.get(interaction.lead_id)
+    if (prior === undefined || interacted < prior) firstInteractionByLead.set(interaction.lead_id, interacted)
+  }
+  const responseMinutes = current.leads.map(l => { const t = firstInteractionByLead.get(l.id); return t === undefined ? null : Math.max(0, (t - new Date(l.created_at).getTime()) / 60000) }).filter((x): x is number => x !== null)
+  const averageFirstResponseMinutes = responseMinutes.length ? Math.round(responseMinutes.reduce((a,b)=>a+b,0) / responseMinutes.length) : null
+  const landingMap = new Map<string, { leads: number; applications: number; enrolled: number }>()
+  const landingForLead = (l: any) => l.attribution_landing_page || 'Unknown / not captured'
+  for (const l of current.leads) { const key = landingForLead(l); const r = landingMap.get(key) || {leads:0,applications:0,enrolled:0}; r.leads++; landingMap.set(key,r) }
+  for (const a of appsInRange) { const l = leadsById.get(a.lead_id); if (!l) continue; const key = landingForLead(l); const r = landingMap.get(key) || {leads:0,applications:0,enrolled:0}; r.applications++; landingMap.set(key,r) }
+  for (const a of enrolledInRange) { const l = leadsById.get(a.lead_id); if (!l) continue; const key = landingForLead(l); const r = landingMap.get(key) || {leads:0,applications:0,enrolled:0}; r.enrolled++; landingMap.set(key,r) }
+  const landingPages = [...landingMap.entries()].map(([landingPage,r])=>({landingPage,...r,leadToEnrolment:pct(r.enrolled,r.leads)})).sort((a,b)=>b.leads-a.leads)
+  const campaignCosts = campaignRows.map((campaign: any) => {
+    const matching = spendRows.filter(row=>row.campaign_id===campaign.id)
+    const currencies = [...new Set(matching.map(row=>row.currency))]
+    const spend = matching.length && currencies.length===1 ? matching.reduce((sum,row)=>sum+Number(row.amount),0) : null
+    return { campaign: campaign.name, spend, currency: currencies.length===1 ? currencies[0] : '—', inquiries: campaign.leads, enrolments: campaign.enrolled, costPerInquiry: spend !== null && campaign.leads>0 ? Math.round(spend/campaign.leads*100)/100 : null, costPerEnrolment: spend !== null && campaign.enrolled>0 ? Math.round(spend/campaign.enrolled*100)/100 : null }
+  }).filter((row:any)=>row.spend !== null || row.inquiries || row.enrolments)
 
   const comparisonDays = daysBetween(range.start, range.end); const comparisonEnd = new Date(range.start.getTime()-1); const comparisonStart = addPeriod(comparisonEnd, -comparisonDays+1)
   const comparisonRange: AnalyticsRange = { key: 'custom', start: comparisonStart, end: comparisonEnd, label: 'Previous period' }
@@ -260,6 +294,9 @@ export async function getAdmissionsAnalytics(range: AnalyticsRange): Promise<Ana
     sourceProgramme,
     campaigns: campaignRows,
     sourcePerformance,
-    marketingFunnel
+    marketingFunnel,
+    operations: { averageFirstResponseMinutes, leadsWithResponse: responseMinutes.length, overdueFollowUps: overdue },
+    landingPages,
+    campaignCosts
   }
 }

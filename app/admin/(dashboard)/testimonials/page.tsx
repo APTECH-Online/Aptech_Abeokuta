@@ -97,7 +97,9 @@ export default async function TestimonialsListPage({
                   <p className="font-semibold text-sm truncate" style={{ color: 'var(--color-ink)' }}>{item.name}</p>
                   <p className="text-xs" style={{ color: 'var(--color-muted)' }}>{item.program}</p>
                 </div>
-                {!item.is_published && (
+                {item.is_published && item.consent_confirmed && <span className="text-[0.65rem] font-semibold uppercase tracking-wide rounded-full px-2 py-0.5 bg-emerald-50 text-emerald-700">Verified & approved</span>}
+              {!item.consent_confirmed && <span className="text-[0.65rem] font-semibold uppercase tracking-wide rounded-full px-2 py-0.5 bg-amber-50 text-amber-800">Needs verification</span>}
+              {!item.is_published && (
                   <span
                     className="ml-auto shrink-0 text-[0.6rem] font-semibold uppercase tracking-wide rounded-full px-2 py-0.5"
                     style={{ background: 'var(--color-ink)', color: 'white', opacity: 0.85 }}

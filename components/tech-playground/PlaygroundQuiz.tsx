@@ -235,7 +235,7 @@ function Result({ r, challenge, variant, token, displayName, onNamed, onAgain, b
       {showCompete && (r.needsDisplayName && !named ? (
         <div className="pg-panel"><h3 className="pg-h3">Can you make the Top 10?</h3><p className="pg-muted">Pick a display name to put this score on the Tech Arena leaderboard.</p>
           <DisplayNameForm token={token} onSaved={(n, nb) => { setNamed(n); setExtraBadges(nb); onNamed() }} /></div>
-      ) : <p className="pg-muted">Playing as <strong>{named}</strong>. <Link href="/tech-playground/leaderboard" className="pg-link">See the Tech Arena →</Link></p>)}
+      ) : <p className="pg-muted">Playing as <strong>{named}</strong>. <Link href="/tech-playground/leaderboard" className="pg-link pg-link--arena">See the Tech Arena →</Link></p>)}
 
       {r.recommendations?.length > 0 && <div className="pg-panel"><h3 className="pg-h3">Programmes that build these skills</h3><ul className="pg-reclist">{r.recommendations.map((p: any) => <li key={p.id}>{p.name}</li>)}</ul></div>}
 

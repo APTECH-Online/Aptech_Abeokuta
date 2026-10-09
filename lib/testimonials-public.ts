@@ -7,6 +7,10 @@ export interface PublicTestimonial {
   program: string
   quote: string
   image_url: string | null
+  story_type: 'testimonial' | 'student_project' | 'graduate_experience' | 'employer_outcome' | 'certification_outcome'
+  project_title: string | null
+  story_summary: string | null
+  programme_slug: string | null
 }
 
 /**
@@ -20,8 +24,9 @@ export async function getPublishedTestimonials(limit?: number): Promise<PublicTe
     const admin = createAdminClient()
     let query = admin
       .from('testimonials')
-      .select('id, name, program, quote, image_url')
+      .select('id, name, program, quote, image_url, story_type, project_title, story_summary, programme_slug')
       .eq('is_published', true)
+      .eq('consent_confirmed', true)
       .order('sort_order', { ascending: true })
 
     if (limit) query = query.limit(limit)

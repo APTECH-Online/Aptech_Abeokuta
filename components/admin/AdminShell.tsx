@@ -10,6 +10,7 @@ import {
   FileText,
   CalendarClock,
   CalendarCheck,
+  CalendarDays,
   GraduationCap,
   BarChart3,
   Megaphone,
@@ -32,7 +33,8 @@ import {
   ChevronDown,
   ExternalLink,
   Gauge,
-  Bell
+  Bell,
+  Workflow
 } from 'lucide-react'
 import type { Staff } from '../../types/db'
 import { STAFF_ROLE_LABELS } from '../../types/db'
@@ -50,7 +52,9 @@ const NAV_ITEMS = [
   { href: '/admin/lead-scoring', label: 'Lead scoring', icon: Gauge, access: 'enquiries' },
   { href: '/admin/applications', label: 'Applications', icon: FileText, access: 'applications' },
   { href: '/admin/follow-ups', label: 'Follow-ups', icon: CalendarClock, access: 'follow_ups' },
+  { href: '/admin/follow-up-journeys', label: 'Behaviour journeys', icon: Workflow, access: 'follow_ups' },
   { href: '/admin/bookings', label: 'Counselling bookings', icon: CalendarCheck, access: 'enquiries' },
+  { href: '/admin/events', label: 'Workshops & events', icon: CalendarDays, access: 'enquiries' },
   { href: '/admin/insights', label: 'News / Blog / Insights', icon: Newspaper, access: 'insights' },
   { href: '/admin/gallery', label: 'Gallery', icon: Images, access: 'media' },
   { href: '/admin/courses', label: 'Courses', icon: BookOpen, access: 'courses' },
@@ -64,6 +68,7 @@ const NAV_ITEMS = [
   { href: '/admin/staff', label: 'Staff', icon: UserCog, access: 'super_admin' },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3, access: 'reports' },
   { href: '/admin/campaigns', label: 'Campaigns', icon: Megaphone, access: 'campaigns' },
+  { href: '/admin/campaign-spend', label: 'Campaign spend', icon: BarChart3, access: 'campaigns' },
   { href: '/admin/challenges', label: 'Tech Zone', icon: Gamepad2, access: 'challenges' },
   { href: '/admin/reports/seo', label: 'SEO Metrics', icon: Gauge, access: 'seo' },
   { href: '/admin/notifications', label: 'Notifications', icon: Bell, access: 'any_staff' },
