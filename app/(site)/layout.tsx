@@ -8,6 +8,7 @@ import { siteGraphJsonLd } from '../../lib/structured-data'
 import { getSiteUrl } from '../../lib/seo'
 import AttributionCapture from '../../components/shared/AttributionCapture'
 import TechIqFloatingButton from '../../components/shared/TechIqFloatingButton'
+import ConsultationFloatingButton from '../../components/shared/ConsultationFloatingButton'
 
 /**
  * Layout for the public marketing website only (everything under the
@@ -41,7 +42,12 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
         <div className="md:hidden" style={{ height: '3.5rem' }} aria-hidden="true" />
       </div>
       <StickyMobileCTA whatsapp={whatsapp} />
-      <TechIqFloatingButton />
+      {/* One fixed, right-aligned vertical group: Book a Consultation directly
+          above Tech IQ. DOM order matches visual order for keyboard users. */}
+      <div className="floating-stack">
+        <ConsultationFloatingButton />
+        <TechIqFloatingButton />
+      </div>
     </>
   )
 }

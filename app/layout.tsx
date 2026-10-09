@@ -65,6 +65,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  // Required for env(safe-area-inset-*) to be non-zero on notched / home-indicator devices.
+  viewportFit: 'cover',
   themeColor: '#0B1747'
 }
 

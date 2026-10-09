@@ -2277,11 +2277,12 @@ button, input, select, textarea { font: inherit; }
 }
 
 /* Tech IQ premium entry point + game experience. */
+/* Positioning now lives on .floating-stack (below) so the Tech IQ and
+   Book a Consultation buttons form one vertical group. Tech IQ keeps the exact
+   same viewport position it had before: the stack uses its former offsets. */
 .tech-iq-float {
-  position: fixed;
-  right: 1.35rem;
-  bottom: 1.35rem;
-  z-index: 45;
+  position: relative;
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: .7rem;
@@ -2305,6 +2306,60 @@ button, input, select, textarea { font: inherit; }
 .tech-iq-float.is-compact { padding-right: .64rem; }
 .tech-iq-float.is-compact .tech-iq-float__copy, .tech-iq-float.is-compact .tech-iq-float__spark { display: none; }
 .tech-iq-float.is-compact .tech-iq-float__icon { width: 42px; height: 42px; flex-basis: 42px; }
+
+/* Floating action stack: Book a Consultation sits directly above Tech IQ.
+   One fixed flex column means the gap and right edge stay correct however tall
+   or wide Tech IQ is (it collapses to icon-only on scroll and is smaller on
+   mobile), so the two buttons can never overlap and no bottom offset is guessed.
+   Offsets mirror the original Tech IQ position, plus safe-area insets. */
+.floating-stack {
+  position: fixed;
+  right: max(1.35rem, env(safe-area-inset-right, 0px));
+  bottom: calc(1.35rem + env(safe-area-inset-bottom, 0px));
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: .875rem; /* 14px */
+  max-width: calc(100vw - 1.6rem);
+  pointer-events: none; /* the gap and empty space never swallow clicks */
+}
+.floating-stack > * { pointer-events: auto; }
+.consultation-float {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: 44px;
+  max-width: 100%;
+  padding: .72rem 1.1rem;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 14px;
+  background: #D71920;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: .8rem;
+  font-weight: 800;
+  letter-spacing: .01em;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-decoration: none;
+  box-shadow: 0 14px 32px rgba(215,25,32,.3), 0 4px 12px rgba(5,13,42,.14);
+  transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease, opacity .2s ease;
+}
+.consultation-float:hover { background: #B9151B; color: #fff; transform: translateY(-2px); box-shadow: 0 18px 38px rgba(215,25,32,.36), 0 5px 15px rgba(5,13,42,.16); }
+.consultation-float:focus-visible { outline: 3px solid rgba(245,189,53,.75); outline-offset: 3px; }
+/* Hidden while a form field has focus so it never sits over the field, its
+   submit button or the on-screen keyboard area. */
+.consultation-float.is-suppressed { opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(6px); }
+@media (max-width: 767px) {
+  .floating-stack {
+    right: max(.8rem, env(safe-area-inset-right, 0px));
+    bottom: calc(4.7rem + env(safe-area-inset-bottom, 0px)); /* clears the mobile sticky CTA bar, as before */
+    gap: .75rem; /* 12px */
+  }
+  .consultation-float { font-size: .76rem; padding: .66rem .95rem; }
+}
 
 .tech-challenge--intro { position: relative; overflow: hidden; grid-template-columns: minmax(0, 1.4fr) minmax(220px, .6fr); min-height: 340px; padding: clamp(1.5rem, 4vw, 2.5rem); background: linear-gradient(145deg, #071337 0%, #0c1b4f 58%, #101f58 100%); border-color: rgba(255,255,255,.1); color: #fff; box-shadow: 0 24px 70px rgba(5,13,42,.18); }
 .tech-challenge__intro-glow { position: absolute; width: 300px; height: 300px; right: -100px; top: -120px; border-radius: 50%; background: rgba(245,189,53,.12); filter: blur(12px); pointer-events: none; }
@@ -2347,7 +2402,7 @@ button, input, select, textarea { font: inherit; }
 .tech-challenge__result-note { display: flex; gap: .55rem; align-items: flex-start; padding: .8rem .9rem; border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-paper-alt); color: var(--color-muted); font-size: .67rem; line-height: 1.5; }
 
 @media (max-width: 767px) {
-  .tech-iq-float { right: .8rem; bottom: calc(4.7rem + env(safe-area-inset-bottom, 0px)); min-height: 50px; padding: .48rem .58rem; border-radius: 15px; }
+  .tech-iq-float { min-height: 50px; padding: .48rem .58rem; border-radius: 15px; }
   .tech-iq-float__icon { width: 36px; height: 36px; flex-basis: 36px; }
   .tech-iq-float__hint, .tech-iq-float__spark { display: none; }
   .tech-challenge--intro { grid-template-columns: 1fr; min-height: 0; }
@@ -2358,7 +2413,7 @@ button, input, select, textarea { font: inherit; }
   .tech-challenge__score-wrap > div:last-child { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .tech-iq-float, .tech-challenge__answer, .tech-challenge__progress span { transition: none; }
+  .tech-iq-float, .consultation-float, .tech-challenge__answer, .tech-challenge__progress span { transition: none; }
 }
 
 /* Interactive conversion experiences — deliberately uses the existing site card/button language. */
