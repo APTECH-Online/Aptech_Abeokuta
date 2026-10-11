@@ -10,6 +10,7 @@ import type { CampusEvent } from '../../../components/events/event-meta'
 import { createAdminClient } from '../../../lib/supabase/admin'
 import { getPublicContactInfo } from '../../../lib/contact-info-public'
 import { buildMetadata } from '../../../lib/seo'
+import { buildWhatsAppLink, trackWhatsAppConversion } from '../../../lib/whatsapp'
 import '../../../components/events/events-page.css'
 
 export const metadata = buildMetadata({
@@ -99,7 +100,17 @@ export default async function EventsRegistrationPage({
               <p className="ev-empty__title">No sessions are open for registration right now</p>
               <p className="ev-empty__text">We add new workshops, webinars and open days regularly. Check back soon, or talk to our team and we&apos;ll tell you what&apos;s coming up.</p>
               <div className="ev-empty__actions">
-                <Link href="/contact" className="btn btn-primary">Contact our team</Link>
+                {whatsapp && (
+                  <a
+                    href={buildWhatsAppLink(whatsapp, "Hi APTECH Abeokuta, please let me know when upcoming workshops, open days or campus events are announced.")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary"
+                    onClick={() => trackWhatsAppConversion({ contextLabel: 'Upcoming events enquiry', contextType: 'page', pagePath: '/events' })}
+                  >
+                    Ask about upcoming workshops
+                  </a>
+                )}
                 <Link href="/courses" className="btn btn-secondary">Browse courses</Link>
               </div>
             </div>

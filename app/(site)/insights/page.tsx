@@ -46,7 +46,7 @@ export default async function InsightsPage({ searchParams }: Props) {
                 <p className="eyebrow">Upcoming events</p>
                 <h2 id="upcoming-events-heading" className={eventStyles.sectionTitle}>Come and meet us</h2>
               </div>
-              <Link href="/insights/events" className={eventStyles.viewAll}>
+              <Link href="/events" className={eventStyles.viewAll}>
                 View all events <ArrowRight size={15} aria-hidden="true" />
               </Link>
             </div>

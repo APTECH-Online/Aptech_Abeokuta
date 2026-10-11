@@ -41,12 +41,12 @@ export const primaryNav = [
 // here alongside News/Blog/Announcements rather than broken out as its own
 // top-level item. It's listed first since open days and info sessions tend
 // to be the most time-sensitive, actionable items for prospective students.
-// Each route is a dedicated public listing filtered by content type; see
-// lib/insights-public.ts and app/(site)/insights/*.
+// Events links to the public workshop registration hub (/events); the other
+// routes are content-type filters of the Insights section.
 export const newsInsightsNav = {
   label: 'News & Events',
   items: [
-    { label: 'Events', href: '/insights/events' },
+    { label: 'Events', href: '/events' },
     { label: 'All Updates', href: '/insights' },
     { label: 'News', href: '/insights/news' },
     { label: 'Blog / Insights', href: '/insights/blog' },
@@ -64,6 +64,7 @@ export const campusNav = {
   label: 'Campus Life',
   items: [
     { label: 'Student Life', href: '/student-life' },
+    { label: 'Events', href: '/events' },
     { label: 'Gallery', href: '/gallery' },
     { label: 'Testimonials', href: '/testimonials' }
   ]
@@ -83,7 +84,7 @@ export const footerNav = {
     { label: 'Gallery', href: '/gallery' },
     { label: 'Testimonials', href: '/testimonials' },
     { label: 'News & Insights', href: '/insights' },
-    { label: 'Events', href: '/insights/events' }
+    { label: 'Events', href: '/events' }
   ],
   support: [
     { label: 'Contact us', href: '/contact' },

@@ -44,10 +44,16 @@ export default function EventFeature() {
             </li>
           ))}
         </ul>
-        <Link href="/gallery" className="btn btn-primary event-cta">
-          See more from the gallery
-          <ArrowRight size={16} aria-hidden="true" />
-        </Link>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link href="/gallery" className="btn btn-primary event-cta">
+            See more from the gallery
+            <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+          <Link href="/events" className="btn btn-secondary event-cta">
+            Explore upcoming events
+            <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </div>
       </div>
     </div>
   )

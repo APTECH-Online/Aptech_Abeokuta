@@ -5,6 +5,8 @@ import { breadcrumbJsonLd } from '../../../lib/structured-data'
 import { getPublishedGalleryItems } from '../../../lib/gallery-public'
 import { buildMetadata, getSiteUrl } from '../../../lib/seo'
 import JsonLd from '../../../components/shared/JsonLd'
+import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 
 export const metadata = buildMetadata({
   title: 'Photo Gallery | Campus & Events at APTECH Abeokuta',
@@ -35,6 +37,14 @@ export default async function GalleryPage() {
             </div>
           </div>
           <Gallery items={items} />
+          {items.some((item) => /event|career quest|workshop|campus/i.test(`${item.category} ${item.title}`)) && (
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-xl border p-5" style={{ borderColor: 'var(--color-line)', background: 'var(--color-paper-alt)' }}>
+              <p className="text-sm" style={{ color: 'var(--color-muted)' }}>Inspired by campus activities? Find a workshop, open day or upcoming event.</p>
+              <Link href="/events" className="inline-flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--color-teal-700)' }}>
+                Explore events <ArrowRight size={16} aria-hidden="true" />
+              </Link>
+            </div>
+          )}
         </Container>
       </section>
     </>
