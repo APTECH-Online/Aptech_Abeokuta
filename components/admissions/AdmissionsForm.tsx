@@ -9,6 +9,7 @@ import IconTile from '../ui/IconTile'
 import { useActionFeedback } from '../admin/AdminFeedbackProvider'
 import FormAlert from '../shared/FormAlert'
 import WhatsAppButton from '../shared/WhatsAppButton'
+import TurnstileWidget from '../shared/TurnstileWidget'
 import { captureAttribution, getAttributionSnapshot } from '../../lib/attribution'
 import { submitEnquiry, type SubmitEnquiryState } from '../../app/(site)/admissions/actions'
 
@@ -325,6 +326,8 @@ export default function AdmissionsForm({ programmes, whatsapp }: { programmes: P
 
           <div className="form-section">
             <ConsentFields error={fieldErrors.privacyConsent} />
+            <TurnstileWidget resetKey={state} action="admissions" />
+
             <div className="form-submit">
               <SubmitButton />
               <p className="form-submit__note">The admissions team will follow up with next steps.</p>

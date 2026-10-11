@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { createAdminClient } from '../../../../lib/supabase/admin'
 import { checkRateLimit } from '../../../../lib/rate-limit'
+import { clientIpFromHeaders } from '../../../../lib/client-ip'
 
 const ALLOWED = new Set([
   'career_quiz_started',
@@ -50,8 +51,9 @@ const ALLOWED = new Set([
 export async function POST(request: Request) {
   try {
     const headerList = await headers()
-    const ip = headerList.get('x-forwarded-for')?.split(',')[0]?.trim() || headerList.get('x-real-ip') || 'unknown'
-    const limit = checkRateLimit(`analytics-event:${ip}`)
+    const ip = clientIpFromHeaders(headerList)
+    // Analytics fires on many interactions per visit (and campus Wi-Fi shares one IP), so allow a generous burst.
+    const limit = await checkRateLimit(`analytics-event:${ip}`, { limit: 120 })
     if (!limit.allowed) return NextResponse.json({ ok: false }, { status: 429 })
     const body = await request.json().catch(() => null) as { event?: unknown; leadId?: unknown; metadata?: unknown; sessionId?: unknown } | null
     const event = typeof body?.event === 'string' ? body.event : ''

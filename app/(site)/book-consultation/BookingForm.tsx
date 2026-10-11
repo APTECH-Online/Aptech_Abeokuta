@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useMemo, useState } from 'react'
 import { CalendarDays, Check, CheckCircle2, Clock3, MapPin, Phone, Video, ArrowRight, ShieldCheck } from 'lucide-react'
 import { createConsultationBooking, type BookingResult } from './actions'
+import TurnstileWidget from '../../../components/shared/TurnstileWidget'
 
 type Programme = { id: string; name: string; duration?: string | null }
 const initialState: BookingResult = { ok: false, message: '' }
@@ -81,6 +82,7 @@ export default function BookingForm({ programmes }: { programmes: Programme[] })
       <div className="mt-6 grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold sm:col-span-2" style={{ color: 'var(--color-ink)' }}>Full name<input name="fullName" required minLength={2} maxLength={120} autoComplete="name" className="form-input consultation-control mt-2 w-full" placeholder="Your full name" /></label><label className="text-sm font-semibold" style={{ color: 'var(--color-ink)' }}>Email address<input name="email" required type="email" maxLength={254} autoComplete="email" className="form-input consultation-control mt-2 w-full" placeholder="you@example.com" /></label><label className="text-sm font-semibold" style={{ color: 'var(--color-ink)' }}>Phone number<input name="phone" required type="tel" minLength={7} maxLength={30} autoComplete="tel" className="form-input consultation-control mt-2 w-full" placeholder="e.g. 080…" /></label><label className="text-sm font-semibold sm:col-span-2" style={{ color: 'var(--color-ink)' }}>Anything you’d like us to know? <span className="font-normal" style={{ color: 'var(--color-muted)' }}>(optional)</span><textarea name="notes" maxLength={1000} rows={3} className="form-input consultation-control mt-2 w-full" placeholder="Ask about course options, schedules, fees…" /></label></div>
       <div className="mt-5 flex items-start gap-2 rounded-xl p-3 text-xs leading-5" style={{ background: 'var(--color-paper-alt)', color: 'var(--color-muted)' }}><ShieldCheck size={17} className="mt-0.5 shrink-0"/>Your details are used to arrange your admissions consultation and follow up on your request.</div>
       <label className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden" aria-hidden="true">Leave blank<input name="companyWebsite" tabIndex={-1} autoComplete="off" /></label>
+      <div className="mt-5"><TurnstileWidget resetKey={state} action="consultation_booking" /></div>
       <div className="mt-7 flex gap-3"><button type="button" className="btn btn-secondary flex-1" onClick={() => setStep(2)} disabled={pending}>Back</button><button type="submit" className="btn btn-primary flex flex-1 items-center justify-center gap-2" disabled={pending}>{pending ? 'Booking…' : 'Confirm booking'} {!pending && <ArrowRight size={17}/>}</button></div>
     </section>}
     <p className="mt-6 text-center text-xs" style={{ color: 'var(--color-muted)' }}>By booking, you agree that APTECH Abeokuta may contact you about this appointment.</p>

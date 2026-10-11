@@ -14,7 +14,9 @@ const TYPE_LABELS: Record<NotificationType, string> = {
   'lead.resubmitted': 'Repeat enquiry',
   'application.created': 'New application',
   'followup.due': 'Follow-up due',
-  'followup.overdue': 'Follow-up overdue'
+  'followup.overdue': 'Follow-up overdue',
+  'event.registered': 'Event registration',
+  'event.full': 'Event fully booked'
 }
 
 function formatWhen(value: string): string {

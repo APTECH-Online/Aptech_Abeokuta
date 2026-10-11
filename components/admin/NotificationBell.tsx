@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { AlarmClock, Bell, BellRing, CalendarClock, CheckCheck, FileText, Repeat, UserPlus } from 'lucide-react'
+import { AlarmClock, Bell, BellRing, CalendarCheck, CalendarClock, CheckCheck, FileText, Repeat, UserPlus } from 'lucide-react'
 import { markAllNotificationsRead, markNotificationRead } from '../../app/admin/(dashboard)/notifications/actions'
 import type { NotificationType } from '../../types/db'
 
@@ -25,7 +25,9 @@ const TYPE_META: Record<NotificationType, { label: string; Icon: typeof Bell }> 
   'lead.resubmitted': { label: 'Repeat enquiry', Icon: Repeat },
   'application.created': { label: 'New application', Icon: FileText },
   'followup.due': { label: 'Follow-up due', Icon: CalendarClock },
-  'followup.overdue': { label: 'Follow-up overdue', Icon: AlarmClock }
+  'followup.overdue': { label: 'Follow-up overdue', Icon: AlarmClock },
+  'event.registered': { label: 'Event registration', Icon: CalendarCheck },
+  'event.full': { label: 'Event fully booked', Icon: CalendarCheck }
 }
 
 function timeAgo(value: string): string {

@@ -4,6 +4,8 @@ import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '../../../lib/supabase/admin'
 import { checkRateLimit } from '../../../lib/rate-limit'
+import { verifyTurnstile, turnstileTokenFromFormData, TURNSTILE_FAILED_MESSAGE } from '../../../lib/turnstile'
+import { clientIpFromHeaders } from '../../../lib/client-ip'
 import { sendEmail } from '../../../lib/email/send'
 import { generateLeadReference } from '../../../lib/reference'
 import { getSiteUrl } from '../../../lib/seo'
@@ -14,8 +16,11 @@ const slots = ['09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','
 
 export async function createConsultationBooking(_prev: BookingResult, formData: FormData): Promise<BookingResult> {
   const h = await headers()
-  const ip = h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || 'unknown'
-  if (!checkRateLimit(`consultation-booking:${ip}`).allowed) return { ok: false, message: 'Too many booking attempts. Please wait a minute and try again.' }
+  const ip = clientIpFromHeaders(h)
+  if (!(await checkRateLimit(`consultation-booking:${ip}`)).allowed) return { ok: false, message: 'Too many booking attempts. Please wait a minute and try again.' }
+
+  const captcha = await verifyTurnstile(turnstileTokenFromFormData(formData), ip)
+  if (!captcha.ok) return { ok: false, message: TURNSTILE_FAILED_MESSAGE }
   const fullName = String(formData.get('fullName') || '').trim()
   const email = String(formData.get('email') || '').trim().toLowerCase()
   const phone = String(formData.get('phone') || '').trim()

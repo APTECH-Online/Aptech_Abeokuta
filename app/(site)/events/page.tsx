@@ -7,9 +7,13 @@ import EventRegistrationForm from '../../../components/events/EventRegistrationF
 import EventsAside from '../../../components/events/EventsAside'
 import { GoodToKnow, WhatYouCanAttend } from '../../../components/events/EventsInfo'
 import type { CampusEvent } from '../../../components/events/event-meta'
-import { createAdminClient } from '../../../lib/supabase/admin'
+import JsonLd from '../../../components/shared/JsonLd'
+import { getUpcomingEvents } from '../../../lib/events-public'
+import { campusEventsJsonLd } from '../../../lib/events-structured-data'
+import { breadcrumbJsonLd, orgId } from '../../../lib/structured-data'
+import { siteConfig } from '../../../data/site'
 import { getPublicContactInfo } from '../../../lib/contact-info-public'
-import { buildMetadata } from '../../../lib/seo'
+import { absoluteUrl, buildMetadata, DEFAULT_OG_IMAGE, getSiteUrl } from '../../../lib/seo'
 import WhatsAppButton from '../../../components/shared/WhatsAppButton'
 import '../../../components/events/events-page.css'
 
@@ -22,32 +26,6 @@ export const dynamic = 'force-dynamic'
 
 /** Cards shown above the form; every open event stays selectable in the form itself. */
 const MAX_CARDS = 9
-
-const EVENT_COLUMNS = 'id,title,slug,event_type,description,starts_at,ends_at,location,delivery_mode,capacity'
-
-/**
- * Upcoming events open for registration. If the richer query fails (for example a
- * database that hasn't had every column migrated), fall back to the three columns
- * the form strictly needs so the page still works.
- */
-async function getUpcomingEvents(): Promise<CampusEvent[]> {
-  try {
-    const db = createAdminClient()
-    const now = new Date().toISOString()
-    const query = (columns: string) =>
-      db.from('campus_events').select(columns).eq('registration_open', true).gte('starts_at', now).order('starts_at').limit(50)
-
-    const full = await query(EVENT_COLUMNS)
-    if (!full.error) return (full.data ?? []) as unknown as CampusEvent[]
-
-    const basic = await query('id,title,starts_at')
-    return ((basic.data ?? []) as unknown as Pick<CampusEvent, 'id' | 'title' | 'starts_at'>[]).map((e) => ({
-      ...e, slug: null, event_type: null, description: null, ends_at: null, location: null, delivery_mode: null, capacity: null
-    }))
-  } catch {
-    return []
-  }
-}
 
 export default async function EventsRegistrationPage({
   searchParams
@@ -63,10 +41,31 @@ export default async function EventsRegistrationPage({
 
   const cards = events.slice(0, MAX_CARDS)
   // The form only needs enough to label options and show the chosen session.
-  const formEvents = events.map(({ id, title, starts_at, ends_at, location, delivery_mode }) => ({ id, title, starts_at, ends_at, location, delivery_mode }))
+  const formEvents = events.map(({ id, title, slug, starts_at, ends_at, location, delivery_mode, is_full, spots_left }) => ({
+    id, title, slug, starts_at, ends_at, location, delivery_mode, is_full, spots_left
+  }))
+
+  const baseUrl = getSiteUrl()
+  const jsonLd = [
+    breadcrumbJsonLd(baseUrl, [{ label: 'Home', href: '/' }, { label: 'Events' }]),
+    ...campusEventsJsonLd(events, {
+      baseUrl,
+      organizer: { '@type': 'EducationalOrganization', '@id': orgId(baseUrl), name: siteConfig.name },
+      imageUrl: absoluteUrl(DEFAULT_OG_IMAGE.url),
+      campusAddress: contact.address
+        ? {
+            streetAddress: contact.address.replace(/,?\s*Abeokuta\s*$/i, ''),
+            addressLocality: 'Abeokuta',
+            addressRegion: 'Ogun State',
+            addressCountry: 'NG'
+          }
+        : null
+    })
+  ]
 
   return (
     <>
+      <JsonLd data={jsonLd} />
       <PageHero
         eyebrow="Learn, explore, connect"
         title="Free workshops, webinars & campus events"

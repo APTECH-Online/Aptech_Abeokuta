@@ -141,3 +141,52 @@ function escapeHtml(value: string) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
 }
+
+export function eventRegistrationConfirmationEmail(params: {
+  firstName: string
+  eventTitle: string
+  when: string
+  where: string
+  /** Online/hybrid events only: the join link, sent to registered attendees. */
+  meetingUrl?: string | null
+  calendarUrl?: string | null
+  eventsUrl: string
+}) {
+  const { firstName, eventTitle, when, where, meetingUrl, calendarUrl, eventsUrl } = params
+  const subject = `You're registered: ${eventTitle}`
+  const text = [
+    `Hi ${firstName},`,
+    '',
+    `You're registered for ${eventTitle} at APTECH Abeokuta.`,
+    '',
+    `When: ${when}`,
+    `Where: ${where}`,
+    meetingUrl ? `Join link: ${meetingUrl}` : null,
+    calendarUrl ? `Add to your calendar: ${calendarUrl}` : null,
+    '',
+    `Event details and other upcoming sessions: ${eventsUrl}`,
+    '',
+    'If your plans change, reply to this email so we can free your place for someone else.',
+    '',
+    'Warm regards,',
+    'APTECH Abeokuta Team'
+  ].filter((line): line is string => line !== null).join('\n')
+
+  const html = `
+    <div style="font-family: sans-serif; color: #1B1626; line-height: 1.6;">
+      <p>Hi ${escapeHtml(firstName)},</p>
+      <p>You're registered for <strong>${escapeHtml(eventTitle)}</strong> at APTECH Abeokuta.</p>
+      <table cellpadding="4">
+        <tr><td><strong>When</strong></td><td>${escapeHtml(when)}</td></tr>
+        <tr><td><strong>Where</strong></td><td>${escapeHtml(where)}</td></tr>
+        ${meetingUrl ? `<tr><td><strong>Join link</strong></td><td><a href="${escapeHtml(meetingUrl)}">${escapeHtml(meetingUrl)}</a></td></tr>` : ''}
+      </table>
+      ${calendarUrl ? `<p><a href="${escapeHtml(calendarUrl)}">Add this event to your calendar</a></p>` : ''}
+      <p>See details and other upcoming sessions on our <a href="${escapeHtml(eventsUrl)}">events page</a>.</p>
+      <p>If your plans change, reply to this email so we can free your place for someone else.</p>
+      <p>Warm regards,<br />APTECH Abeokuta Team</p>
+    </div>
+  `
+
+  return { subject, text, html }
+}

@@ -12,10 +12,14 @@ export type CampusEvent = {
   location: string | null
   delivery_mode: string | null
   capacity: number | null
+  updated_at?: string | null
+  /** Places still open. null = no limit (or unknown). */
+  spots_left?: number | null
+  is_full?: boolean
 }
 
 /** Minimal slice the registration form needs to label options and show the picked-event summary. */
-export type EventOption = Pick<CampusEvent, 'id' | 'title' | 'starts_at' | 'ends_at' | 'location' | 'delivery_mode'>
+export type EventOption = Pick<CampusEvent, 'id' | 'title' | 'starts_at' | 'ends_at' | 'location' | 'delivery_mode'> & Partial<Pick<CampusEvent, 'is_full' | 'spots_left' | 'slug'>>
 
 export const EVENT_TYPES: Record<string, { label: string; icon: LucideIcon }> = {
   coding_workshop: { label: 'Coding workshop', icon: Code2 },

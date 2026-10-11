@@ -278,6 +278,8 @@ export type NotificationType =
   | 'application.created'
   | 'followup.due'
   | 'followup.overdue'
+  | 'event.registered'
+  | 'event.full'
 
 export interface Notification {
   id: string

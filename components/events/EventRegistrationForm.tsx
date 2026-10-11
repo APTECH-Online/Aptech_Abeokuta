@@ -5,6 +5,7 @@ import { ArrowRight, CheckCircle2, Loader2 } from 'lucide-react'
 import IconTile from '../ui/IconTile'
 import FormAlert from '../shared/FormAlert'
 import WhatsAppButton from '../shared/WhatsAppButton'
+import TurnstileWidget from '../shared/TurnstileWidget'
 import { eventParts, eventTime, timeRange } from '../insights/event-utils'
 import { SELECT_EVENT, eventWhere, type EventOption } from './event-meta'
 
@@ -26,7 +27,7 @@ const CONTACT_METHODS = [
 type Status = 'idle' | 'error' | 'success'
 type FieldErrors = Partial<Record<'event_id' | 'full_name' | 'email' | 'phone' | 'registration_consent', string>>
 
-const optionLabel = (e: EventOption) => `${e.title} — ${eventParts(e.starts_at).dateShort}, ${eventTime(e.starts_at)}`
+const optionLabel = (e: EventOption) => `${e.title} — ${eventParts(e.starts_at).dateShort}, ${eventTime(e.starts_at)}${e.is_full ? ' (fully booked)' : ''}`
 
 /** The calendar tile + facts for the chosen event, so people can see what they picked. */
 function PickedEvent({ event }: { event: EventOption }) {
@@ -58,9 +59,13 @@ export default function EventRegistrationForm({
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState('')
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
-  const [eventId, setEventId] = useState(events.some((e) => e.id === initialEventId) ? initialEventId : '')
+  const [eventId, setEventId] = useState(events.some((e) => e.id === initialEventId && !e.is_full) ? initialEventId : '')
   const [contact, setContact] = useState('email')
   const [registered, setRegistered] = useState<EventOption | null>(null)
+  const [calendarUrl, setCalendarUrl] = useState<string | null>(null)
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false)
+  // Bumped after every attempt so the Turnstile widget issues a fresh single-use token.
+  const [attempt, setAttempt] = useState(0)
 
   const noEvents = events.length === 0
   const picked = events.find((e) => e.id === eventId) ?? null
@@ -69,7 +74,7 @@ export default function EventRegistrationForm({
   useEffect(() => {
     const onSelect = (ev: Event) => {
       const id = (ev as CustomEvent<{ eventId?: string }>).detail?.eventId
-      if (id && events.some((e) => e.id === id)) {
+      if (id && events.some((e) => e.id === id && !e.is_full)) {
         setEventId(id)
         setFieldErrors((prev) => ({ ...prev, event_id: undefined }))
       }
@@ -122,18 +127,23 @@ export default function EventRegistrationForm({
           interest: String(f.get('interest') || 'general'),
           preferred_contact: contact,
           registration_consent: true,
-          marketing_consent: f.get('marketing_consent') === 'on'
+          marketing_consent: f.get('marketing_consent') === 'on',
+          turnstile_token: String(f.get('cf-turnstile-response') || ''),
+          company_website: String(f.get('company_website') || '')
         })
       })
       const d = await r.json().catch(() => ({}))
       if (r.ok) {
         setRegistered(picked)
+        setCalendarUrl(typeof d.calendarUrl === 'string' ? d.calendarUrl : null)
+        setAlreadyRegistered(d.alreadyRegistered === true)
         setStatus('success')
         form.reset()
         setEventId('')
         setContact('email')
       } else {
         setStatus('error')
+        if (d.fieldErrors && typeof d.fieldErrors === 'object') setFieldErrors(d.fieldErrors as FieldErrors)
         setMessage(d.message || 'Please try again.')
       }
     } catch {
@@ -141,6 +151,7 @@ export default function EventRegistrationForm({
       setMessage('Registration is temporarily unavailable. Please try again in a few minutes.')
     } finally {
       setBusy(false)
+      setAttempt((n) => n + 1)
     }
   }
 
@@ -149,11 +160,16 @@ export default function EventRegistrationForm({
       <div className="form-card ev-form">
         <div className="form-success" role="status">
           <IconTile icon={CheckCircle2} tone="teal" size="lg" />
-          <h3 className="form-success__title">You&apos;re registered</h3>
+          <h3 className="form-success__title">{alreadyRegistered ? 'You\u2019re already registered' : 'You\u2019re registered'}</h3>
           <p className="form-success__text">
-            Thank you for registering. We look forward to seeing you{registered ? ' at this session:' : '.'}
+            {alreadyRegistered ? 'We already have your registration for this session.' : 'Thank you for registering. A confirmation email is on its way.'} We look forward to seeing you{registered ? ' at this session:' : '.'}
           </p>
           {registered && <div className="ev-success-event"><PickedEvent event={registered} /></div>}
+          {calendarUrl && (
+            <a href={calendarUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary ev-success-again">
+              Add to Google Calendar
+            </a>
+          )}
           <button type="button" className="btn btn-secondary ev-success-again" onClick={() => setStatus('idle')}>
             Register for another event
           </button>
@@ -211,7 +227,7 @@ export default function EventRegistrationForm({
             aria-describedby={describedBy('event_id')}
           >
             <option value="" disabled>{noEvents ? 'No events open right now' : 'Select a workshop or event'}</option>
-            {events.map((ev) => <option key={ev.id} value={ev.id}>{optionLabel(ev)}</option>)}
+            {events.map((ev) => <option key={ev.id} value={ev.id} disabled={ev.is_full}>{optionLabel(ev)}</option>)}
           </select>
           {fieldErrors.event_id && <p id="err-event_id" className="field-error-text">{fieldErrors.event_id}</p>}
         </div>
@@ -295,6 +311,14 @@ export default function EventRegistrationForm({
           </label>
           {fieldErrors.registration_consent && <p id="err-registration_consent" className="consent-error" role="alert">{fieldErrors.registration_consent}</p>}
         </div>
+
+        {/* Honeypot: hidden from people, tempting to bots. */}
+        <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px', width: 1, height: 1, overflow: 'hidden' }}>
+          <label htmlFor="company_website">Leave this field empty</label>
+          <input id="company_website" name="company_website" type="text" tabIndex={-1} autoComplete="off" />
+        </div>
+
+        <TurnstileWidget resetKey={attempt} action="event_registration" />
 
         <div className="form-submit">
           <button type="submit" disabled={busy || noEvents} aria-busy={busy} className="btn btn-primary ev-submit">

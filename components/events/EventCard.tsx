@@ -18,6 +18,13 @@ export default function EventCard({ event }: { event: CampusEvent }) {
   // "Upcoming" says nothing the date tile doesn't; only call out sessions that are close.
   const statusLabel = status && status.key !== 'upcoming' && status.key !== 'ended' ? status.label : null
   const urgent = status ? ['live', 'today', 'tomorrow'].includes(status.key) : false
+  const full = Boolean(event.is_full)
+  const left = event.spots_left
+  const placesLabel = full
+    ? 'Fully booked'
+    : typeof left === 'number' && left <= 10
+      ? `Only ${left} ${left === 1 ? 'place' : 'places'} left`
+      : `Limited to ${event.capacity} places`
 
   return (
     <article className="ev-card">
@@ -54,13 +61,17 @@ export default function EventCard({ event }: { event: CampusEvent }) {
           {event.capacity ? (
             <li>
               <Users size={16} aria-hidden="true" />
-              <span>Limited to {event.capacity} places</span>
+              <span>{placesLabel}</span>
             </li>
           ) : null}
         </ul>
 
         <div className="ev-card__foot">
-          <EventPickButton eventId={event.id} eventTitle={event.title} />
+          {full ? (
+            <button type="button" className="btn btn-secondary btn-block" disabled>Fully booked</button>
+          ) : (
+            <EventPickButton eventId={event.id} eventTitle={event.title} />
+          )}
         </div>
       </div>
     </article>

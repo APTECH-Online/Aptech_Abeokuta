@@ -7,6 +7,8 @@ import { contactFormSchema, formatZodErrors } from '../../../lib/validation'
 import { findExistingLead } from '../../../lib/duplicate'
 import { generateLeadReference } from '../../../lib/reference'
 import { checkRateLimit } from '../../../lib/rate-limit'
+import { verifyTurnstile, turnstileTokenFromFormData, TURNSTILE_FAILED_MESSAGE } from '../../../lib/turnstile'
+import { clientIpFromHeaders } from '../../../lib/client-ip'
 import { logAudit } from '../../../lib/audit'
 import { sendEmail } from '../../../lib/email/send'
 import { contactAcknowledgementEmail } from '../../../lib/email/templates'
@@ -31,17 +33,18 @@ export async function submitContactMessage(
   // --- Rate limiting ---------------------------------------------------------
   const headerList = await headers()
   const ip =
-    headerList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    headerList.get('x-real-ip') ||
-    'unknown'
+    clientIpFromHeaders(headerList)
 
-  const rateLimit = checkRateLimit(`contact-form:${ip}`)
+  const rateLimit = await checkRateLimit(`contact-form:${ip}`)
   if (!rateLimit.allowed) {
     return {
       status: 'error',
       message: "You've submitted a few messages in a short time. Please wait a minute and try again."
     }
   }
+
+  const captcha = await verifyTurnstile(turnstileTokenFromFormData(formData), ip)
+  if (!captcha.ok) return { status: 'error', message: TURNSTILE_FAILED_MESSAGE }
 
   // --- Parse + validate --------------------------------------------------------
   const raw = Object.fromEntries(formData.entries())

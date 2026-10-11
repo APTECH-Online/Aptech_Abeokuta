@@ -2,7 +2,7 @@ import 'server-only'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getCurrentLegalVersions } from './legal-public'
 
-export type ConsentSource = 'admissions' | 'contact' | 'career_quiz' | 'tech_zone'
+export type ConsentSource = 'admissions' | 'contact' | 'career_quiz' | 'tech_zone' | 'event'
 
 /** True when the date of birth (YYYY-MM-DD) indicates someone under 18. */
 export function isUnder18(dateOfBirth?: string | null, now = new Date()): boolean {

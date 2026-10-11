@@ -4,6 +4,7 @@ import { recordConsent } from '../../../lib/consent'
 import { headers } from 'next/headers'
 import { createAdminClient } from '../../../lib/supabase/admin'
 import { checkRateLimit } from '../../../lib/rate-limit'
+import { clientIpFromHeaders } from '../../../lib/client-ip'
 import { findExistingLead } from '../../../lib/duplicate'
 import { generateLeadReference } from '../../../lib/reference'
 import { createNotification } from '../../../lib/notifications'
@@ -119,8 +120,8 @@ async function upsertChallengeLead(admin: ReturnType<typeof createAdminClient>, 
 }
 
 export async function captureChallengeLead(formData: FormData) {
-  const headerList = await headers(); const ip = headerList.get('x-forwarded-for')?.split(',')[0]?.trim() || headerList.get('x-real-ip') || 'unknown'
-  if (!checkRateLimit(`tech-zone-lead:${ip}`).allowed) return { ok: false, message: 'Please wait a moment before submitting another result.' }
+  const headerList = await headers(); const ip = clientIpFromHeaders(headerList)
+  if (!(await checkRateLimit(`tech-zone-lead:${ip}`)).allowed) return { ok: false, message: 'Please wait a moment before submitting another result.' }
   const attemptId = clean(formData.get('attemptId')); const name = clean(formData.get('name')); const email = clean(formData.get('email')).toLowerCase(); const phone = clean(formData.get('phone')); const preference = clean(formData.get('communicationPreference')) || 'none'; const consent = formData.get('consent') === 'yes'
   if (!attemptId || !name || !consent) return { ok: false, message: 'Please provide your name and consent to receive the result.' }
   if (!email && !phone) return { ok: false, message: 'Please provide an email address or phone/WhatsApp number.' }
@@ -145,8 +146,8 @@ export async function captureChallengeLead(formData: FormData) {
 }
 
 export async function captureLegacyTechIqLead(formData: FormData) {
-  const headerList = await headers(); const ip = headerList.get('x-forwarded-for')?.split(',')[0]?.trim() || headerList.get('x-real-ip') || 'unknown'
-  if (!checkRateLimit(`tech-iq-lead:${ip}`).allowed) return { ok: false, message: 'Please wait a moment before submitting another result.' }
+  const headerList = await headers(); const ip = clientIpFromHeaders(headerList)
+  if (!(await checkRateLimit(`tech-iq-lead:${ip}`)).allowed) return { ok: false, message: 'Please wait a moment before submitting another result.' }
   const name = clean(formData.get('name')); const email = clean(formData.get('email')).toLowerCase(); const phone = clean(formData.get('phone')); const score = Math.max(0, Math.min(5, Number(formData.get('score')) || 0)); const consent = formData.get('consent') === 'yes'
   if (!name || !consent) return { ok: false, message: 'Please provide your name and consent to receive the result.' }
   if (!email && !phone) return { ok: false, message: 'Please provide an email address or phone/WhatsApp number.' }

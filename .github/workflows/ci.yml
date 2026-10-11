@@ -2,20 +2,49 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main]
   pull_request:
-    branches: [ main, master ]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # `secrets` can't be tested directly in a step condition, so expose a flag.
+      HAS_BUILD_SECRETS: ${{ secrets.SUPABASE_URL != '' && secrets.SUPABASE_ANON_KEY != '' && secrets.SUPABASE_SECRET_KEY != '' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+
+      - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: 22
+          cache: npm
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit and route tests
+        run: npm test
+
+      # Some pages (for example /tech-zone) read the database while Next prerenders them,
+      # so a production build needs a reachable Supabase project. Add SUPABASE_URL,
+      # SUPABASE_ANON_KEY and SUPABASE_SECRET_KEY as repository secrets (ideally pointing
+      # at a staging project) to enable this step. Without them it is skipped.
       - name: Build
+        if: env.HAS_BUILD_SECRETS == 'true'
         run: npm run build
+        env:
+          NEXT_PUBLIC_SITE_URL: https://www.aptech-abeokuta.com.ng
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}

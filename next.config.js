@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+const { buildSecurityHeaders } = require('./lib/security-headers')
 
 // The CRM (gallery, insights, and now partner logos) stores uploaded images
 // in Supabase Storage and renders them with next/image, which requires the
@@ -24,6 +25,11 @@ function supabaseImageRemotePatterns() {
 
 const nextConfig = {
   reactStrictMode: true,
+  // `typescript` is aliased to the TypeScript 6 compatibility package (see package.json)
+  // so ESLint's typescript-eslint keeps working next to the native TypeScript 7 compiler.
+  // That alias has no `bin/tsc`, so have `next build` type-check through the compiler API
+  // instead of the CLI. CI also runs the full native check: `npm run typecheck`.
+  experimental: { useTypeScriptCli: false },
   // Don't advertise the framework in a response header.
   poweredByHeader: false,
   images: {
@@ -35,6 +41,15 @@ const nextConfig = {
 
   async headers() {
     return [
+      // Security headers (CSP, HSTS, framing, MIME sniffing, referrer, permissions) on every response.
+      {
+        source: '/:path*',
+        headers: buildSecurityHeaders({
+          supabaseUrl: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL,
+          isDev: process.env.NODE_ENV !== 'production',
+          reportOnly: process.env.CSP_REPORT_ONLY === 'true'
+        })
+      },
       // Defence in depth on top of robots.txt + <meta robots>: the staff CRM
       // and API responses must never be indexed, even if a URL leaks.
       { source: '/admin/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] },

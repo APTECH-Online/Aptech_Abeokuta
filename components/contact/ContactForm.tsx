@@ -9,6 +9,7 @@ import IconTile from '../ui/IconTile'
 import { useActionFeedback } from '../admin/AdminFeedbackProvider'
 import FormAlert from '../shared/FormAlert'
 import WhatsAppButton from '../shared/WhatsAppButton'
+import TurnstileWidget from '../shared/TurnstileWidget'
 import { submitContactMessage, type SubmitContactState } from '../../app/(site)/contact/actions'
 
 const initialState: SubmitContactState = { status: 'idle' }
@@ -120,6 +121,8 @@ export default function ContactForm({ whatsapp }: { whatsapp: string }) {
             {fieldErrors.message && <p className="field-error-text">{fieldErrors.message}</p>}
           </div>
           <ConsentFields error={fieldErrors.privacyConsent} />
+          <TurnstileWidget resetKey={state} action="contact" />
+
           <div className="form-submit">
             <SubmitButton />
             <p className="form-submit__note"><span className="field-req" aria-hidden="true">*</span> Required fields</p>

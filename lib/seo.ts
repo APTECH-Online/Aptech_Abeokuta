@@ -443,6 +443,7 @@ export const STATIC_INDEXABLE_PATHS = [
   '/tech-playground/7-day-challenge',
   '/tech-playground/spin-to-learn',
   '/student-life',
+  '/events',
   '/insights',
   '/insights/news',
   '/insights/blog',

@@ -3,6 +3,7 @@ import { getSiteUrl, RESERVED_COURSE_SLUGS, RESERVED_INSIGHT_SLUGS, STATIC_INDEX
 import { getSitemapCourses } from '../lib/courses-public'
 import { getSitemapInsights } from '../lib/insights-public'
 import { getPublicChallenges } from '../lib/tech-zone'
+import { getUpcomingEvents } from '../lib/events-public'
 
 /**
  * XML sitemap, served at /sitemap.xml.
@@ -25,7 +26,12 @@ export const revalidate = 3600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getSiteUrl()
-  const [courses, insights, challenges] = await Promise.all([getSitemapCourses(), getSitemapInsights(), getPublicChallenges()])
+  const [courses, insights, challenges, campusEvents] = await Promise.all([
+    getSitemapCourses(),
+    getSitemapInsights(),
+    getPublicChallenges(),
+    getUpcomingEvents()
+  ])
 
   const latest = (dates: (string | undefined)[]) => {
     const times = dates.filter(Boolean).map((d) => Date.parse(d as string)).filter((t) => Number.isFinite(t))
@@ -34,6 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const listingLastModified: Record<string, Date | undefined> = {
     '/courses': latest(courses.map((c) => c.updatedAt)),
+    '/events': latest(campusEvents.map((e) => e.updated_at ?? undefined)),
     '/insights': latest(insights.map((i) => i.updatedAt)),
     '/insights/news': latest(insights.filter((i) => i.contentType === 'news').map((i) => i.updatedAt)),
     '/insights/announcements': latest(insights.filter((i) => i.contentType === 'announcement').map((i) => i.updatedAt)),

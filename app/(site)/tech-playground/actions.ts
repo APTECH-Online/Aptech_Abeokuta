@@ -3,6 +3,7 @@
 import { headers } from 'next/headers'
 import { createAdminClient } from '../../../lib/supabase/admin'
 import { checkRateLimit } from '../../../lib/rate-limit'
+import { clientIpFromHeaders } from '../../../lib/client-ip'
 import { recordConsent } from '../../../lib/consent'
 import { createNotification } from '../../../lib/notifications'
 import { safeAttribution, upsertPlaygroundLead } from '../../../lib/playground-lead'
@@ -17,7 +18,7 @@ const fail = (message: string): Fail => ({ ok: false, message })
 
 async function clientIp() {
   const h = await headers()
-  return h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || 'unknown'
+  return clientIpFromHeaders(h)
 }
 const clean = (v: FormDataEntryValue | null, n = 1000) => String(v ?? '').trim().slice(0, n)
 const levelFor = (p: number) => (p >= 90 ? 'Tech Pro' : p >= 75 ? 'Skilled' : p >= 50 ? 'Explorer' : 'Beginner')
@@ -37,7 +38,7 @@ export async function initParticipant(token: string) {
 
 export async function setPlaygroundDisplayName(input: { token: string; name: string }) {
   if (!validToken(input.token)) return fail('Invalid session.')
-  if (!checkRateLimit(`pg-name:${await clientIp()}`).allowed) return fail('Please wait a moment and try again.')
+  if (!(await checkRateLimit(`pg-name:${await clientIp()}`, { limit: 10 })).allowed) return fail('Please wait a moment and try again.')
   const v = validateDisplayName(String(input.name ?? ''))
   if (!v.ok) return fail(v.message)
   try {
@@ -56,7 +57,7 @@ export async function setPlaygroundDisplayName(input: { token: string; name: str
 
 export async function startPlaygroundAttempt(input: { token: string; challengeId: string; attribution?: unknown }) {
   if (!validToken(input.token)) return fail('Invalid session.')
-  if (!checkRateLimit(`pg-start:${await clientIp()}`).allowed) return fail('Slow down a little, then try again.')
+  if (!(await checkRateLimit(`pg-start:${await clientIp()}`, { limit: 30 })).allowed) return fail('Slow down a little, then try again.')
   try {
     const admin = createAdminClient()
     const now = new Date().toISOString()
@@ -192,7 +193,7 @@ export async function finishPlaygroundAttempt(input: { token: string; attemptId:
 
 export async function submitPlaygroundActivity(input: { token: string; kind: 'career_pathfinder' | 'career_quiz' | 'code_lab'; answers?: number[]; codeTaskId?: string; attribution?: unknown }) {
   if (!validToken(input.token)) return fail('Invalid session.')
-  if (!checkRateLimit(`pg-activity:${await clientIp()}`).allowed) return fail('Please wait a moment before trying again.')
+  if (!(await checkRateLimit(`pg-activity:${await clientIp()}`, { limit: 30 })).allowed) return fail('Please wait a moment before trying again.')
   try {
     const admin = createAdminClient()
     const p = await getOrCreateParticipant(admin, input.token)
@@ -220,7 +221,7 @@ export async function submitPlaygroundActivity(input: { token: string; kind: 'ca
 
 export async function capturePlaygroundLead(formData: FormData) {
   const ip = await clientIp()
-  if (!checkRateLimit(`pg-lead:${ip}`).allowed) return fail('Please wait a moment before submitting again.')
+  if (!(await checkRateLimit(`pg-lead:${ip}`)).allowed) return fail('Please wait a moment before submitting again.')
   const token = clean(formData.get('token'), 100), activityId = clean(formData.get('activityId'), 60)
   const name = clean(formData.get('name'), 150), email = clean(formData.get('email'), 200).toLowerCase(), phone = clean(formData.get('phone'), 30)
   const preference = clean(formData.get('communicationPreference'), 20) || 'none', consent = formData.get('consent') === 'yes'

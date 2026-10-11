@@ -3,6 +3,7 @@
 import { headers } from 'next/headers'
 import { createAdminClient } from '../../../lib/supabase/admin'
 import { checkRateLimit } from '../../../lib/rate-limit'
+import { clientIpFromHeaders } from '../../../lib/client-ip'
 import { generateLeadReference } from '../../../lib/reference'
 import { findExistingLead } from '../../../lib/duplicate'
 import { createNotification } from '../../../lib/notifications'
@@ -16,8 +17,8 @@ function clean(value: FormDataEntryValue | null) { return String(value ?? '').tr
 
 export async function submitCareerQuizLead(_prev: QuizLeadState, formData: FormData): Promise<QuizLeadState> {
   const headerList = await headers()
-  const ip = headerList.get('x-forwarded-for')?.split(',')[0]?.trim() || headerList.get('x-real-ip') || 'unknown'
-  const rateLimit = checkRateLimit(`career-quiz:${ip}`)
+  const ip = clientIpFromHeaders(headerList)
+  const rateLimit = await checkRateLimit(`career-quiz:${ip}`)
   if (!rateLimit.allowed) return { status: 'error', message: 'Please wait a moment before submitting another enquiry.' }
 
   const name = clean(formData.get('name'))

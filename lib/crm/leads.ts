@@ -93,7 +93,7 @@ export async function getLeads(filter: LeadsFilter) {
     return { leads: [] as LeadRow[], total: 0, page, pageSize }
   }
 
-  let rows = (data ?? []).map((l: any) => {
+  const rows = (data ?? []).map((l: any) => {
     const interests = (l.lead_interests ?? []).slice().sort(
       (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     )
